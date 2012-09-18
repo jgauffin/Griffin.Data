@@ -4,3 +4,5 @@ obj
 
 # mstest test results
 TestResults
+src/_ReSharper*
+src/packages/*
