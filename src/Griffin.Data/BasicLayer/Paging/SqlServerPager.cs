@@ -6,10 +6,20 @@ using System.Threading.Tasks;
 
 namespace Griffin.Data.BasicLayer.Paging
 {
+    public class SqlServerPagerContext : DbPagerContext
+    {
+        public string PkColumn { get; set; }
+
+        public SqlServerPagerContext(string sql, int pageNumber, int pageSize, string pkColumn)
+            : base(sql, pageNumber, pageSize)
+        {
+            PkColumn = pkColumn;
+        }
+    }
     /// <summary>
     /// Helper for adding paging to a SQL statement
     /// </summary>
-    public class SqlServerPager
+    public class SqlServerPager : IDbPager
     {
         /// <summary>
         /// Page
@@ -19,65 +29,102 @@ namespace Griffin.Data.BasicLayer.Paging
         /// <param name="pageSize">Number of items per page</param>
         /// <param name="pkColumn">The primary key column</param>
         /// <returns>Paged SQL query</returns>
-        public string ApplyTo(string originalSql, int pageNumber, int pageSize, string pkColumn)
+        public string ApplyTo(DbPagerContext context)
         {
-            const string template = @"WITH PagedEntities As 
-(
-    SELECT ROW_NUMBER() OVER (ORDER BY {{OrderByColumns}}) As Row,
-        {{PrimaryKey}}
-    FROM {{TableName}}
-)
-{{OriginalSql}}
-WHERE (c.Row Between {{FirstEntry}} AND {{LastEntry}})
-{{OrignalWhere}}
-";
-
-            var orderByPos = originalSql.IndexOf("ORDER BY", StringComparison.OrdinalIgnoreCase);
-            var orderBy = "";
-            orderBy = orderByPos == -1 ? pkColumn : originalSql.Substring(orderByPos + 9);
-            var lastPartPos = orderByPos;
-
-             var groupByPos = originalSql.IndexOf("GROUP BY", StringComparison.OrdinalIgnoreCase);
-            if (groupByPos != -1)
-                lastPartPos = groupByPos;
-
-            var wherePos = originalSql.IndexOf("WHERE", StringComparison.OrdinalIgnoreCase);
-
-            var fromPos = originalSql.IndexOf("FROM", StringComparison.OrdinalIgnoreCase);
-            var fromEndPos = wherePos != -1 ? wherePos : lastPartPos;
-            var tables = originalSql.Substring(fromPos, fromEndPos - fromPos);
+            var sqlServerContext = (SqlServerPagerContext) context;
+            var fromIndex = context.Sql.IndexOf("FROM", StringComparison.OrdinalIgnoreCase);
+            var whereIndex = context.Sql.IndexOf("WHERE", fromIndex, StringComparison.OrdinalIgnoreCase);
+            var groupByIndex = context.Sql.IndexOf("GROUP BY", StringComparison.OrdinalIgnoreCase);
+            var orderByIndex = context.Sql.IndexOf("ORDER BY", StringComparison.OrdinalIgnoreCase);
             
+            var selectColumns = context.Sql.Substring(7, fromIndex - 7).TrimEnd();
 
-            string where = "";
-            if (wherePos != -1)
+            string tables = "";
+            if (fromIndex == -1)
+                throw new InvalidOperationException("Failed to find a FROM clause");
+            else
             {
-                var startPos = wherePos + 6;
-                int endPos;
-               
-                if (groupByPos != -1)
-                {
-                    endPos = groupByPos;
-                }
-                else if (orderByPos != -1)
-                {
-                    endPos = orderByPos;
-                }
-                else
-                    endPos = originalSql.Length - 1;
-
-                where = originalSql.Substring(startPos, endPos - startPos);
+                var startPos = fromIndex + 5;
+                var endPos = whereIndex != -1
+                    ? whereIndex
+                    :groupByIndex != -1
+                             ? groupByIndex
+                             : orderByIndex != -1
+                                   ? orderByIndex
+                                   : context.Sql.Length;
+                tables = context.Sql.Substring(startPos, endPos - startPos).TrimEnd();
             }
 
-            var firstRow = (pageNumber - 1)*pageSize;
+            // where
+            var where = "";
+            if (whereIndex != -1)
+            {
+                var startPos = whereIndex + 6;
+                var endPos = groupByIndex != -1
+                             ? groupByIndex
+                             : orderByIndex != -1
+                                   ? orderByIndex
+                                   : context.Sql.Length;
 
-            var sql = template.Replace("{{PrimaryKey}}", pkColumn)
-                          .Replace("{{OrderByColumns}}", orderBy)
-                          .Replace("{{FirstEntry}}", firstRow.ToString())
-                          .Replace("{{LastEntry}}", (firstRow + pageSize).ToString())
-                          .Replace("{{OrignalWhere}}", " AND (" + where + ")")
-                          .Replace("{{TableName}}", tables)
-                      + originalSql.Substring(lastPartPos);
+                where = context.Sql.Substring(startPos, endPos - startPos).TrimEnd();
+            }
 
+            // group by
+            var groupByColumns = "";
+            if (groupByIndex != -1)
+            {
+                var startPos = groupByIndex + 9;
+                var endPos = orderByIndex != -1
+                                   ? orderByIndex
+                                   : context.Sql.Length;
+
+                groupByColumns = context.Sql.Substring(startPos, endPos - startPos).TrimEnd();
+            }
+
+            // order by
+            var orderByColumns = "";
+            if (orderByIndex == -1)
+                orderByColumns = sqlServerContext.PkColumn;
+            else
+            {
+                var startPos = orderByIndex + 9;
+                var endPos = context.Sql.Length;
+                orderByColumns = context.Sql.Substring(startPos, endPos - startPos);
+            }
+
+
+
+            var firstRow = (context.PageNumber - 1)*context.PageSize;
+            var lastRow = firstRow + context.PageSize;
+
+
+            /*WITH Members  AS
+(
+SELECT	M_NAME, M_POSTS, M_LASTPOSTDATE, M_LASTHEREDATE, M_DATE, M_COUNTRY,
+ROW_NUMBER() OVER (ORDER BY M_POSTS DESC) AS RowNumber
+FROM	dbo.FORUM_MEMBERS
+)
+SELECT	RowNumber, M_NAME, M_POSTS, M_LASTPOSTDATE, M_LASTHEREDATE, M_DATE, M_COUNTRY
+FROM	Members
+WHERE	RowNumber BETWEEN 1 AND 20
+ORDER BY RowNumber ASC;
+*/
+            var sql = string.Format(@"WITH Paged AS 
+(
+    SELECT {0},
+    ROW_NUMBER() OVER (ORDER BY {1}) AS RowNumber
+    FROM {2}
+)
+SELECT RowNumber, {0}
+FROM {2}
+WHERE RowNumber BETWEEN {3} AND {4}
+", selectColumns, orderByColumns, tables, firstRow, lastRow);
+
+            if (where != "")
+                sql += "AND (" + where + ")\r\n";
+            if (groupByColumns != "")
+                sql += "GROUP BY " + groupByColumns + "\r\n";
+            sql += "ORDER BY " + orderByColumns;
             return sql;
 
 

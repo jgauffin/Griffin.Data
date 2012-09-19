@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Griffin.Data</RootNamespace>
     <AssemblyName>Griffin.Data</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -28,6 +29,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Griffin.Data.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -45,8 +47,10 @@
     <Compile Include="BasicLayer\CommandHelpers.cs" />
     <Compile Include="BasicLayer\DateExtensionMethods.cs" />
     <Compile Include="BasicLayer\IAdoNetContext.cs" />
-    <Compile Include="BasicLayer\LayerMapper.cs" />
+    <Compile Include="BasicLayer\EntityMapper.cs" />
     <Compile Include="BasicLayer\NamespaceDoc.cs" />
+    <Compile Include="BasicLayer\Paging\IDbPager.cs" />
+    <Compile Include="BasicLayer\Paging\SqlServerCePager.cs" />
     <Compile Include="BasicLayer\Paging\SqlServerPager.cs" />
     <Compile Include="Mappings\SqlServerDateConverter.cs" />
     <Compile Include="CommandExtensions.cs" />
@@ -77,6 +81,8 @@
     <Compile Include="Queries\IQueryConstraints.cs" />
     <Compile Include="IUnitOfWork.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Queries\LazyLoadingEnumerator.cs" />
+    <Compile Include="Queries\LazyLoadingResult.cs" />
     <Compile Include="Queries\QueryResult.cs" />
     <Compile Include="Queries\QueryConstraintsExtensions.cs" />
     <Compile Include="Queries\QueryConstraintsT.cs" />

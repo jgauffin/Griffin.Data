@@ -34,6 +34,16 @@ namespace Griffin.Data.Mappings
         }
 
         /// <summary>
+        /// Gets column name
+        /// </summary>
+        public string ColumnName { get { return _columnName; }}
+
+        /// <summary>
+        /// Gets property name
+        /// </summary>
+        public string PropertyName { get { return _propertyInfo.Name; }}
+
+        /// <summary>
         /// Assign the property
         /// </summary>
         /// <param name="record">A data record</param>

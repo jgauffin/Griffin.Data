@@ -13,14 +13,14 @@ namespace Griffin.Data.Tests.Queries
         [Fact]
         public void NonExistantProperty()
         {
-            var constraints = new QueryConstraints(typeof (User));
+            var constraints = new QueryConstraints<User>();
             Assert.Throws<ArgumentOutOfRangeException>(() => constraints.SortBy("Arne"));
         }
 
         [Fact]
         public void SortBy()
         {
-            var constraints = new QueryConstraints(typeof(User));
+            var constraints = new QueryConstraints<User>();
 
             constraints.SortBy("FirstName");
 
@@ -31,7 +31,7 @@ namespace Griffin.Data.Tests.Queries
         [Fact]
         public void SortByDescending()
         {
-            var constraints = new QueryConstraints(typeof(User));
+            var constraints = new QueryConstraints<User>();
 
             constraints.SortByDescending("FirstName");
 
@@ -42,7 +42,7 @@ namespace Griffin.Data.Tests.Queries
         [Fact]
         public void NoPaging()
         {
-            var constraints = new QueryConstraints(typeof(User));
+            var constraints = new QueryConstraints<User>();
 
             Assert.Equal(-1, constraints.PageNumber);
             Assert.Equal(-1, constraints.PageSize);
@@ -51,7 +51,7 @@ namespace Griffin.Data.Tests.Queries
         [Fact]
         public void FirstPage()
         {
-            var constraints = new QueryConstraints(typeof(User));
+            var constraints = new QueryConstraints<User>();
 
             constraints.Page(1, 50);
 
@@ -64,7 +64,7 @@ namespace Griffin.Data.Tests.Queries
         [Fact]
         public void TenthPage()
         {
-            var constraints = new QueryConstraints(typeof(User));
+            var constraints = new QueryConstraints<User>();
 
             constraints.Page(10, 20);
 

@@ -51,6 +51,7 @@
     <Compile Include="BasicLayer\AdoNetUnitOfWork.cs" />
     <Compile Include="BasicLayer\AppConfigConnectionFactory.cs" />
     <Compile Include="BasicLayer\CommandExtensionTests.cs" />
+    <Compile Include="BasicLayer\Paging\SqlServerPagerTests.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="CustomMapper.cs" />
     <Compile Include="Mappings\CommandExtensionsTests.cs" />

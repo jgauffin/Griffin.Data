@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using Griffin.Data.Mappings;
-using ITableMapping = Griffin.Data.BasicLayer.ITableMapping;
 
 namespace Griffin.Data.BasicLayer
 {
@@ -54,6 +53,27 @@ namespace Griffin.Data.BasicLayer
         }
 
         /// <summary>
+        /// Transforms the SQL query into a <c>Count(*)</c>, runs a scalar execute and then restores the query.
+        /// </summary>
+        /// <param name="command">Command to use</param>
+        /// <returns>Number of rows</returns>
+        public static int Count(this IDbCommand command)
+        {
+            if (command == null) throw new ArgumentNullException("command");
+            
+            var pos = command.CommandText.IndexOf("FROM", StringComparison.OrdinalIgnoreCase);
+            if (pos == -1)
+                throw new NotSupportedException("Failed to find FROM in the SQL query");
+
+            var org = command.CommandText;
+            command.CommandText = "SELECT count(*) " + command.CommandText.Substring(pos);
+            var result = (int)command.ExecuteScalar();
+
+            command.CommandText = org;
+            return result;
+        }
+
+        /// <summary>
         /// Execute a query where the "WHERE" clause is generated for you
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
@@ -66,7 +86,7 @@ namespace Griffin.Data.BasicLayer
         /// <![CDATA[
         /// using (var cmd = _connection.CreateCommand())
         /// {
-        ///     return cmd.ExecuteQuery<User>(new { first_name = "Arne", last_name="Kalle" }).FirstOrDefault();
+        ///     return cmd.ExecuteLazyQuery<User>(new { first_name = "Arne", last_name="Kalle" }).FirstOrDefault();
         /// }
         /// ]]>
         /// </code>
@@ -76,6 +96,46 @@ namespace Griffin.Data.BasicLayer
         {
             if (command == null) throw new ArgumentNullException("command");
 
+            PrepareCommand<TEntity>(command, parameters);
+
+            return command.ExecuteQuery<TEntity>();
+        }
+
+        /// <summary>
+        /// Execute a query where the "WHERE" clause is generated for you
+        /// </summary>
+        /// <typeparam name="TEntity">Entity</typeparam>
+        /// <param name="command">Command to use</param>
+        /// <param name="parameters">columns which must be specified.</param>
+        /// <returns>Lazy loading list</returns>
+        /// <remarks>
+        /// <para>Everything is lazy loaded, which means that you may not dispose the command. It will be disposed for you when the returned list is disposed.
+        /// </para>
+        /// <para>Requires that the mapping class implements <see cref="ITableMapping"/>.</para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// <![CDATA[
+        /// using (var cmd = _connection.CreateCommand())
+        /// {
+        ///     return cmd.ExecuteLazyQuery<User>(new { FirstName = "Arne", LastName = "Kalle" }).FirstOrDefault();
+        /// }
+        /// ]]>
+        /// </code>
+        /// </example>
+        public static IEnumerable<TEntity> ExecuteLazyQuery<TEntity>(this IDbCommand command, object parameters)
+            where TEntity : class
+        {
+            if (command == null) throw new ArgumentNullException("command");
+
+            PrepareCommand<TEntity>(command, parameters);
+
+            return command.ExecuteLazyQuery<TEntity>();
+        }
+
+
+        private static void PrepareCommand<TEntity>(IDbCommand command, object parameters) where TEntity : class
+        {
             var mapper = MapperProvider.Instance.GetMapper<TEntity>();
             var tableMapping = mapper as ITableMapping;
             if (tableMapping == null)
@@ -83,27 +143,19 @@ namespace Griffin.Data.BasicLayer
                     string.Format(
                         "The mapper for {0} do not implement ITableMapping which is required by this method.",
                         typeof (TEntity)));
-
+            
             command.CommandText = string.Format("SELECT * FROM {0}", tableMapping.TableName);
 
-            if (parameters != null)
-            {
-                command.CommandText += " WHERE ";
-                foreach (var propertyInfo in parameters.GetType().GetProperties())
-                {
-                    command.CommandText += " " + propertyInfo.Name + " = @" + propertyInfo.Name + " AND ";
-                    command.AddParameter(propertyInfo.Name, propertyInfo.GetValue(parameters, null));
-                }
-                command.CommandText = command.CommandText.Remove(command.CommandText.Length - 5, 5);
-            }
+            if (parameters == null) 
+                return;
 
-            using (var reader = command.ExecuteReader())
+            command.CommandText += " WHERE ";
+            foreach (var propertyInfo in parameters.GetType().GetProperties())
             {
-                while (reader.Read())
-                {
-                    yield return mapper.Map(reader);
-                }
+                command.CommandText += " " + tableMapping.GetColumnName(propertyInfo.Name) + " = @" + propertyInfo.Name + " AND ";
+                command.AddParameter(propertyInfo.Name, propertyInfo.GetValue(parameters, null));
             }
+            command.CommandText = command.CommandText.Remove(command.CommandText.Length - 5, 5);
         }
     }
 }

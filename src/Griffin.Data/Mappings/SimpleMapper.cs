@@ -40,6 +40,11 @@ namespace Griffin.Data.Mappings
     {
         private readonly IList<IColumnMapping> _mappings = new List<IColumnMapping>();
 
+        /// <summary>
+        /// Gets column mappings
+        /// </summary>
+        protected IEnumerable<IColumnMapping> Mappings { get { return _mappings; } }
+
         #region IDataRecordMapper<TEntity> Members
 
         /// <summary>

@@ -17,5 +17,12 @@ namespace Griffin.Data.BasicLayer
         /// Gets id column name.
         /// </summary>
         string IdColumnName { get; }
+
+        /// <summary>
+        /// Get column name from a property name
+        /// </summary>
+        /// <param name="propertyName">property name</param>
+        /// <returns>Column name</returns>
+        string GetColumnName(string propertyName);
     }
 }
