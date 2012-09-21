@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq.Expressions;
 using System.Reflection;
+using Griffin.Data.Converters;
 
 namespace Griffin.Data.Mappings
 {

@@ -1,4 +1,4 @@
-namespace Griffin.Data.Mappings
+namespace Griffin.Data.Converters
 {
     /// <summary>
     /// Used to convert the conversion to typed.
@@ -7,7 +7,7 @@ namespace Griffin.Data.Mappings
     /// <typeparam name="TEntityValue">Property type</typeparam>
     public abstract class ColumnConverterBase<TColumnValue, TEntityValue> : IColumnConverter
     {
-        object IColumnConverter.ConvertFromDb(object dbColumnValue)
+        object IColumnConverter.Convert(object dbColumnValue)
         {
             return ConvertDbValue((TColumnValue)dbColumnValue);
         }

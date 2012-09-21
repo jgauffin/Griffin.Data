@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Griffin.Data.Converters;
 using Griffin.Data.Mappings;
 using Xunit;
 
@@ -21,7 +22,7 @@ namespace Griffin.Data.Tests.Mappings
         {
             var converter = new DelegateConverter<int, string>(i => i.ToString());
 
-            var actual = converter.ConvertFromDb(10);
+            var actual = converter.Convert(10);
 
             Assert.Equal("10", actual);
         }

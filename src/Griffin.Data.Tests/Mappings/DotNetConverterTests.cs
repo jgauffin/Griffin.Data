@@ -1,4 +1,5 @@
 ﻿using System;
+using Griffin.Data.Converters;
 using Griffin.Data.Mappings;
 using Xunit;
 
@@ -11,7 +12,7 @@ namespace Griffin.Data.Tests.Mappings
         {
             var converter = new DotNetConverter<string>();
 
-            var actual = converter.ConvertFromDb(DBNull.Value);
+            var actual = converter.Convert(DBNull.Value);
 
             Assert.Null(actual);
         }
@@ -21,7 +22,7 @@ namespace Griffin.Data.Tests.Mappings
         {
             var converter = new DotNetConverter<int>();
 
-            var actual = converter.ConvertFromDb(DBNull.Value);
+            var actual = converter.Convert(DBNull.Value);
 
             Assert.Equal(0, actual);
         }
@@ -31,7 +32,7 @@ namespace Griffin.Data.Tests.Mappings
         {
             var converter = new DotNetConverter<string>();
 
-            var actual = converter.ConvertFromDb(null);
+            var actual = converter.Convert(null);
 
             Assert.Null(actual);
         }
@@ -41,7 +42,7 @@ namespace Griffin.Data.Tests.Mappings
         {
             var converter = new DotNetConverter<string>();
 
-            var actual = converter.ConvertFromDb(1);
+            var actual = converter.Convert(1);
 
             Assert.Equal("1", actual);
         }
@@ -51,7 +52,7 @@ namespace Griffin.Data.Tests.Mappings
         {
             var converter = new DotNetConverter<int>();
 
-            var actual = converter.ConvertFromDb(null);
+            var actual = converter.Convert(null);
 
             Assert.Equal(0, actual);
         }

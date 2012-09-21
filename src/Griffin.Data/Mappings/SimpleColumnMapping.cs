@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Linq.Expressions;
 using System.Reflection;
+using Griffin.Data.Converters;
 
 namespace Griffin.Data.Mappings
 {
@@ -55,7 +56,7 @@ namespace Griffin.Data.Mappings
 
             var value = record[_columnName];
             if (_converter != null)
-                value = _converter.ConvertFromDb(value);
+                value = _converter.Convert(value);
 
             _propertyInfo.SetValue(entity, value, null);
         }

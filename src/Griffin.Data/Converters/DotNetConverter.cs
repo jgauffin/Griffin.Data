@@ -1,6 +1,6 @@
 using System;
 
-namespace Griffin.Data.Mappings
+namespace Griffin.Data.Converters
 {
     /// <summary>
     /// Uses <see cref="Convert.ChangeType(object, Type)"/> for the conversion.
@@ -16,7 +16,7 @@ namespace Griffin.Data.Mappings
         /// </summary>
         /// <param name="dbColumnValue">Value in the db column</param>
         /// <returns>Value which can be assigned to the property</returns>
-        public object ConvertFromDb(object dbColumnValue)
+        public object Convert(object dbColumnValue)
         {
             var isString = typeof (TEntityValue) == typeof (string);
             if (dbColumnValue == null || dbColumnValue == DBNull.Value)
@@ -24,7 +24,7 @@ namespace Griffin.Data.Mappings
 
             return isString
                        ? dbColumnValue.ToString()
-                       : Convert.ChangeType(dbColumnValue, typeof (TEntityValue));
+                       : System.Convert.ChangeType(dbColumnValue, typeof (TEntityValue));
         }
     }
 

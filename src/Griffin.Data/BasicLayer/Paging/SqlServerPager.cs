@@ -97,6 +97,9 @@ namespace Griffin.Data.BasicLayer.Paging
             var firstRow = (context.PageNumber - 1)*context.PageSize;
             var lastRow = firstRow + context.PageSize;
 
+            var innerFrom = tables;
+            if (!string.IsNullOrEmpty(where))
+                innerFrom += "\r\n    WHERE " + where + "\r\n";
 
             /*WITH Members  AS
 (
@@ -116,12 +119,10 @@ ORDER BY RowNumber ASC;
     FROM {2}
 )
 SELECT RowNumber, {0}
-FROM {2}
+FROM Paged
 WHERE RowNumber BETWEEN {3} AND {4}
-", selectColumns, orderByColumns, tables, firstRow, lastRow);
+", selectColumns, orderByColumns, innerFrom, firstRow, lastRow);
 
-            if (where != "")
-                sql += "AND (" + where + ")\r\n";
             if (groupByColumns != "")
                 sql += "GROUP BY " + groupByColumns + "\r\n";
             sql += "ORDER BY " + orderByColumns;
