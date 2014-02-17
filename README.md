@@ -1,6 +1,10 @@
 Griffin.Data
 ============
 
+*** This library will be merged into [Griffin.Framework](https://github.com/jgauffin/griffin.framework) - now with commercial support ***
+
+
+
 Simple Data Mapping Layer
 
 The purpose of this layer is not to create an OR/M but to help you map the result of your SQL Queries to your domain entities (or POCOs).
