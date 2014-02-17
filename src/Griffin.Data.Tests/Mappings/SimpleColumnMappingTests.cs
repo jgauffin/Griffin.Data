@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Griffin.Data.Converters;
 using Griffin.Data.Mappings;
 using NSubstitute;
 using Xunit;
@@ -29,7 +30,7 @@ namespace Griffin.Data.Tests.Mappings
         public void CallingConverter()
         {
             var converter = Substitute.For<IColumnConverter>();
-            converter.ConvertFromDb("arne").Returns("Arne");
+            converter.Convert("arne").Returns("Arne");
             var mapping = new SimpleColumnMapping<User>(x => x.FirstName, "first_name", converter);
             var dataRecord = Substitute.For<IDataRecord>();
             dataRecord["first_name"].Returns("arne");
@@ -38,7 +39,7 @@ namespace Griffin.Data.Tests.Mappings
             mapping.SetValue(dataRecord, actual);
 
             Assert.Equal("Arne", actual.FirstName);
-            converter.Received().ConvertFromDb("arne");
+            converter.Received().Convert("arne");
         }
     }
 }

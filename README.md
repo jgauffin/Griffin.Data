@@ -9,6 +9,8 @@ Simple Data Mapping Layer
 
 The purpose of this layer is not to create an OR/M but to help you map the result of your SQL Queries to your domain entities (or POCOs).
 
+# Mapping only
+
 You start by creating a mapping:
 
     public class UserMapping : SimpleMapper<User>
@@ -69,7 +71,7 @@ Where the actual implementation looks like (all used classes exist in Griffin.Da
 
 			// page
 			cmd.CommandText = ApplyConstraints(constraints, cmd.CommandText);
-			var result = cmd.ExecuteQuery<User>();
+			var result = cmd.ExecuteLazyQuery<User>();
 			return new QueryResult<User>(result, count);
 		}
 	}
@@ -85,11 +87,54 @@ Where the actual implementation looks like (all used classes exist in Griffin.Da
 
 		if (constraints.PageNumber != -1)
 		{
-			// notice the SQL pager class which transforms the SQL
+			var context = new SqlServerPagerContext(sql, constraints.PageNumber, constraints.PageSize, "Id");
 			var pager = new SqlServerPager();
-			sql = pager.ApplyTo(sql, constraints.PageNumber, constraints.PageSize, "id");
+			sql = pager.ApplyTo(context);
 		}
 
 		return sql;
 	}
 }
+
+# Access helpers
+
+Makes it a bit easier to fetch stuff. Remember. Still not an OR/M but just a simple access layer.
+
+Create a mapping (and register it like before):
+
+	public class UserMapping : EntityMapper<User>
+    {
+        public UserMapping()
+        {
+            Add(x => x.Id, "Id");
+            Add(x => x.FirstName, "FirstName");
+            Add(x => x.LastName, "LastName");
+            Add(x => x.Age, "Age");
+            Add(x => x.CreatedAt, "CreatedAt", new SqlServerDateConverter());
+
+			// the new stuff
+            TableName = "Users";
+            IdColumnName = "Id";
+        }
+    }
+	
+And then fetch one item by doing:
+
+	using (var cmd = _connection.CreateCommand())
+	{
+		return cmd.ExecuteScalar<User>(id);
+	}
+	
+Fetch several (all params are AND:ed)
+
+    using (var cmd = _connection.CreateCommand())
+    {
+		// note that it's property names and not column names.	
+		return cmd.ExecuteLazyQuery<User>(new { FirstName = "Arne", LastName = "Kalle" }).FirstOrDefault();
+    }
+
+Easy paging (no need to care about the db server implementation):
+
+	var context = new DbPagerContext(sql, constraints.PageNumber, constraints.PageSize);
+	var pager = new SqlServerCePager();
+	sql = pager.ApplyTo(context);

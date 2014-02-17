@@ -10,6 +10,16 @@ namespace Griffin.Data.Mappings
     public interface IColumnMapping
     {
         /// <summary>
+        /// Gets column name
+        /// </summary>
+        string ColumnName { get; }
+
+        /// <summary>
+        /// Gets property name
+        /// </summary>
+        string PropertyName { get; }
+
+        /// <summary>
         /// Assign the property
         /// </summary>
         /// <param name="record">A data record</param>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq.Expressions;
 using System.Reflection;
+using Griffin.Data.Converters;
 
 namespace Griffin.Data.Mappings
 {
@@ -39,6 +40,11 @@ namespace Griffin.Data.Mappings
     public class SimpleMapper<TEntity> : IDataRecordMapper<TEntity> where TEntity : class
     {
         private readonly IList<IColumnMapping> _mappings = new List<IColumnMapping>();
+
+        /// <summary>
+        /// Gets column mappings
+        /// </summary>
+        protected IEnumerable<IColumnMapping> Mappings { get { return _mappings; } }
 
         #region IDataRecordMapper<TEntity> Members
 

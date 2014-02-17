@@ -1,4 +1,4 @@
-namespace Griffin.Data.Mappings
+namespace Griffin.Data.Converters
 {
     /// <summary>
     /// Used to convert from a table column type to a property type
@@ -10,6 +10,6 @@ namespace Griffin.Data.Mappings
         /// </summary>
         /// <param name="dbColumnValue">Value in the db column</param>
         /// <returns>Value which can be assigned to the property</returns>
-        object ConvertFromDb(object dbColumnValue);
+        object Convert(object dbColumnValue);
     }
 }

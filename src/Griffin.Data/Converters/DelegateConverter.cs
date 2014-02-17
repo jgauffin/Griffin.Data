@@ -1,6 +1,6 @@
 using System;
 
-namespace Griffin.Data.Mappings
+namespace Griffin.Data.Converters
 {
     /// <summary>
     /// Use a lambda/delegate for the conversion
@@ -23,7 +23,7 @@ namespace Griffin.Data.Mappings
         /// </summary>
         /// <param name="dbColumnValue">Value in the db column</param>
         /// <returns>Value which can be assigned to the property</returns>
-        public object ConvertFromDb(object dbColumnValue)
+        public object Convert(object dbColumnValue)
         {
             return _func((TFrom)dbColumnValue);
         }
