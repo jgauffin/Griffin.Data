@@ -1,7 +1,7 @@
 Griffin.Data
 ============
 
-***This library will be merged into [Griffin.Framework](https://github.com/jgauffin/griffin.framework) - now with commercial support***
+***This library hass been merged into [Griffin.Framework](https://github.com/jgauffin/griffin.framework) - Got a lot more functions in Griffin.Framework. ***
 
 
 
