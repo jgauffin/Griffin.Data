@@ -4,10 +4,11 @@ Griffin.Data
 ***This library hass been merged into [Griffin.Framework](https://github.com/jgauffin/griffin.framework) - Got a lot more functions in Griffin.Framework. ***
 
 
-
 Simple Data Mapping Layer
 
 The purpose of this layer is not to create an OR/M but to help you map the result of your SQL Queries to your domain entities (or POCOs).
+
+Licence: Apache License v2.0
 
 # Mapping only
 
