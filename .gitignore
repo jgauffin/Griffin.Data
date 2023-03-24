@@ -6,3 +6,5 @@ obj
 TestResults
 src/_ReSharper*
 src/packages/*
+/.vs
+/src/.vs
