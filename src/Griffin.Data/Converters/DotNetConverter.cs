@@ -1,31 +1,21 @@
-using System;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
-namespace Griffin.Data.Converters
+namespace Griffin.Data.Converters;
+
+internal class DotNetConverter<TColumn, TProperty> : ISingleValueConverter<TColumn, TProperty>
 {
-    /// <summary>
-    /// Uses <see cref="Convert.ChangeType(object, Type)"/> for the conversion.
-    /// </summary>
-    /// <typeparam name="TEntityValue">Property type</typeparam>
-    /// <remarks>Uses <c>Activator.CreateInstance</c> to create default values if the db value is null. Not very effecient, but the
-    /// best I could come up with. (primitives is the problem)</remarks>
-    public class DotNetConverter<TEntityValue> : IColumnConverter
+    [return: NotNull]
+    public TProperty ColumnToProperty([DisallowNull] [NotNull] TColumn value)
     {
-
-        /// <summary>
-        /// Convert from db value to property value
-        /// </summary>
-        /// <param name="dbColumnValue">Value in the db column</param>
-        /// <returns>Value which can be assigned to the property</returns>
-        public object Convert(object dbColumnValue)
-        {
-            var isString = typeof (TEntityValue) == typeof (string);
-            if (dbColumnValue == null || dbColumnValue == DBNull.Value)
-                return isString ? null : Activator.CreateInstance(typeof(TEntityValue)); // to get default value
-
-            return isString
-                       ? dbColumnValue.ToString()
-                       : System.Convert.ChangeType(dbColumnValue, typeof (TEntityValue));
-        }
+        if (value == null) throw new ArgumentNullException(nameof(value));
+        return (TProperty)Convert.ChangeType(value, typeof(TProperty));
     }
 
+    [return: NotNull]
+    public TColumn PropertyToColumn([DisallowNull] [NotNull] TProperty value)
+    {
+        if (value == null) throw new ArgumentNullException(nameof(value));
+        return (TColumn)Convert.ChangeType(value, typeof(TColumn));
+    }
 }

@@ -1,101 +1,33 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6FE51C91-968C-42FF-8FB0-98D94DE4F5B3}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Griffin.Data</RootNamespace>
-    <AssemblyName>Griffin.Data</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Griffin.Data.XML</DocumentationFile>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="BasicLayer\CommandExtensions.cs" />
-    <Compile Include="BasicLayer\AdoNetUnitOfWork.cs" />
-    <Compile Include="BasicLayer\CommandHelpers.cs" />
-    <Compile Include="DateExtensionMethods.cs" />
-    <Compile Include="BasicLayer\IAdoNetContext.cs" />
-    <Compile Include="BasicLayer\EntityMapper.cs" />
-    <Compile Include="BasicLayer\NamespaceDoc.cs" />
-    <Compile Include="BasicLayer\Paging\IDbPager.cs" />
-    <Compile Include="BasicLayer\Paging\SqlServerCePager.cs" />
-    <Compile Include="BasicLayer\Paging\SqlServerPager.cs" />
-    <Compile Include="Converters\DbNullConverter.cs" />
-    <Compile Include="Converters\SqlServerDateConverter.cs" />
-    <Compile Include="CommandExtensions.cs" />
-    <Compile Include="ExpressionExtensions.cs" />
-    <Compile Include="IDataStorage.cs" />
-    <Compile Include="ItemAbstract.cs" />
-    <Compile Include="BasicLayer\AppConfigConnectionFactory.cs" />
-    <Compile Include="Converters\ColumnConverterBase.cs" />
-    <Compile Include="Mappings\CommandExtensions.cs" />
-    <Compile Include="BasicLayer\DataLayerException.cs" />
-    <Compile Include="Converters\DelegateConverter.cs" />
-    <Compile Include="Mappings\DelegateMapper.cs" />
-    <Compile Include="Converters\DotNetConverter.cs" />
-    <Compile Include="Converters\IColumnConverter.cs" />
-    <Compile Include="Mappings\IColumnMapping.cs" />
-    <Compile Include="BasicLayer\IConnectionFactory.cs" />
-    <Compile Include="Mappings\IDataRecordMapper.cs" />
-    <Compile Include="Mappings\IMapperProvider.cs" />
-    <Compile Include="BasicLayer\ITableMapping.cs" />
-    <Compile Include="Mappings\MapperProvider.cs" />
-    <Compile Include="Mappings\MappingException.cs" />
-    <Compile Include="Mappings\NamespaceDoc.cs" />
-    <Compile Include="BasicLayer\AdoNetContext.cs" />
-    <Compile Include="Mappings\SimpleColumnMapping.cs" />
-    <Compile Include="Mappings\SimpleMapper.cs" />
-    <Compile Include="ObjectExtensions.cs" />
-    <Compile Include="Queries\IQueryResult.cs" />
-    <Compile Include="Queries\IQueryConstraints.cs" />
-    <Compile Include="IUnitOfWork.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Queries\LazyLoadingEnumerator.cs" />
-    <Compile Include="Queries\LazyLoadingResult.cs" />
-    <Compile Include="Queries\QueryResult.cs" />
-    <Compile Include="Queries\QueryConstraintsExtensions.cs" />
-    <Compile Include="Queries\QueryConstraintsT.cs" />
-    <Compile Include="SortOrder.cs" />
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.1</TargetFramework>
+		<Nullable>enable</Nullable>
+		<LangVersion>default</LangVersion>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(ProjectName).xml</DocumentationFile>
+
+		<Version>1.0.0-rc13</Version>
+		<PackageReleaseNotes>Fixed so the user is attached to the error contexts.</PackageReleaseNotes>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PackageId>Griffin.Data</PackageId>
+		<Authors>Coderr AB</Authors>
+		<Description>Takes care of all your exceptions in ASP.NET Core Mvc applications.</Description>
+		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<Copyright>Copyright 2023 © Jonas Gauffin. All rights reserved.</Copyright>
+		<PackageTags>logger exceptions analysis .net-core netstandard aspnet mvc-core</PackageTags>
+		<PackageIconUrl>https://coderr.io/images/nuget_icon.png</PackageIconUrl>
+		<PackageProjectUrl>https://coderr.io</PackageProjectUrl>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+	</ItemGroup>
+
+	<Target Name="CopyPackage" AfterTargets="Pack">
+		<Copy SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="\src\nuget\" />
+	</Target>
+
 </Project>

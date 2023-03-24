@@ -1,49 +1,66 @@
 Griffin.Data
 ============
 
-***This library hass been merged into [Griffin.Framework](https://github.com/jgauffin/griffin.framework) - Got a lot more functions in Griffin.Framework. ***
+Version 2.0 is work in progress and not ready for use.
 
+Lightweight ORM and data mapper.
 
-Simple Data Mapping Layer
-
-The purpose of this layer is not to create an OR/M but to help you map the result of your SQL Queries to your domain entities (or POCOs).
+The ORM part is inteded to manage business entites (no joins etc) while the data mapper is used to build queries for the view part of an application.
 
 Licence: Apache License v2.0
 
-# Mapping only
+# ORM
 
-You start by creating a mapping:
 
-    public class UserMapping : SimpleMapper<User>
+Start by creating a mapping:
+
+```csharp
+internal class UserConfigurator : IEntityConfigurator<User>
+{
+    public void Configure(IClassMappingConfigurator<User> config)
     {
-        public UserMapping()
+        config.Key(x => x.Id).AutoIncrement();
+        config.Property(x => x.FirstName);
+        
+        config.HasMany(x=>x.Addresses)
+            .ForeignKey(x=>x.UserId)
+            .References(x=>x.Id);
+        
+        config.HasOne(x=>x.Data)
+            .Denominator(x=>x.State, CreateChildEntity)
+            .ForeignKey(x=>x.UserId)
+            .References(x=>x.Id);
+        
+    }
+
+    private Data? CreateChildEntity(AccountState arg)
+    {
+        switch (arg)
         {
-            Add(x => x.Id, "Id");
-            Add(x => x.FirstName, "FirstName");
-            Add(x => x.LastName, "LastName");
-            Add(x => x.Age, "Age");
-            Add(x => x.CreatedAt, "CreatedAt", new SqlServerDateConverter());
+            case AccountState.Active:
+                return new UserData();
+            case AccountState.Admin:
+                return new AdminData();
+            default:
+                return null;
         }
     }
-	
-Which you register:
+}
+```
 
-	MapperProvider.Instance.RegisterAssembly(Assembly.GetExecutingAssembly());
+There is scaffolding included which can generate both entities (parent and child entities using foreign keys) and mappings for those.
 
-Then you create methods like:
+All entities are change tracked and only those changed are persisted back to the database.
 
-	public IEnumerable<User> FindAll()
-	{
-		using (var cmd = _connection.CreateCommand())
-		{
-			cmd.CommandText = "SELECT * FROM Users";
-			
-			// this is the magic
-			return cmd.ExecuteQuery<User>();
-		}
-	}
+Next, use the DbScope to apply changes:
 
-Done!
+```csharp
+var user = dbScope.GetById<User>(1);
+user.LockAccount();
+dbScope.SaveChanges();
+```
+
+# Queries
 
 There is also a small query framework which allows you to query like:
 
@@ -96,46 +113,3 @@ Where the actual implementation looks like (all used classes exist in Griffin.Da
 		return sql;
 	}
 }
-
-# Access helpers
-
-Makes it a bit easier to fetch stuff. Remember. Still not an OR/M but just a simple access layer.
-
-Create a mapping (and register it like before):
-
-	public class UserMapping : EntityMapper<User>
-    {
-        public UserMapping()
-        {
-            Add(x => x.Id, "Id");
-            Add(x => x.FirstName, "FirstName");
-            Add(x => x.LastName, "LastName");
-            Add(x => x.Age, "Age");
-            Add(x => x.CreatedAt, "CreatedAt", new SqlServerDateConverter());
-
-			// the new stuff
-            TableName = "Users";
-            IdColumnName = "Id";
-        }
-    }
-	
-And then fetch one item by doing:
-
-	using (var cmd = _connection.CreateCommand())
-	{
-		return cmd.ExecuteScalar<User>(id);
-	}
-	
-Fetch several (all params are AND:ed)
-
-    using (var cmd = _connection.CreateCommand())
-    {
-		// note that it's property names and not column names.	
-		return cmd.ExecuteLazyQuery<User>(new { FirstName = "Arne", LastName = "Kalle" }).FirstOrDefault();
-    }
-
-Easy paging (no need to care about the db server implementation):
-
-	var context = new DbPagerContext(sql, constraints.PageNumber, constraints.PageSize);
-	var pager = new SqlServerCePager();
-	sql = pager.ApplyTo(context);
