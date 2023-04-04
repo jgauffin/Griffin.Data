@@ -1,63 +1,61 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using Griffin.Data.Mappings.Properties;
 
 namespace Griffin.Data.Mappings.Relations;
 
-public class HasManyMapping : IPropertyAccessor
+/// <summary>
+/// Mapping between a parent and or or more children.
+/// </summary>
+/// <typeparam name="TParent">Parent entity type.</typeparam>
+/// <typeparam name="TChild">Child entity type.</typeparam>
+public class HasManyMapping<TParent, TChild> : RelationShipBase<TParent, TChild>, IHasManyMapping where TChild: notnull
 {
-    private readonly Action<object, object> _addMethod;
-    private readonly Func<IList> _collectionFactory;
-    private readonly Func<object, object?> _getter;
-    private readonly Action<object, object>? _setter;
-    private readonly Func<object, Func<object, Task>, Task> _visitorWrapper;
+    private readonly Func<TParent, object> _getter;
+    private readonly Action<TParent, object> _setter;
 
-    public HasManyMapping(string propertyName, Type propertyType, Type elementType, Func<object, object?> getter,
-        Action<object, object>? setter, Func<IList> collectionFactory, Action<object, object> addMethod,
-        Func<object, Func<object, Task>, Task> visitorWrapper)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="fk">Foreign key mapping.</param>
+    /// <param name="getter">Function to get the collection property value.</param>
+    /// <param name="setter">Action to set the collection property value.</param>
+    public HasManyMapping(ForeignKeyMapping<TParent, TChild> fk, Func<TParent, object> getter,
+        Action<TParent, object> setter) : base(fk, typeof(TChild))
     {
-        _getter = getter;
-        _setter = setter;
-        _collectionFactory = collectionFactory;
-        _addMethod = addMethod;
-        _visitorWrapper = visitorWrapper;
-        PropertyName = propertyName;
-        PropertyType = propertyType;
-        ElementType = elementType;
+        _getter = getter ?? throw new ArgumentNullException(nameof(getter));
+        _setter = setter ?? throw new ArgumentNullException(nameof(setter));
     }
 
-    public string PropertyName { get; }
-    public Type PropertyType { get; }
-    public Type ElementType { get; }
-
-    public ForeignKeyMapping ForeignKey { get; set; }
-
-
-    public void SetColumnValue(object instance, object value)
-    {
-        if (_setter == null) throw new InvalidOperationException("No setter has been specified.");
-
-        _setter(instance, value);
-    }
-
-    public object? GetColumnValue(object entity)
-    {
-        return _getter(entity);
-    }
-
+    /// <inheritdoc />
     public IList CreateCollection()
     {
-        return _collectionFactory();
+        return new List<TChild>();
     }
 
-    public void AddItem(object collection, object entity)
+    /// <inheritdoc />
+    public async Task Visit(object collection, Func<object, Task> visitor)
     {
-        _addMethod(collection, entity);
+        var col = (IReadOnlyList<TChild>)collection;
+        foreach (var item in col)
+        {
+            await visitor(item);
+        }
     }
 
-    public async Task Visit(object collection, Func<object, Task> itemCallback)
+    /// <inheritdoc />
+    public void SetColumnValue([NotNull]object instance, object collectionInstance)
     {
-        await _visitorWrapper(collection, itemCallback);
+        if (instance == null) throw new ArgumentNullException(nameof(instance));
+        _setter((TParent)instance, collectionInstance);
+    }
+
+    /// <inheritdoc />
+    public object? GetColumnValue([NotNull] object entity)
+    {
+        if (entity == null) throw new ArgumentNullException(nameof(entity));
+        return _getter((TParent)entity);
     }
 }

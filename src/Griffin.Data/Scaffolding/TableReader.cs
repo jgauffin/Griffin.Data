@@ -6,8 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Griffin.Data.Scaffolding.Helpers;
 using Griffin.Data.Scaffolding.Meta;
-using Column = Griffin.Data.Meta.Column;
-using Table = Griffin.Data.Meta.Table;
 
 namespace Griffin.Data.Scaffolding;
 

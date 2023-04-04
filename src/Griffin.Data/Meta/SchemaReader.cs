@@ -1,38 +1,37 @@
 using System.Data.Common;
 using System.Text.RegularExpressions;
 
-namespace Griffin.Data.Meta
+namespace Griffin.Data.Meta;
+
+internal abstract class SchemaReader
 {
-    abstract class SchemaReader
+    private static readonly Regex rxCleanUp = new(@"[^\w\d_]", RegexOptions.Compiled);
+
+    protected virtual string CleanUp(string name)
     {
-        private static Regex rxCleanUp = new Regex(@"[^\w\d_]", RegexOptions.Compiled);
+        var str = rxCleanUp.Replace(name, "_");
+        if (char.IsDigit(str[0])) str = "_" + str;
 
-        protected virtual string CleanUp(string name)
-        {
-            var str = rxCleanUp.Replace(name, "_");
-            if (char.IsDigit(str[0])) str = "_" + str;
+        return str;
+    }
 
-            return str;
-        }
-
-        private string CheckNullable(Column col)
-        {
-            string result = "";
-            if (col.IsNullable &&
-                col.PropertyType != "byte[]" &&
-                col.PropertyType != "string" &&
-                col.PropertyType != "Microsoft.SqlServer.Types.SqlGeography" &&
-                col.PropertyType != "Microsoft.SqlServer.Types.SqlGeometry"
-                )
-                result = "?";
-            return result;
-        }
+    private string CheckNullable(Column col)
+    {
+        var result = "";
+        if (col.IsNullable &&
+            col.PropertyType != "byte[]" &&
+            col.PropertyType != "string" &&
+            col.PropertyType != "Microsoft.SqlServer.Types.SqlGeography" &&
+            col.PropertyType != "Microsoft.SqlServer.Types.SqlGeometry"
+           )
+            result = "?";
+        return result;
+    }
 
 
-        public abstract TableCollection ReadSchema(DbConnection connection, DbProviderFactory factory);
-        public void WriteLine(string o)
-        {
-        }
+    public abstract TableCollection ReadSchema(DbConnection connection, DbProviderFactory factory);
 
+    public void WriteLine(string o)
+    {
     }
 }

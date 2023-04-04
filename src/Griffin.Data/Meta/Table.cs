@@ -1,39 +1,31 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Griffin.Data.Meta
+namespace Griffin.Data.Meta;
+
+/// <summary>
+/// A class.
+/// </summary>
+public class Table
 {
-    public class Table
+    public string ClassName { get; set; }
+    public string CleanName { get; set; }
+    public List<Column> Columns { get; set; }
+    public bool Ignore { get; set; }
+    public bool IsView { get; set; }
+    public string Name { get; set; }
+    public string? Schema { get; set; }
+    public string SequenceName { get; set; }
+
+    public Column PrimaryKey
     {
-        public List<Column> Columns;	
-        public string Name;
-        public string Schema;
-        public bool IsView;
-        public string CleanName;
-        public string ClassName;
-        public string SequenceName;
-        public bool Ignore;
+        get { return Columns.SingleOrDefault(x => x.IsPrimaryKey); }
+    }
 
-        public Column PrimaryKey
-        {
-            get
-            {
-                return this.Columns.SingleOrDefault(x=>x.IsPrimaryKey);
-            }
-        }
+    public Column this[string columnName] => GetColumn(columnName);
 
-        public Column GetColumn(string columnName)
-        {
-            return Columns.Single(x=>string.Compare(x.Name, columnName, true)==0);
-        }
-
-        public Column this[string columnName]
-        {
-            get
-            {
-                return GetColumn(columnName);
-            }
-        }
-
+    public Column GetColumn(string columnName)
+    {
+        return Columns.Single(x => string.Compare(x.Name, columnName, true) == 0);
     }
 }

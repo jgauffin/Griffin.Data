@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Griffin.Data.Configuration;
+using Griffin.Data.Mapper;
 using Griffin.Data.Mappings.Properties;
 
 namespace Griffin.Data.Mappings.Relations;
@@ -7,31 +9,48 @@ namespace Griffin.Data.Mappings.Relations;
 /// <summary>
 ///     Mapping for a has one/many FK.
 /// </summary>
-public class ForeignKeyMapping : IPropertyAccessor
+public class ForeignKeyMapping<TParentEntity, TChildEntity> : IFieldAccessor, IForeignKey
 {
+    private readonly IFieldAccessor? _foreignKey;
+    private readonly IFieldAccessor? _referencedProperty;
+
     /// <summary>
     /// </summary>
-    /// <param name="configuredType">Type that the has many/one configuration is for (that this FK is part of).</param>
-    /// <param name="propertyName">FK property in the child table</param>
     /// <param name="columnName">Column name (specified when there are no FK property in the child table).</param>
-    public ForeignKeyMapping(Type configuredType, string? propertyName = null, string? columnName = null)
+    /// <param name="foreignKey">Foreign key property accessor (in the child table).</param>
+    /// <param name="referencedProperty">Referenced property accessor (in the parent table).</param>
+    public ForeignKeyMapping(string columnName, IFieldAccessor? foreignKey, IFieldAccessor? referencedProperty)
     {
-        if (configuredType == null) throw new ArgumentNullException(nameof(configuredType));
-        ForeignKeyPropertyName = propertyName;
+        if (string.IsNullOrEmpty(columnName) && foreignKey == null)
+        {
+            throw new MappingConfigurationException(typeof(TParentEntity),
+                "Both FK column and FK property cannot be empty.");
+        }
+
+        _foreignKey = foreignKey;
         ForeignKeyColumnName = columnName;
-        if (columnName == null && propertyName == null) throw new MappingConfigurationException(configuredType, "FK must specify either property or column name in the child entity.");
+        _referencedProperty = referencedProperty;
     }
 
     /// <summary>
-    ///     Property in the child entity that contains the FK.
+    /// Get id from the parent entity.
     /// </summary>
-    public IPropertyAccessor ForeignKey { get; set; } = null!;
+    /// <param name="parentEntity">Entity to fetch id from</param>
+    /// <returns>id if found; otherwise <c>null</c>.</returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="MappingException"></exception>
+    public object? GetReferencedId([DisallowNull] TParentEntity parentEntity)
+    {
+        if (parentEntity == null) throw new ArgumentNullException(nameof(parentEntity));
+        if (_referencedProperty == null)
+        {
+            throw new MappingException(parentEntity,
+                "A parent property reference has not been configured.");
+        }
 
-    /// <summary>
-    ///     Property in the parent table that the FK is referencing.
-    /// </summary>
-    public IPropertyAccessor ReferencedProperty { get; set; }=null!;
-
+        return _referencedProperty.GetColumnValue(parentEntity);
+    }
+    
     /// <summary>
     ///     Column to insert the foreign key in.
     /// </summary>
@@ -40,30 +59,37 @@ public class ForeignKeyMapping : IPropertyAccessor
     ///         Specified instead of the property if the child entity do not contain a property for the FK.
     ///     </para>
     /// </remarks>
-    public string? ForeignKeyColumnName { get; set; }
+    public string ForeignKeyColumnName { get; private set; }
 
     /// <summary>
-    ///     Specified when the child table has a property for the FK.
+    /// Has a foreign key property configured.
     /// </summary>
-    public string? ForeignKeyPropertyName { get; set; }
-
-    /// <summary>
-    ///     Specified when property binding is made.
-    /// </summary>
-    public string? ReferencedPropertyName { get; set; }
+    public bool HasProperty => _foreignKey != null;
 
     /// <inheritdoc />
-    public void SetColumnValue(object instance, object value)
+    public void SetColumnValue([NotNull]object childEntity, object value)
     {
-        if (instance == null) throw new ArgumentNullException(nameof(instance));
+        if (childEntity == null) throw new ArgumentNullException(nameof(childEntity));
         if (value == null) throw new ArgumentNullException(nameof(value));
-        ForeignKey.SetColumnValue(instance, value);
+        if (_foreignKey == null)
+        {
+            throw new MappingException(childEntity,
+                "FK property has not been configured. Configure it or use the FK column name instead.");
+        }
+
+        _foreignKey.SetColumnValue(childEntity, value);
     }
 
     /// <inheritdoc />
-    public object? GetColumnValue(object entity)
+    public object? GetColumnValue([NotNull] object childEntity)
     {
-        if (entity == null) throw new ArgumentNullException(nameof(entity));
-        return ForeignKey.GetColumnValue(entity);
+        if (childEntity == null) throw new ArgumentNullException(nameof(childEntity));
+        if (_foreignKey == null)
+        {
+            throw new MappingException(childEntity,
+                "FK property has not been configured. Configure it or use the FK column name instead.");
+        }
+
+        return _foreignKey.GetColumnValue(childEntity);
     }
 }

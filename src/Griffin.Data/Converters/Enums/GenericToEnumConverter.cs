@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -14,7 +15,7 @@ namespace Griffin.Data.Converters.Enums;
 ///         There is no struct restriction since this convert can not be used by the property mappings with it.
 ///     </para>
 /// </remarks>
-public class GenericToEnumConverter<TColumn, TEnum> : ISingleValueConverter<TColumn, TEnum>
+internal class GenericToEnumConverter<TColumn, TEnum>
 {
     private readonly Func<TColumn, TEnum> _converter;
     private readonly bool _isFlags;
@@ -50,15 +51,18 @@ public class GenericToEnumConverter<TColumn, TEnum> : ISingleValueConverter<TCol
         _converter = Expression.Lambda<Func<TColumn, TEnum>>(c, p).Compile();
     }
 
+    [return: NotNull]
     public TEnum ColumnToProperty(TColumn value)
     {
         if (!_isFlags) EnsureEnumValue(value);
 
-        return _converter(value);
+        return _converter(value)!;
     }
 
-    public TColumn PropertyToColumn(TEnum value)
+    [return: NotNull]
+    public TColumn PropertyToColumn([DisallowNull] [NotNull] TEnum value)
     {
+        if (value == null) throw new ArgumentNullException(nameof(value));
         return (TColumn)Convert.ChangeType(value, typeof(TColumn));
     }
 

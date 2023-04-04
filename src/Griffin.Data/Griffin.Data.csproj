@@ -14,10 +14,10 @@
 	<PropertyGroup>
 		<PackageId>Griffin.Data</PackageId>
 		<Authors>Coderr AB</Authors>
-		<Description>Takes care of all your exceptions in ASP.NET Core Mvc applications.</Description>
+		<Description>Lightweight ORM and Query mapper with change tracking, relationships (one to many + one to one).</Description>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<Copyright>Copyright 2023 © Jonas Gauffin. All rights reserved.</Copyright>
-		<PackageTags>logger exceptions analysis .net-core netstandard aspnet mvc-core</PackageTags>
+		<PackageTags>data-mapper, orm, sqlserver, queries</PackageTags>
 		<PackageIconUrl>https://coderr.io/images/nuget_icon.png</PackageIconUrl>
 		<PackageProjectUrl>https://coderr.io</PackageProjectUrl>
 	</PropertyGroup>

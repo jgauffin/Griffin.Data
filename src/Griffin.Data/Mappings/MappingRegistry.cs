@@ -1,16 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Griffin.Data.Configuration;
 
 namespace Griffin.Data.Mappings;
 
+/// <summary>
+///     Implementation of <see cref="IMappingRegistry" />.
+/// </summary>
+/// <remarks>
+///     <para>
+///         Scans assemblies after classes that inherit <see cref="ClassMappingConfigurator{T}" /> and uses them to
+///         configure mappings.
+///     </para>
+/// </remarks>
 public class MappingRegistry : IMappingRegistry
 {
     private readonly Dictionary<Type, ClassMapping> _mappings = new();
     private readonly List<Assembly> _scannedAssemblies = new();
 
+    /// <inheritdoc />
     public ClassMapping Get<T>()
     {
         var type = typeof(T);
@@ -20,26 +31,35 @@ public class MappingRegistry : IMappingRegistry
             Scan(type.Assembly);
         }
 
+        var str = string.Join(", ", _scannedAssemblies.Select(x => x.GetName().Name));
         if (!_mappings.TryGetValue(type, out var mapper))
-            throw new InvalidOperationException($"Failed to find a mapping for {type}.");
+            throw new MissingMappingException(type, str);
 
         return mapper;
     }
 
-    public ClassMapping Get(Type type)
+    /// <inheritdoc />
+    public ClassMapping Get([NotNull] Type type)
     {
+        if (type == null) throw new ArgumentNullException(nameof(type));
         if (!_mappings.Any())
         {
             Scan(Assembly.GetExecutingAssembly());
             Scan(type.Assembly);
         }
 
+        var str = string.Join(", ", _scannedAssemblies.Select(x => x.GetName().Name));
         if (!_mappings.TryGetValue(type, out var mapper))
-            throw new InvalidOperationException($"Failed to find a mapping for {type}.");
+            throw new MissingMappingException(type, str);
 
         return mapper;
     }
 
+    /// <summary>
+    ///     Find a specific mapping.
+    /// </summary>
+    /// <typeparam name="T">Type of entity to find a mapping for.</typeparam>
+    /// <returns>Mapping if found; otherwise <c>null</c>.</returns>
     public ClassMapping? Find<T>()
     {
         var type = typeof(T);
@@ -52,8 +72,14 @@ public class MappingRegistry : IMappingRegistry
         return _mappings.TryGetValue(type, out var mapper) ? mapper : null;
     }
 
-    public void Scan(Assembly assembly)
+    /// <summary>
+    ///     Scan an assembly after implementations of <see cref="ClassMappingConfigurator{TEntity}" />.
+    /// </summary>
+    /// <param name="assembly">Assembly to scan.</param>
+    /// <exception cref="InvalidOperationException"></exception>
+    public void Scan([NotNull] Assembly assembly)
     {
+        if (assembly == null) throw new ArgumentNullException(nameof(assembly));
         if (_scannedAssemblies.Contains(assembly))
             throw new InvalidOperationException($"Assembly '{assembly.GetName().Name}' has already been scanned.");
 
@@ -65,40 +91,38 @@ public class MappingRegistry : IMappingRegistry
             where mappingInterface != null
             select new { type, mappingInterface };
 
+        var builders = new List<IMappingBuilder>();
         foreach (var pair in types)
         {
             var entityType = pair.mappingInterface.GetGenericArguments()[0];
             var configType = typeof(ClassMappingConfigurator<>).MakeGenericType(entityType);
-            var config = (IMappingBuilder)Activator.CreateInstance(configType)!;
+            var configurator = (IMappingBuilder)Activator.CreateInstance(configType)!;
+            builders.Add(configurator);
 
-            var configurator = Activator.CreateInstance(pair.type);
+            var mapping = Activator.CreateInstance(pair.type);
             var method = pair.type.GetMethod("Configure");
             if (method == null) throw new InvalidOperationException($"Failed to find 'Configure' in {pair.type}.");
 
-            method.Invoke(configurator, new object[] { config });
+            method.Invoke(mapping, new object[] { configurator });
 
-            _mappings[entityType] = config.BuildMapping();
+            _mappings[entityType] = configurator.BuildMapping();
         }
 
-        foreach (var mapping in _mappings.Values)
-        {
-            foreach (var collection in mapping.Collections)
-            {
-                collection.ForeignKey.ReferencedProperty =
-                    mapping.GetProperty(collection.ForeignKey.ReferencedPropertyName!);
-                var childMapping = _mappings[collection.ElementType];
-                collection.ForeignKey.ForeignKey =
-                    childMapping.GetProperty(collection.ForeignKey.ForeignKeyPropertyName);
-            }
+        foreach (var mapping in builders) mapping.BuildRelations(this);
+    }
 
-            foreach (var collection in mapping.Children)
-            {
-                collection.ForeignKey.ReferencedProperty =
-                    mapping.GetProperty(collection.ForeignKey.ReferencedPropertyName!);
-                var childMapping = _mappings[collection.ChildEntityType];
-                collection.ForeignKey.ForeignKey =
-                    childMapping.GetProperty(collection.ForeignKey.ForeignKeyPropertyName);
-            }
-        }
+    /// <summary>
+    ///     Add a mapping.
+    /// </summary>
+    /// <param name="mapping">Mapping to add.</param>
+    /// <remarks>
+    ///     <para>
+    ///         Will replace any existing mapping for the specified entity type.
+    ///     </para>
+    /// </remarks>
+    public void Add(ClassMapping mapping)
+    {
+        if (mapping == null) throw new ArgumentNullException(nameof(mapping));
+        _mappings[mapping.EntityType] = mapping;
     }
 }

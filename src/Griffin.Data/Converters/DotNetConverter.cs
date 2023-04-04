@@ -3,8 +3,14 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Griffin.Data.Converters;
 
-internal class DotNetConverter<TColumn, TProperty> : ISingleValueConverter<TColumn, TProperty>
+/// <summary>
+/// Converter that uses te built in <see cref="Convert"/> class.
+/// </summary>
+/// <typeparam name="TColumn">Type of table column.</typeparam>
+/// <typeparam name="TProperty">Type of class property.</typeparam>
+public class DotNetConverter<TColumn, TProperty> : ISingleValueConverter<TColumn, TProperty> where TColumn: notnull where TProperty:notnull
 {
+    /// <inheritdoc />
     [return: NotNull]
     public TProperty ColumnToProperty([DisallowNull] [NotNull] TColumn value)
     {
@@ -12,6 +18,7 @@ internal class DotNetConverter<TColumn, TProperty> : ISingleValueConverter<TColu
         return (TProperty)Convert.ChangeType(value, typeof(TProperty));
     }
 
+    /// <inheritdoc />
     [return: NotNull]
     public TColumn PropertyToColumn([DisallowNull] [NotNull] TProperty value)
     {

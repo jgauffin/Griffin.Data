@@ -4,5 +4,6 @@ namespace Griffin.Data.Configuration;
 
 public interface IMappingBuilder
 {
-    public ClassMapping BuildMapping();
+    ClassMapping BuildMapping();
+    void BuildRelations(IMappingRegistry registry);
 }

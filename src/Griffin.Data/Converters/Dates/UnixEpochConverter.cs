@@ -4,24 +4,21 @@ using System.Diagnostics.CodeAnalysis;
 namespace Griffin.Data.Converters.Dates;
 
 /// <summary>
-///     Epoch time in milliseconds.
+///     Lets you store unix epoch (milliseconds) in the database while using a <c>DateTime</c> property in your classes.
 /// </summary>
-public class DateTimeToUnixTimeMs : ISingleValueConverter<DateTime, long>
+public class UnixEpochConverter : ISingleValueConverter<long, DateTime>
 {
     private static readonly DateTime Epoch = new(1970, 1, 1);
 
-    public long ColumnToProperty([NotNull] DateTime value)
+    /// <inheritdoc />
+    public long PropertyToColumn([NotNull] DateTime value)
     {
         return (long)value.Subtract(Epoch).TotalMilliseconds;
     }
 
-    public DateTime PropertyToColumn([NotNull] long value)
+    /// <inheritdoc />
+    public DateTime ColumnToProperty([NotNull] long value)
     {
         return Epoch.AddMilliseconds(value);
-    }
-
-    public long Convert(DateTime value)
-    {
-        return (long)value.Subtract(Epoch).TotalMilliseconds;
     }
 }

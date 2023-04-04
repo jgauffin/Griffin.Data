@@ -1,11 +1,4 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=d16f1b12_002D5a29_002D4901_002D884d_002Dd7ec2b3b18cf/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="Test1" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;xUnit::7D5928DE-675A-47D4-BBAA-C2B828F731A2::net6.0::Griffin.Data.Tests.UnitTest1.Test1&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;xUnit::7D5928DE-675A-47D4-BBAA-C2B828F731A2::net6.0::Griffin.Data.Tests.CrudOperationsTests.Should_be_able_to_insert_main_entity_without_children&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;xUnit::7D5928DE-675A-47D4-BBAA-C2B828F731A2::net6.0::Griffin.Data.Tests.CrudOperationsTests&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;xUnit::7D5928DE-675A-47D4-BBAA-C2B828F731A2::net6.0::Griffin.Data.Tests.QueryOperationsTests.Should_be_able_to_load_enum&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;xUnit::7D5928DE-675A-47D4-BBAA-C2B828F731A2::net6.0::Griffin.Data.Tests.Configuration.ClassMappingConfiguratorTests&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;xUnit::7D5928DE-675A-47D4-BBAA-C2B828F731A2::net6.0::Griffin.Data.Tests.Configuration.PropertyConfigurationTests.Should_assign_EnumToInt_as_default_converter_for_enums&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
+  &lt;Solution /&gt;&#xD;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

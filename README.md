@@ -5,11 +5,29 @@ Version 2.0 is work in progress and not ready for use.
 
 Lightweight ORM and data mapper.
 
-The ORM part is inteded to manage business entites (no joins etc) while the data mapper is used to build queries for the view part of an application.
+The ORM part is inteded to manage business entites which means that joins or fetching specific columns is not supported.
+However, there is also a data mapper included which can generate custom queries (and mappings) from your custom SQL queries.
 
 Licence: Apache License v2.0
 
 # ORM
+
+## Features
+
+* Change tracking (currently through snapshots, change proxies are being developed).
+* DB independing handling of paging, sorting and to limit the number of rows.
+* One to many and many to one.
+* Inheritance support.
+* Minimal mapping configuration.
+* 
+
+## Features that never will be implemented
+
+Our goal is to create a ORM which is easy to use and to debug. Therefore, we have not, and will not, implement the following features:
+
+* LINQ - You need to write SQL (partial or complete statements) or use constraints like `var user = await session.First<User>(new { firstName = 'Jonas' })`.
+* Lazy loading - The internal loading strategies promote bulk fetches for children. If that's not enough, you are probably doing something wrong.
+
 
 
 Start by creating a mapping:
@@ -55,9 +73,9 @@ All entities are change tracked and only those changed are persisted back to the
 Next, use the DbScope to apply changes:
 
 ```csharp
-var user = dbScope.GetById<User>(1);
+var user = session.GetById<User>(1);
 user.LockAccount();
-dbScope.SaveChanges();
+session.SaveChanges();
 ```
 
 # Queries

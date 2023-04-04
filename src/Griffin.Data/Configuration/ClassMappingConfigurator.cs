@@ -1,56 +1,49 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading.Tasks;
 using Griffin.Data.Helpers;
 using Griffin.Data.Mappings;
 using Griffin.Data.Mappings.Properties;
-using Griffin.Data.Mappings.Relations;
+using Griffin.Data.Scaffolding.Helpers;
 
 namespace Griffin.Data.Configuration
 {
     /// <summary>
-    ///     Allows developer to generate a mapping for a specific entity.
+    /// Implementation for <see cref="IClassMappingConfigurator{TEntity}"/>.
     /// </summary>
-    /// <typeparam name="TEntity">Type of entity to create a mapping for.</typeparam>
-    public class ClassMappingConfigurator<TEntity> : IMappingBuilder, IClassMappingConfigurator<TEntity>
+    /// <typeparam name="TEntity">Type of entity that this is a mapping for.</typeparam>
+    public class ClassMappingConfigurator<TEntity> : IMappingBuilder, IClassMappingConfigurator<TEntity> where TEntity : notnull
     {
-        private readonly List<HasManyMapping> _hasManyMappings = new();
-        private readonly List<HasOneMapping> _hasOneMappings = new();
+        private readonly List<IHasManyConfigurator> _hasManyMappings = new();
+        private readonly List<IHasOneConfigurator> _hasOneMappings = new();
         private readonly List<KeyMapping> _keys = new();
         private readonly List<PropertyMapping> _properties = new();
         private string _tableName;
+        private ClassMapping? _mapping;
 
         /// <summary>
         /// </summary>
         public ClassMappingConfigurator()
         {
-            _tableName = typeof(TEntity).Name;
+            _tableName = typeof(TEntity).Name.Pluralize();
         }
 
-        /// <summary>
-        /// </summary>
-        /// <param name="tableName">Name of the corresponding table in the database.</param>
-        /// <exception cref="ArgumentNullException">table name is not specified.</exception>
+        /// <inheritdoc />
         public void TableName(string tableName)
         {
             _tableName = tableName ?? throw new ArgumentNullException(nameof(tableName));
         }
 
-        /// <summary>
-        ///     Define a primary key.
-        /// </summary>
-        /// <typeparam name="TProperty">Property type for the primary key.</typeparam>
-        /// <param name="selector">Expression used to select the correct property.</param>
-        /// <returns></returns>
-        public KeyConfigurator<TEntity, TProperty> Key<TProperty>(Expression<Func<TEntity, TProperty>> selector)
+        /// <inheritdoc />
+        public KeyConfigurator<TEntity, TProperty> Key<TProperty>(Expression<Func<TEntity, TProperty>> selector) where TProperty : notnull
         {
             var compiled = selector.Compile();
-            var getter = (object entity) => (object?)compiled((TEntity)entity);
-            var setter = selector.GetPropertyInfo().GenerateSetterDelegate();
+            object? Getter(object entity) => compiled((TEntity)entity);
+            var setter = selector.GetPropertyInfo().GenerateSetterDelegate(typeof(TEntity));
 
-            var mapping = new KeyMapping(getter, setter)
+            var mapping = new KeyMapping(typeof(TEntity), Getter, setter)
             {
                 PropertyName = selector.GetMemberName(),
                 ColumnName = selector.GetMemberName()
@@ -60,24 +53,18 @@ namespace Griffin.Data.Configuration
             return new KeyConfigurator<TEntity, TProperty>(mapping);
         }
 
-        /// <summary>
-        ///     Map a property (which is not a key or child entity).
-        /// </summary>
-        /// <typeparam name="TProperty">Type of property.</typeparam>
-        /// <param name="selector">Expression used to select a property.</param>
-        /// <returns>Property configurator.</returns>
+        /// <inheritdoc />
         public PropertyConfigurator<TEntity, TProperty> Property<TProperty>(
-            Expression<Func<TEntity, TProperty>> selector)
+            Expression<Func<TEntity, TProperty>> selector) where TProperty : notnull
         {
             var compiled = selector.Compile();
-            var getter = (object entity) => (object?)compiled((TEntity)entity);
-            var setter = selector.GetPropertyInfo().GenerateSetterDelegate();
+            object Getter(object entity) => compiled((TEntity)entity);
+            var setter = selector.GetPropertyInfo().GenerateSetterDelegate(typeof(TEntity));
             var prop = selector.GetPropertyInfo();
 
-            var mapping = new PropertyMapping(getter, setter)
+            var mapping = new PropertyMapping(typeof(TEntity), typeof(TProperty), Getter, setter)
             {
                 PropertyName = prop.Name,
-                PropertyType = prop.PropertyType,
                 ColumnName = prop.Name
             };
             _properties.Add(mapping);
@@ -85,104 +72,105 @@ namespace Griffin.Data.Configuration
             return new PropertyConfigurator<TEntity, TProperty>(mapping);
         }
 
-        /// <summary>
-        ///     A property is for a collection of child entities.
-        /// </summary>
-        /// <typeparam name="TProperty">Type of child property.</typeparam>
-        /// <param name="selector">Expression used to select the property.</param>
-        /// <returns>Has many configuration.</returns>
+        /// <inheritdoc />
         public HasManyConfigurator<TEntity, TProperty> HasMany<TProperty>(
-            Expression<Func<TEntity, IReadOnlyList<TProperty>>> selector)
+            Expression<Func<TEntity, IReadOnlyList<TProperty>>> selector) where TProperty : notnull
         {
             var getter = selector.Compile();
             var prop = selector.GetPropertyInfo();
-            return CreateHasManyMapping<TProperty>(entity => getter((TEntity)entity), prop, typeof(TProperty));
+            return CreateHasManyMapping<TProperty>(entity => getter(entity), prop, typeof(TProperty));
         }
 
-        /// <summary>
-        ///     A property is for a collection of child entities.
-        /// </summary>
-        /// <typeparam name="TProperty">Type of child property.</typeparam>
-        /// <param name="selector">Expression used to select the property.</param>
-        /// <returns>Has many configuration.</returns>
+        /// <inheritdoc />
         public HasManyConfigurator<TEntity, TProperty> HasMany<TProperty>(
-            Expression<Func<TEntity, IList<TProperty>>> selector)
+            Expression<Func<TEntity, IList<TProperty>>> selector) where TProperty : notnull
         {
             var getter = selector.Compile();
             var prop = selector.GetPropertyInfo();
-            return CreateHasManyMapping<TProperty>(entity => getter((TEntity)entity), prop, typeof(TEntity));
+            return CreateHasManyMapping<TProperty>(entity => getter(entity), prop, typeof(TEntity));
         }
 
-        /// <summary>
-        ///     A property is for a collection of child entities.
-        /// </summary>
-        /// <typeparam name="TProperty">Type of child property.</typeparam>
-        /// <param name="selector">Expression used to select the property.</param>
-        /// <returns>Has many configuration.</returns>
+        /// <inheritdoc />
         public HasManyConfigurator<TEntity, TProperty> HasMany<TProperty>(
-            Expression<Func<TEntity, ICollection<TProperty>>> selector)
+            Expression<Func<TEntity, ICollection<TProperty>>> selector) where TProperty : notnull
         {
             var getter = selector.Compile();
             var prop = selector.GetPropertyInfo();
-            return CreateHasManyMapping<TProperty>(entity => getter((TEntity)entity), prop, typeof(TEntity));
+            return CreateHasManyMapping<TProperty>(entity => getter(entity), prop, typeof(TEntity));
         }
 
-        /// <summary>
-        ///     A property is for a single child entity.
-        /// </summary>
-        /// <typeparam name="TProperty">Type of child property.</typeparam>
-        /// <param name="selector">Expression used to select the property.</param>
-        /// <returns>Has one configuration.</returns>
-        public HasOne<TEntity, TProperty> HasOne<TProperty>(Expression<Func<TEntity, TProperty>> selector)
+        /// <inheritdoc />
+        public HasOneConfigurator<TEntity, TProperty> HasOne<TProperty>(Expression<Func<TEntity, TProperty>> selector)
         {
-            var inner = selector.Compile();
-            Func<object, object?> getter = x => inner((TEntity)x);
-            var setter = selector.GetPropertyInfo().GenerateSetterDelegate();
-
-            var mapping = new HasOneMapping(selector.GetMemberName(), getter, setter);
-            _hasOneMappings.Add(mapping);
-            return new HasOne<TEntity, TProperty>(mapping);
+            var config=new HasOneConfigurator<TEntity, TProperty>(selector);
+            _hasOneMappings.Add(config);
+            return config;
         }
+
+        /// <inheritdoc />
+        public void MapRemainingProperties()
+        {
+            var props = typeof(TEntity).GetProperties();
+            foreach (var prop in props)
+            {
+                // Do not override manual configurations.
+                if (_properties.Any(x => x.PropertyName == prop.Name) ||
+                    _keys.Any(x => x.PropertyName == prop.Name) ||
+                    _hasManyMappings.Any(x=>x.PropertyName == prop.Name)||
+                        _hasOneMappings.Any(x => x.PropertyName == prop.Name))
+                {
+                    continue;
+                }
+
+                // Ignore all collection properties that has not been explicitly mapped.
+                if (prop.PropertyType.IsCollection())
+                {
+                    continue;
+                }
+
+                var getter = prop.GenerateGetterDelegate();
+                var setter = prop.GenerateSetterDelegate(typeof(TEntity));
+                var mapping = new PropertyMapping(typeof(TEntity), prop.PropertyType, getter, setter)
+                {
+                    PropertyName = prop.Name,
+                    ColumnName = prop.Name
+                };
+                _properties.Add(mapping);
+            }
+        }
+        
 
         /// <summary>
         ///     Create a mapping using this configuration.
         /// </summary>
         /// <returns>Generated mapping.</returns>
-        public ClassMapping BuildMapping()
+        ClassMapping IMappingBuilder.BuildMapping()
         {
-            return new ClassMapping(typeof(TEntity), _tableName, _properties, _keys, _hasManyMappings, _hasOneMappings);
+            _mapping= new ClassMapping(typeof(TEntity), _tableName, _keys, _properties);
+            return _mapping;
+        }
+
+        void IMappingBuilder.BuildRelations(IMappingRegistry registry)
+        {
+            var hasMany = _hasManyMappings.Select(x => x.Build(registry)).ToList();
+            var hasOne = _hasOneMappings.Select(x => x.Build(registry)).ToList();
+            if (_mapping == null)
+            {
+                throw new MappingConfigurationException(typeof(TEntity),
+                    "You must build all mappings before assigning references.");
+            }
+
+            _mapping.AddRelations(hasMany, hasOne);
         }
 
         private HasManyConfigurator<TEntity, TProperty> CreateHasManyMapping<TProperty>(
-            Func<object, object> getter,
+            Func<TEntity, object> _,
             PropertyInfo prop,
-            Type elementType)
+            Type elementType) where TProperty : notnull
         {
-            var setter = prop.GenerateSetterDelegate();
-
-            Func<object, Func<object, Task>, Task> visitorWrapper = async (entity, callback) =>
-            {
-                var list = (IEnumerable<TProperty>)entity;
-                foreach (var item in list)
-                {
-                    if (item != null)
-                    {
-                        await callback(item);
-                    }
-                }
-            };
-
-            var hasManyMapping = new HasManyMapping(
-                prop.Name,
-                prop.PropertyType,
-                elementType,
-                entity => getter((TEntity)entity),
-                setter,
-                () => new List<TProperty>(),
-                (object list, object item) => ((ICollection<TProperty>)list).Add((TProperty)item),
-                visitorWrapper);
-            _hasManyMappings.Add(hasManyMapping);
-            return new HasManyConfigurator<TEntity, TProperty>(hasManyMapping);
+            var config = new HasManyConfigurator<TEntity, TProperty>(prop, elementType);
+            _hasManyMappings.Add(config);
+            return config;
         }
     }
 }

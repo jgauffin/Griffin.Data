@@ -1,6 +1,6 @@
-﻿using Griffin.Data.Scaffolding.Helpers;
+﻿using System.Linq;
+using Griffin.Data.Scaffolding.Helpers;
 using Griffin.Data.Scaffolding.Meta;
-using Table = Griffin.Data.Meta.Table;
 
 namespace Griffin.Data.Scaffolding.Generators;
 
@@ -47,7 +47,7 @@ public class MappingGenerator
             sb.AppendLine($"      .ForeignKey(x => x.{childColumn.PropertyName})");
             sb.AppendLine($"      .References(x => x.{reference.ReferencedColumn});");
 
-            sb.AppendLine($"//config.HasOne(x => x.{reference.ReferencingTable.ClassName})");
+            sb.AppendLine($"//config.HasOneConfigurator(x => x.{reference.ReferencingTable.ClassName})");
             sb.AppendLine($"//      .ForeignKey(x => x.{childColumn.PropertyName})");
             sb.AppendLine($"//      .References(x => x.{reference.ReferencedColumn});");
             sb.AppendLine();

@@ -1,28 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Griffin.Data.Mapper;
 using Griffin.Data.Mappings.Properties;
 using Griffin.Data.Mappings.Relations;
 
 namespace Griffin.Data.Mappings;
 
+/// <summary>
+///     Mapping for a specific type of entity.
+/// </summary>
 public class ClassMapping
 {
-    private readonly List<HasOneMapping> _children;
-    private readonly List<HasManyMapping> _collections;
+    private readonly List<IHasOneMapping> _children = new();
+    private readonly List<IHasManyMapping> _collections = new();
     private readonly List<KeyMapping> _keys;
     private readonly List<PropertyMapping> _properties;
 
-    public ClassMapping(Type entityType, string tableName, List<PropertyMapping> properties, List<KeyMapping> keys,
-        List<HasManyMapping> collections, List<HasOneMapping> children)
+    /// <summary>
+    /// </summary>
+    /// <param name="entityType">Type of entity that the mapping is for.</param>
+    /// <param name="tableName">Table that the entity is stored in.</param>
+    /// <param name="keys">Keys used to be able to find a specific entity.</param>
+    /// <param name="properties">All properties to read data into.</param>
+    public ClassMapping(Type entityType, string tableName, List<KeyMapping> keys,
+        List<PropertyMapping> properties)
     {
-        EntityType = entityType;
-        TableName = tableName;
-        _properties = properties;
-        _keys = keys;
-        _collections = collections;
-        _children = children;
+        EntityType = entityType ?? throw new ArgumentNullException(nameof(entityType));
+        TableName = tableName ?? throw new ArgumentNullException(nameof(tableName));
+        _properties = properties ?? throw new ArgumentNullException(nameof(properties));
+        _keys = keys ?? throw new ArgumentNullException(nameof(keys));
     }
 
     /// <summary>
@@ -30,42 +39,88 @@ public class ClassMapping
     /// </summary>
     public Type EntityType { get; }
 
+    /// <summary>
+    ///     Properties to fill with data.
+    /// </summary>
     public IReadOnlyList<PropertyMapping> Properties => _properties;
+
+    /// <summary>
+    ///     Keys used to identify a specific entity.
+    /// </summary>
     public IReadOnlyList<KeyMapping> Keys => _keys;
-    public IReadOnlyList<HasManyMapping> Collections => _collections;
-    public IReadOnlyList<HasOneMapping> Children => _children;
+
+    /// <summary>
+    ///     One to many relations.
+    /// </summary>
+    public IReadOnlyList<IHasManyMapping> Collections => _collections;
+
+    /// <summary>
+    ///     One to one relations.
+    /// </summary>
+    public IReadOnlyList<IHasOneMapping> Children => _children;
+
+    /// <summary>
+    ///     Table that the entity is stored in.
+    /// </summary>
     public string TableName { get; set; }
 
-    public void Map(IDataRecord record, object entity)
+    /// <summary>
+    /// </summary>
+    /// <param name="collections">One to many relationships.</param>
+    /// <param name="children">One to one relationships.</param>
+    public void AddRelations(IEnumerable<IHasManyMapping> collections, IEnumerable<IHasOneMapping> children)
     {
-        foreach (var mapping in _properties)
-        {
-            var value = record[mapping.ColumnName];
-            if (value is DBNull) continue;
-
-            mapping.SetColumnValue(entity, value);
-        }
+        _children.AddRange(children);
+        _collections.AddRange(collections);
     }
 
-    public void AddCommandParameters(object entity, IDbCommand command)
+    /// <summary>
+    ///     Get a specific property (looks in keys and properties for the given name, using case insensitive search).
+    /// </summary>
+    /// <param name="propertyName">Property name.</param>
+    /// <returns>Property</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the given name is not found.</exception>
+    public IFieldMapping GetProperty(string propertyName)
     {
-        foreach (var mapping in _properties)
-        {
-        }
-    }
-
-    public IPropertyAccessor GetProperty(string propertyName)
-    {
-        return (IPropertyAccessor?)Keys.FirstOrDefault(x => x.PropertyName.Equals(propertyName)) ??
+        return (IFieldMapping?)Keys.FirstOrDefault(x => x.PropertyName.Equals(propertyName)) ??
                Properties.FirstOrDefault(x => x.PropertyName.Equals(propertyName)) ??
-               throw new InvalidOperationException(
-                   $"Failed to find property {propertyName} in entity {EntityType.Name}.");
+               throw new MappingException(EntityType,
+                   $"Failed to find property {propertyName}.");
     }
 
-    public PropertyMapping? FindPropertyByName(string propertyOrColumnName)
+    /// <summary>
+    ///     Find a specific property (looks in keys and properties for the given name, using case insensitive search).
+    /// </summary>
+    /// <param name="propertyOrColumnName">Property or column name.</param>
+    /// <returns>Property if found; otherwise <c>null</c>.</returns>
+    public IFieldMapping? FindPropertyByName(string propertyOrColumnName)
     {
-        return Properties.FirstOrDefault(x =>
-            x.PropertyName.Equals(propertyOrColumnName, StringComparison.OrdinalIgnoreCase) ||
-            x.ColumnName.Equals(propertyOrColumnName, StringComparison.OrdinalIgnoreCase));
+        if (propertyOrColumnName == null) throw new ArgumentNullException(nameof(propertyOrColumnName));
+
+        return (IFieldMapping?)Properties.FirstOrDefault(x =>
+                   x.PropertyName.Equals(propertyOrColumnName, StringComparison.OrdinalIgnoreCase) ||
+                   x.ColumnName.Equals(propertyOrColumnName, StringComparison.OrdinalIgnoreCase))
+               ?? Keys.FirstOrDefault(x =>
+                   x.PropertyName.Equals(propertyOrColumnName, StringComparison.OrdinalIgnoreCase) ||
+                   x.ColumnName.Equals(propertyOrColumnName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    ///     Create an instance using the data record (which allows us to use non default constructors).
+    /// </summary>
+    /// <param name="record">Record set.</param>
+    /// <returns>Created entity.</returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    [return: NotNull]
+    public object CreateInstance(IDataRecord record)
+    {
+        if (record == null) throw new ArgumentNullException(nameof(record));
+        return Activator.CreateInstance(EntityType, true);
+    }
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        return EntityType.Name;
     }
 }

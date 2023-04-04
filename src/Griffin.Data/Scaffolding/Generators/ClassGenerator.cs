@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using Griffin.Data.Scaffolding.Helpers;
 using Griffin.Data.Scaffolding.Meta;
-using Table = Griffin.Data.Meta.Table;
 
 namespace Griffin.Data.Scaffolding.Generators;
 
+/// <summary>
+/// Generate a entity class.
+/// </summary>
 public class ClassGenerator
 {
     private static readonly Dictionary<Type, string> Aliases =
@@ -29,8 +31,17 @@ public class ClassGenerator
             { typeof(void), "void" }
         };
 
+    /// <summary>
+    /// Generate an entity class from a table.
+    /// </summary>
+    /// <param name="table">Table to generate for.</param>
+    /// <param name="allTables">All read tables (required to be able to build relations).</param>
+    /// <returns>Generated class (including namespace).</returns>
     public string Generate(Table table, IReadOnlyList<Table> allTables)
     {
+        if (table == null) throw new ArgumentNullException(nameof(table));
+        if (allTables == null) throw new ArgumentNullException(nameof(allTables));
+
         var sb = new TabbedStringBuilder();
         if (table.Namespace.Length > 0)
         {

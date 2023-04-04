@@ -1,40 +1,90 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using Griffin.Data.Configuration;
+using Griffin.Data.Mapper;
 using Griffin.Data.Mappings.Properties;
 
 namespace Griffin.Data.Mappings.Relations;
 
-public class HasOneMapping : IPropertyAccessor
+/// <summary>
+///     One to zero/one mapping.
+/// </summary>
+/// <typeparam name="TParent">Parent entity.</typeparam>
+/// <typeparam name="TChild">Child entity.</typeparam>
+public class HasOneMapping<TParent, TChild> : RelationShipBase<TParent, TChild>, IHasOneMapping
 {
-    private readonly Func<object, object?>? _getter;
-    private readonly Action<object, object>? _setter;
+    private readonly Func<TParent, TChild> _getter;
+    private readonly Action<TParent, TChild> _setter;
 
     /// <summary>
     /// </summary>
-    /// <param name="parentPropertyName">Property that the child entity is assigned to.</param>
-    public HasOneMapping(string parentPropertyName, Func<object, object?>? getter, Action<object, object>? setter)
+    /// <param name="fk">Foreign key property in the child entity.</param>
+    /// <param name="getter">Getter to fetch the child object from a parent property.</param>
+    /// <param name="setter">Setter to assign the child entity to a parent property.</param>
+    public HasOneMapping(ForeignKeyMapping<TParent, TChild> fk, Func<TParent, TChild> getter,
+        Action<TParent, TChild> setter) : base(fk, typeof(TChild))
     {
-        ParentPropertyName = parentPropertyName;
         _getter = getter;
         _setter = setter;
     }
 
-    public string ParentPropertyName { get; }
+    /// <summary>
+    ///     Property used to determine which child sub class to create.
+    /// </summary>
+    internal IFieldMapping? DiscriminatorProperty { get; set; }
 
-    public ForeignKeyMapping ForeignKey { get; set; }
-    public Type ParentEntityType { get; set; }
-    public Type ChildEntityType { get; set; }
+    /// <summary>
+    ///     Callback used to decide sub class type.
+    /// </summary>
+    internal Func<object, Type?>? DiscriminatorTypeSelector { get; set; }
 
-    public void SetColumnValue(object instance, object value)
+    KeyValuePair<string, string>? IHasOneMapping.SubsetColumn { get; set; }
+
+    /// <inheritdoc />
+    public void SetColumnValue([NotNull] object parentEntity, object value)
     {
-        if (_setter == null) throw new InvalidOperationException("No setter has been specified");
-
-        _setter(instance, value);
+        _setter((TParent)parentEntity, (TChild)value);
     }
 
-    public object? GetColumnValue(object entity)
+    /// <inheritdoc />
+    public object? GetColumnValue([NotNull] object parentEntity)
     {
-        if (_getter == null) throw new InvalidOperationException("No getter has been specified");
+        return _getter((TParent)parentEntity);
+    }
 
-        return _getter(entity);
+    /// <summary>
+    ///     Have a discriminator property.
+    /// </summary>
+    public bool HaveDiscriminator => DiscriminatorProperty != null;
+
+    /// <summary>
+    /// Should be added to all insert/update statements and used in all WHERE statements.
+    /// </summary>
+    public KeyValuePair<string, string>? SubsetColumn { get; set; }
+
+    /// <summary>
+    ///     Used to decide sub class type.
+    /// </summary>
+    /// <param name="parentEntity">Entity that contains the discriminator property.</param>
+    /// <returns></returns>
+    public Type? GetTypeUsingDiscriminator(object parentEntity)
+    {
+        if (parentEntity == null) throw new ArgumentNullException(nameof(parentEntity));
+        if (DiscriminatorProperty == null || DiscriminatorTypeSelector == null)
+            throw new MappingConfigurationException(typeof(TParent),
+                $"A discriminator has not been configured correctly for {typeof(TChild).Name}.");
+        var value = DiscriminatorProperty.GetColumnValue(parentEntity);
+        if (value == null) throw new MappingException(parentEntity, "Failed to get a discriminator value.");
+
+        return DiscriminatorTypeSelector(value);
+    }
+
+    protected override void ApplyConstraints(IDictionary<string, object> dbParameters)
+    {
+        if (SubsetColumn != null)
+        {
+            dbParameters.Add(SubsetColumn.Value.Key, SubsetColumn.Value.Value);
+        }
     }
 }

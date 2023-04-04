@@ -11,7 +11,7 @@ namespace Griffin.Data.Configuration;
 /// </summary>
 /// <typeparam name="TEntity">Type of entity.</typeparam>
 /// <typeparam name="TProperty">Type of property in the entity.</typeparam>
-public class PropertyConfigurator<TEntity, TProperty>
+public class PropertyConfigurator<TEntity, TProperty> where TProperty : notnull
 {
     private readonly PropertyMapping _mapping;
 
@@ -22,7 +22,10 @@ public class PropertyConfigurator<TEntity, TProperty>
     public PropertyConfigurator(PropertyMapping mapping)
     {
         _mapping = mapping ?? throw new ArgumentNullException(nameof(mapping));
-        if (typeof(TProperty).IsEnum) Converter(new GenericToEnumConverter<int, TProperty>());
+        if (typeof(TProperty).IsEnum)
+        {
+            Converter(new IntToEnum<TProperty>());
+        }
     }
 
     /// <summary>
@@ -33,6 +36,7 @@ public class PropertyConfigurator<TEntity, TProperty>
     public void ColumnName(string name)
     {
         _mapping.ColumnName = name ?? throw new ArgumentNullException(nameof(name));
+
     }
 
     /// <summary>
@@ -51,7 +55,7 @@ public class PropertyConfigurator<TEntity, TProperty>
     {
         if (recordToPropertyConverter == null) throw new ArgumentNullException(nameof(recordToPropertyConverter));
 
-        _mapping.RecordToColumnConverter = record => recordToPropertyConverter(record)!;
+        _mapping.RecordToPropertyConverter = record => recordToPropertyConverter(record)!;
     }
 
     /// <summary>
@@ -64,7 +68,7 @@ public class PropertyConfigurator<TEntity, TProperty>
     ///         The column type and the property type differs and there is no automatic conversion between them.
     ///     </para>
     /// </remarks>
-    public void Converter<TColumn>(ISingleValueConverter<TColumn, TProperty> converter)
+    public void Converter<TColumn>(ISingleValueConverter<TColumn, TProperty> converter) where TColumn: notnull
     {
         if (converter == null) throw new ArgumentNullException(nameof(converter));
         _mapping.ColumnToPropertyConverter = columnValue => converter.ColumnToProperty((TColumn)columnValue);

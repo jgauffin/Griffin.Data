@@ -4,56 +4,55 @@ using System.Reflection;
 
 namespace Griffin.Data.Helpers;
 
+/// <summary>
+///     Extensions for mapping values to the entity.
+/// </summary>
 public static class PropertyInfoExtensions
 {
-    public static object ConvertFromColumnToPropertyValue(this object value, Type propertyType)
+    /// <summary>
+    ///     Try to create an converter
+    /// </summary>
+    /// <param name="columnType"></param>
+    /// <param name="propertyType"></param>
+    /// <returns></returns>
+    /// <exception cref="NotSupportedException"></exception>
+    public static Func<object, object>? GetColumnToPropertyConverter(Type columnType, Type propertyType)
     {
-        if (value == null) throw new ArgumentNullException(nameof(value));
-
-        if (propertyType.IsCollection()) return value;
-
-        // Many columns are still long instead of int, which is enough.
-        if (value is long l && propertyType == typeof(int)) return (int)l;
-
-        if (propertyType.IsInstanceOfType(value)) return value;
+        if (propertyType.IsCollection())
+            throw new NotSupportedException("Collections are not supported by the auto-converter yet.");
 
         var underlyingType = Nullable.GetUnderlyingType(propertyType);
         var type = underlyingType ?? propertyType;
+        if (type.IsAssignableFrom(columnType)) return null;
 
-        if (!type.IsEnum) return Convert.ChangeType(value, type);
 
-        return value is string str
-            ? Enum.Parse(type, str)
-            : Enum.ToObject(type, value);
+        if (!type.IsEnum) return x => Convert.ChangeType(x, propertyType);
+
+        return columnType == typeof(string)
+            ? x => Enum.Parse(type, (string)x)
+            : x => Enum.ToObject(type, (int)x);
     }
 
-    public static Func<object, object?>? GenerateGetterDelegate(this PropertyInfo property)
+    /// <summary>
+    ///     Generate a setter delegate for a property.
+    /// </summary>
+    /// <param name="property">Property generate for.</param>
+    /// <param name="entityType">Entity that the property is declared in.</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException">Property is null.</exception>
+    /// <remarks>
+    ///     <para>Tries all possible ways, including using the backing field directly.</para>
+    /// </remarks>
+    public static Action<object, object>? GenerateSetterDelegate(this PropertyInfo property, Type entityType)
     {
-        if (!property.CanRead) return null;
-
-        return property.GetValue;
-    }
-
-    public static Action<object, object>? GenerateSetterDelegate(this PropertyInfo property)
-    {
-        if (property == null) throw new ArgumentNullException(nameof(property));
-
         if (property == null) throw new ArgumentNullException(nameof(property));
 
         if (property.CanWrite)
-            return (entity, value) =>
-            {
-                value = value.ConvertFromColumnToPropertyValue(property.PropertyType);
-                property.SetValue(entity, value);
-            };
+            return property.SetValue;
 
         var setterMethod = property.GetSetMethod();
         if (setterMethod != null)
-            return (entity, value) =>
-            {
-                value = value.ConvertFromColumnToPropertyValue(property.PropertyType);
-                setterMethod.Invoke(entity, new[] { value });
-            };
+            return (entity, value) => { setterMethod.Invoke(entity, new[] { value }); };
 
         var camelCase = property.Name.Length == 0
             ? property.Name.ToLower()
@@ -63,21 +62,130 @@ public static class PropertyInfoExtensions
         var newBackingFieldFormat = $"<{property.Name}>k__BackingField";
         var customField = $"_{camelCase}";
 
-        var declaringType = property.DeclaringType;
-        if (declaringType == null)
-            throw new InvalidOperationException($"DeclaringType is not specified for '{property.Name}'.");
-
         //property.DeclaringType.GetFields(BindingFlags.Instance|BindingFlags.NonPublic)
-        var field = declaringType.GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public)
+        var field = entityType.GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public)
             .FirstOrDefault(x =>
                 x.Name == oldBackingFieldFormat || x.Name == newBackingFieldFormat ||
                 x.Name.Equals(customField, StringComparison.OrdinalIgnoreCase));
         if (field == null) return null;
 
-        return (entity, value) =>
-        {
-            value = value.ConvertFromColumnToPropertyValue(property.PropertyType);
-            field.SetValue(entity, value);
-        };
+        return field.SetValue;
+    }
+
+    /// <summary>
+    ///     Generate a setter delegate for a property.
+    /// </summary>
+    /// <param name="property">Property to generate for.</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException">Property is null.</exception>
+    /// <remarks>
+    ///     <para>Tries all possible ways, including using the backing field directly.</para>
+    /// </remarks>
+    public static Action<TParent, TChild>? GenerateSetterDelegate<TParent, TChild>(this PropertyInfo property)
+        where TParent : notnull where TChild : notnull
+    {
+        if (property == null) throw new ArgumentNullException(nameof(property));
+
+        if (property.CanWrite)
+            return (entity, value) => property.SetValue(entity, value);
+
+        var setterMethod = property.GetSetMethod();
+        if (setterMethod != null)
+            return (entity, value) => { setterMethod.Invoke(entity, new object[] { value }); };
+
+        var camelCase = property.Name.Length == 0
+            ? property.Name.ToLower()
+            : char.ToLower(property.Name[0]) + property.Name[1..];
+
+        var oldBackingFieldFormat = $"{camelCase}k__BackingField";
+        var newBackingFieldFormat = $"<{property.Name}>k__BackingField";
+        var customField = $"_{camelCase}";
+
+        //property.DeclaringType.GetFields(BindingFlags.Instance|BindingFlags.NonPublic)
+        var field = typeof(TParent).GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public)
+            .FirstOrDefault(x =>
+                x.Name == oldBackingFieldFormat || x.Name == newBackingFieldFormat ||
+                x.Name.Equals(customField, StringComparison.OrdinalIgnoreCase));
+        if (field == null) return null;
+
+        return (x, y) => field.SetValue(x, y);
+    }
+
+    /// <summary>
+    ///     Generate a getter delegate for a property.
+    /// </summary>
+    /// <param name="property">Property to generate for.</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException">Property is null.</exception>
+    /// <remarks>
+    ///     <para>Tries all possible ways, including using the backing field directly.</para>
+    /// </remarks>
+    public static Func<TParent, TChild>? GenerateGetterDelegate<TParent, TChild>(this PropertyInfo property)
+        where TParent : notnull where TChild : notnull
+    {
+        if (property == null) throw new ArgumentNullException(nameof(property));
+
+        if (property.CanRead)
+            return entity => (TChild)property.GetValue(entity);
+
+        var getterMethod = property.GetGetMethod();
+        if (getterMethod != null)
+            return entity => (TChild)getterMethod.Invoke(entity, null);
+
+        var camelCase = property.Name.Length == 0
+            ? property.Name.ToLower()
+            : char.ToLower(property.Name[0]) + property.Name[1..];
+
+        var oldBackingFieldFormat = $"{camelCase}k__BackingField";
+        var newBackingFieldFormat = $"<{property.Name}>k__BackingField";
+        var customField = $"_{camelCase}";
+
+        //property.DeclaringType.GetFields(BindingFlags.Instance|BindingFlags.NonPublic)
+        var field = typeof(TParent).GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public)
+            .FirstOrDefault(x =>
+                x.Name == oldBackingFieldFormat || x.Name == newBackingFieldFormat ||
+                x.Name.Equals(customField, StringComparison.OrdinalIgnoreCase));
+        if (field == null) return null;
+
+        return x => (TChild)field.GetValue(x);
+    }
+
+    /// <summary>
+    ///     Generate a getter delegate for a property.
+    /// </summary>
+    /// <param name="property">Property to generate for.</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException">Property is null.</exception>
+    /// <remarks>
+    ///     <para>Tries all possible ways, including using the backing field directly.</para>
+    /// </remarks>
+    public static Func<object, object>? GenerateGetterDelegate(this PropertyInfo property)
+    {
+        if (property == null) throw new ArgumentNullException(nameof(property));
+
+        if (property.CanRead)
+            return property.GetValue;
+
+        var getterMethod = property.GetGetMethod();
+        if (getterMethod != null)
+            return entity => getterMethod.Invoke(entity, null);
+
+        var camelCase = property.Name.Length == 0
+            ? property.Name.ToLower()
+            : char.ToLower(property.Name[0]) + property.Name[1..];
+
+        var oldBackingFieldFormat = $"{camelCase}k__BackingField";
+        var newBackingFieldFormat = $"<{property.Name}>k__BackingField";
+        var customField = $"_{camelCase}";
+
+        //property.DeclaringType.GetFields(BindingFlags.Instance|BindingFlags.NonPublic)
+        var field = property.DeclaringType!
+            .GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public)
+            .FirstOrDefault(x =>
+                x.Name == oldBackingFieldFormat || x.Name == newBackingFieldFormat ||
+                x.Name.Equals(customField, StringComparison.OrdinalIgnoreCase));
+        if (field == null) return null;
+
+        return x => field.GetValue(x);
     }
 }

@@ -2,20 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Griffin.Data.Meta
-{
-    public class TableCollection : List<Table>
-    {
-        public Table this[string tableName]
-        {
-            get { return GetTable(tableName); }
-        }
+namespace Griffin.Data.Meta;
 
-        public Table GetTable(string tableName)
-        {
-            return
-                this.Single(
-                    x => String.Compare(x.Name, tableName, StringComparison.OrdinalIgnoreCase) == 0);
-        }
+public class TableCollection : List<Table>
+{
+    public Table this[string tableName] => GetTable(tableName);
+
+    public Table GetTable(string tableName)
+    {
+        return
+            this.Single(
+                x => string.Compare(x.Name, tableName, StringComparison.OrdinalIgnoreCase) == 0);
     }
 }

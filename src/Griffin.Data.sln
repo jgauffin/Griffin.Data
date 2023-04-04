@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33122.133
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Data", "Griffin.Data\Griffin.Data.csproj", "{40C1806B-C4D2-42B2-AB20-2358856D7ACE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Griffin.Data", "Griffin.Data\Griffin.Data.csproj", "{40C1806B-C4D2-42B2-AB20-2358856D7ACE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Data.Tests", "Griffin.Data.Tests\Griffin.Data.Tests.csproj", "{7D5928DE-675A-47D4-BBAA-C2B828F731A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Griffin.Data.Tests", "Griffin.Data.Tests\Griffin.Data.Tests.csproj", "{7D5928DE-675A-47D4-BBAA-C2B828F731A2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestApp", "TestApp\TestApp.csproj", "{A68D532D-16DD-4E1B-ABB0-B2B43461ADEF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{7D5928DE-675A-47D4-BBAA-C2B828F731A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7D5928DE-675A-47D4-BBAA-C2B828F731A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7D5928DE-675A-47D4-BBAA-C2B828F731A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A68D532D-16DD-4E1B-ABB0-B2B43461ADEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A68D532D-16DD-4E1B-ABB0-B2B43461ADEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A68D532D-16DD-4E1B-ABB0-B2B43461ADEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A68D532D-16DD-4E1B-ABB0-B2B43461ADEF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
