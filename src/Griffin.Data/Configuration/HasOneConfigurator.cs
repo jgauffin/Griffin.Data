@@ -51,47 +51,50 @@ public class HasOneConfigurator<TParentEntity, TChildEntity> : IHasOneConfigurat
                 $"Property {_propertyName} must have a setter or a backing field with the same name as the property ('Users' => '_users').");
         }
 
-        var mapping = new HasOneMapping<TParentEntity, TChildEntity>(fk, getter, setter);
+        var mapping = new HasOneMapping<TParentEntity, TChildEntity>(fk, getter, setter)
+        {
+            SubsetColumn = _subsetColumn
+        };
+
         if (_discriminator == null) return mapping;
         mapping.DiscriminatorProperty =
             mappingRegistry.Get(typeof(TParentEntity)).GetProperty(_discriminator.PropertyName);
         mapping.DiscriminatorTypeSelector = _discriminator.TypeSelector;
-        mapping.SubsetColumn = _subsetColumn;
         return mapping;
     }
 
 
     /// <summary>
-    ///     A denominator is used to tell which type of child type to load (in case of inheritance).
+    ///     A discriminator is used to tell which type of child type to load (in case of inheritance).
     /// </summary>
-    /// <typeparam name="TDenominatorProperty">Property used to determine child type.</typeparam>
-    /// <param name="denominatorSelector">Expression used to selected denominator property.</param>
+    /// <typeparam name="TDiscriminatorProperty">Property used to determine child type.</typeparam>
+    /// <param name="propertySelector">Expression used to selected discriminator property.</param>
     /// <param name="factory">
-    ///     Factory used to construct types based on the denominator property value. Contains denominator
+    ///     Factory used to construct types based on the discriminator property value. Contains discriminator
     ///     property, the column value and should return the created entity.
     /// </param>
     /// <returns>Config.</returns>
-    public HasOneConfigurator<TParentEntity, TChildEntity> Discriminator<TDenominatorProperty>(
-        Expression<Func<TParentEntity, TDenominatorProperty>> denominatorSelector,
-        Func<TDenominatorProperty, object, TChildEntity?> factory)
+    public HasOneConfigurator<TParentEntity, TChildEntity> Discriminator<TDiscriminatorProperty>(
+        Expression<Func<TParentEntity, TDiscriminatorProperty>> propertySelector,
+        Func<TDiscriminatorProperty, object, TChildEntity?> factory)
     {
-        //new Discriminator<TParentEntity, TChildEntity>(denominatorSelector.GetMemberName());
+        //new Discriminator<TParentEntity, TChildEntity>(propertySelector.GetMemberName());
         return this;
     }
 
     /// <summary>
-    ///     A denominator is used to tell which type of child type to load (in case of inheritance).
+    ///     A discriminator is used to tell which type of child type to load (in case of inheritance).
     /// </summary>
-    /// <typeparam name="TDenominatorProperty">Property used to determine child type.</typeparam>
-    /// <param name="denominatorSelector">Expression used to selected denominator property.</param>
-    /// <param name="typeSelector">Factory used to construct types based on the denominator property value.</param>
+    /// <typeparam name="TDiscriminatorProperty">Property used to determine child type.</typeparam>
+    /// <param name="selector">Expression used to selected discriminator property.</param>
+    /// <param name="typeSelector">Factory used to construct types based on the discriminator property value.</param>
     /// <returns>Config.</returns>
-    public HasOneConfigurator<TParentEntity, TChildEntity> Discriminator<TDenominatorProperty>(
-        Expression<Func<TParentEntity, TDenominatorProperty>> denominatorSelector,
-        Func<TDenominatorProperty, Type?> typeSelector)
+    public HasOneConfigurator<TParentEntity, TChildEntity> Discriminator<TDiscriminatorProperty>(
+        Expression<Func<TParentEntity, TDiscriminatorProperty>> selector,
+        Func<TDiscriminatorProperty, Type?> typeSelector)
     {
-        _discriminator = new Discriminator<TParentEntity, TChildEntity>(denominatorSelector.GetMemberName(),
-            x => typeSelector((TDenominatorProperty)x));
+        _discriminator = new Discriminator<TParentEntity, TChildEntity>(selector.GetMemberName(),
+            x => typeSelector((TDiscriminatorProperty)x));
         return this;
     }
 

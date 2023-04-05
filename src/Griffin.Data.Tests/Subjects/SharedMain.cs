@@ -14,6 +14,14 @@ namespace Griffin.Data.Tests.Subjects
         public int Id { get; set; }
     }
 
+    internal class SharedMainCollection
+    {
+        public int SomeField { get; set; }
+        public IReadOnlyList<SharedChild> Left { get; set; }
+        public IReadOnlyList<SharedChild> Right { get; set; }
+        public int Id { get; set; }
+    }
+
     public class SharedChild
     {
         public int Id { get; set; }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Griffin.Data.Mappings.Properties;
 
@@ -15,6 +16,11 @@ public interface IHasManyMapping : IFieldAccessor, IRelationShip
     /// </summary>
     /// <returns>Created collection.</returns>
     IList CreateCollection();
+
+    /// <summary>
+    /// Used to limit returned rows.
+    /// </summary>
+    public KeyValuePair<string, string>? SubsetColumn { get; set; }
 
     /// <summary>
     ///     Visit all items in the collection.

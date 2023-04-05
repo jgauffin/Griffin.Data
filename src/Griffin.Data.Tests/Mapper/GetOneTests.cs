@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Griffin.Data.Mapper;
 using Griffin.Data.Tests.Entities;
+using Griffin.Data.Tests.Subjects;
 
 namespace Griffin.Data.Tests.Mapper;
 
@@ -45,6 +46,26 @@ public class GetOneTests : IntegrationTests
         var actual = await Session.GetById<MainTable>(1);
 
         actual.Children[1].Action.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Should_get_specific_children_when_using_subset_column_for_hasMany()
+    {
+        var actual = await Session.GetById<SharedMainCollection>(1);
+
+        actual.Left[0].Value.Should().Be("Stop");
+        actual.Right[0].Value.Should().Be("Skip");
+        actual.Left.Should().HaveCount(1);
+        actual.Right.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task Should_get_specific_children_when_using_subset_column_for_hasOne()
+    {
+        var actual = await Session.GetById<SharedMain>(1);
+
+        actual.Left.Value.Should().Be("Stop");
+        actual.Right.Value.Should().Be("Skip");
     }
 
 }

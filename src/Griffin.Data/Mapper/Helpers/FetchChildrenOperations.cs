@@ -13,6 +13,10 @@ internal static class FetchChildrenOperations
     internal static async Task GetChildren<TParent>(this Session session, [DisallowNull] TParent parentEntity)
     {
         if (parentEntity == null) throw new ArgumentNullException(nameof(parentEntity));
+        if (typeof(TParent) == typeof(object))
+        {
+            throw new ArgumentException("Entity type cannot be 'object'.");
+        }
 
         var parentMapping = session.GetMapping<TParent>();
 
@@ -28,6 +32,38 @@ internal static class FetchChildrenOperations
         foreach (var hasOneMapping in parentMapping.Children)
         {
             options.DbParameters= hasOneMapping.CreateDbConstraints(new[] { parentEntity });
+
+            var childType = hasOneMapping.ChildEntityType;
+            if (hasOneMapping.HaveDiscriminator)
+                childType = hasOneMapping.GetTypeUsingDiscriminator(parentEntity) ?? hasOneMapping.ChildEntityType;
+
+            var child = await session.FirstOrDefault(childType, options);
+            if (child != null) hasOneMapping.SetColumnValue(parentEntity, child);
+        }
+    }
+
+    internal static async Task GetChildren(this Session session, Type parentType, [DisallowNull] object parentEntity)
+    {
+        if (parentEntity == null) throw new ArgumentNullException(nameof(parentEntity));
+        if (parentType == typeof(object))
+        {
+            throw new ArgumentException("Entity type cannot be 'object'.");
+        }
+
+        var parentMapping = session.GetMapping(parentType);
+
+        var options = new QueryOptions();
+        foreach (var hasManyMapping in parentMapping.Collections)
+        {
+            options.DbParameters = hasManyMapping.CreateDbConstraints(new[] { parentEntity });
+            var collection = hasManyMapping.CreateCollection();
+            await session.Query(hasManyMapping.ChildEntityType, options, collection);
+            hasManyMapping.SetColumnValue(parentEntity, collection);
+        }
+
+        foreach (var hasOneMapping in parentMapping.Children)
+        {
+            options.DbParameters = hasOneMapping.CreateDbConstraints(new[] { parentEntity });
 
             var childType = hasOneMapping.ChildEntityType;
             if (hasOneMapping.HaveDiscriminator)
@@ -131,7 +167,7 @@ internal static class FetchChildrenOperations
     private static async Task FetchUsingDiscriminator(Session session, ClassMapping parentMapping,
         IHasOneMapping hasOneMapping, IEnumerable parents)
     {
-        var denominatorIndex = new Dictionary<Type, IList>();
+        var discriminatorIndex = new Dictionary<Type, IList>();
         var parentIndex = new Dictionary<object, object>();
         foreach (var parent in parents)
         {
@@ -151,17 +187,17 @@ internal static class FetchChildrenOperations
                 continue;
             }
 
-            if (!denominatorIndex.TryGetValue(den, out var items))
+            if (!discriminatorIndex.TryGetValue(den, out var items))
             {
                 items = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(parentMapping.EntityType));
-                denominatorIndex[den] = items;
+                discriminatorIndex[den] = items;
             }
 
             items.Add(parent);
         }
 
         var options = new QueryOptions();
-        foreach (var kvp in denominatorIndex)
+        foreach (var kvp in discriminatorIndex)
         {
             options.DbParameters = hasOneMapping.CreateDbConstraints(kvp.Value);
 

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Griffin.Data.Helpers;
 
@@ -30,6 +32,9 @@ public static class TypeExtensions
                || typeToCheck == typeof(Uri);
     }
 
+    private static Type[] CollectionTypes = new Type[]
+        { typeof(IReadOnlyList<>), typeof(IList<>), typeof(ICollection<>)};
+
     /// <summary>
     /// Is it a collection/list/array?
     /// </summary>
@@ -38,20 +43,27 @@ public static class TypeExtensions
     /// <exception cref="ArgumentNullException">Argument is null.</exception>
     public static bool IsCollection(this Type type)
     {
+
         if (type == null) throw new ArgumentNullException(nameof(type));
         if (type.IsArray)
             return true;
 
-        foreach (var i in type.GetInterfaces())
+        if (type.IsGenericType && CollectionTypes.Contains(type.GetGenericTypeDefinition()))
         {
-            switch (i.IsGenericType)
+            return true;
+        }
+
+        if (type == typeof(IList))
+            return true;
+
+        foreach (var interfaceType in type.GetInterfaces())
+        {
+            if (interfaceType.IsGenericType && CollectionTypes.Contains(interfaceType.GetGenericTypeDefinition()))
             {
-                case true when i.GetGenericTypeDefinition() == typeof(IList<>):
-                case true when i.GetGenericTypeDefinition() == typeof(ICollection<>):
-                    return true;
+                return true;
             }
 
-            if (i == typeof(IList))
+            if (interfaceType == typeof(IList))
                 return true;
         }
 

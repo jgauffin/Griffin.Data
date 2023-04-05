@@ -33,10 +33,21 @@ public class PropertyConfigurator<TEntity, TProperty> where TProperty : notnull
     /// </summary>
     /// <param name="name">Table column name.</param>
     /// <exception cref="ArgumentNullException">name is null.</exception>
-    public void ColumnName(string name)
+    public PropertyConfigurator<TEntity, TProperty> ColumnName(string name)
     {
         _mapping.ColumnName = name ?? throw new ArgumentNullException(nameof(name));
+        return this;
 
+    }
+
+    /// <summary>
+    ///     Specify column name (used when the name differs from the property name).
+    /// </summary>
+    /// <exception cref="ArgumentNullException">name is null.</exception>
+    public PropertyConfigurator<TEntity, TProperty> Ignore()
+    {
+        _mapping.IsIgnored = true;
+        return this;
     }
 
     /// <summary>

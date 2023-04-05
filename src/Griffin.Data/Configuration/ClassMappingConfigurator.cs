@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -102,7 +103,7 @@ namespace Griffin.Data.Configuration
         /// <inheritdoc />
         public HasOneConfigurator<TEntity, TProperty> HasOne<TProperty>(Expression<Func<TEntity, TProperty>> selector)
         {
-            var config=new HasOneConfigurator<TEntity, TProperty>(selector);
+            var config = new HasOneConfigurator<TEntity, TProperty>(selector);
             _hasOneMappings.Add(config);
             return config;
         }
@@ -116,7 +117,7 @@ namespace Griffin.Data.Configuration
                 // Do not override manual configurations.
                 if (_properties.Any(x => x.PropertyName == prop.Name) ||
                     _keys.Any(x => x.PropertyName == prop.Name) ||
-                    _hasManyMappings.Any(x=>x.PropertyName == prop.Name)||
+                    _hasManyMappings.Any(x => x.PropertyName == prop.Name) ||
                         _hasOneMappings.Any(x => x.PropertyName == prop.Name))
                 {
                     continue;
@@ -138,7 +139,7 @@ namespace Griffin.Data.Configuration
                 _properties.Add(mapping);
             }
         }
-        
+
 
         /// <summary>
         ///     Create a mapping using this configuration.
@@ -146,7 +147,7 @@ namespace Griffin.Data.Configuration
         /// <returns>Generated mapping.</returns>
         ClassMapping IMappingBuilder.BuildMapping()
         {
-            _mapping= new ClassMapping(typeof(TEntity), _tableName, _keys, _properties);
+            _mapping = new ClassMapping(typeof(TEntity), _tableName, _keys, _properties.Where(x => !x.IsIgnored).ToList());
             return _mapping;
         }
 

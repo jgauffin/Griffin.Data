@@ -16,6 +16,7 @@ public class HasOneMapping<TParent, TChild> : RelationShipBase<TParent, TChild>,
 {
     private readonly Func<TParent, TChild> _getter;
     private readonly Action<TParent, TChild> _setter;
+    private KeyValuePair<string, string>? _subsetColumn;
 
     /// <summary>
     /// </summary>
@@ -39,7 +40,14 @@ public class HasOneMapping<TParent, TChild> : RelationShipBase<TParent, TChild>,
     /// </summary>
     internal Func<object, Type?>? DiscriminatorTypeSelector { get; set; }
 
-    KeyValuePair<string, string>? IHasOneMapping.SubsetColumn { get; set; }
+    //KeyValuePair<string, string>? IHasOneMapping.SubsetColumn => _subsetColumn;
+
+    /// <inheritdoc />
+    public KeyValuePair<string, string>? SubsetColumn
+    {
+        get => _subsetColumn;
+        set => _subsetColumn = value;
+    }
 
     /// <inheritdoc />
     public void SetColumnValue([NotNull] object parentEntity, object value)
@@ -59,11 +67,6 @@ public class HasOneMapping<TParent, TChild> : RelationShipBase<TParent, TChild>,
     public bool HaveDiscriminator => DiscriminatorProperty != null;
 
     /// <summary>
-    /// Should be added to all insert/update statements and used in all WHERE statements.
-    /// </summary>
-    public KeyValuePair<string, string>? SubsetColumn { get; set; }
-
-    /// <summary>
     ///     Used to decide sub class type.
     /// </summary>
     /// <param name="parentEntity">Entity that contains the discriminator property.</param>
@@ -80,11 +83,9 @@ public class HasOneMapping<TParent, TChild> : RelationShipBase<TParent, TChild>,
         return DiscriminatorTypeSelector(value);
     }
 
+    /// <inheritdoc />
     protected override void ApplyConstraints(IDictionary<string, object> dbParameters)
     {
-        if (SubsetColumn != null)
-        {
-            dbParameters.Add(SubsetColumn.Value.Key, SubsetColumn.Value.Value);
-        }
+        if (_subsetColumn != null) dbParameters.Add(_subsetColumn.Value.Key, _subsetColumn.Value.Value);
     }
 }

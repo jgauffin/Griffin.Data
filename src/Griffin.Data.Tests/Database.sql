@@ -49,6 +49,7 @@ create table SharedChild
 	Value varchar(40)
 );
 
+
 delete from Logs;
 delete from ExtraAction;
 delete from SimpleAction;
@@ -77,3 +78,4 @@ insert into SharedMain (SomeField) VALUES(113);
 select @id = scope_identity();
 insert into SharedChild (MainId, ParentProperty, Value) VALUES (@id, 'Left', 'Stop');
 insert into SharedChild (MainId, ParentProperty, Value) VALUES (@id, 'Right', 'Skip');
+

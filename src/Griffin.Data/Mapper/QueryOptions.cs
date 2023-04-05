@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq.Expressions;
 using Griffin.Data.Helpers;
+using Griffin.Data.Mapper.Helpers;
 
 namespace Griffin.Data.Mapper;
 
 /// <summary>
-///     Factory delegate for <see cref="QueryOptions" />.
+/// Query options.
 /// </summary>
-/// <param name="record">Data record used to determine which type of entity to load.</param>
-/// <returns>Created entity.</returns>
-public delegate object CreateEntityDelegate(IDataRecord record);
-
+/// <typeparam name="T"></typeparam>
 public class QueryOptions<T>
 {
     /// <summary>
@@ -41,34 +38,80 @@ public class QueryOptions<T>
     {
     }
 
+    internal Session? Session;
+
     internal QueryOptions Options { get; } = new();
 
-
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="propertyConstraints"></param>
+    /// <returns></returns>
     public QueryOptions<T> Where(object propertyConstraints)
     {
+        if (propertyConstraints == null) throw new ArgumentNullException(nameof(propertyConstraints));
+
         Options.Parameters = propertyConstraints.ToDictionary();
         return this;
     }
 
-    public QueryOptions<T> Where(string sql, object columnConstraints)
+    /// <summary>
+    /// Create a complete SQL statement or a WHERE statement.
+    /// </summary>
+    /// <param name="sql">Complete SQL or short form.</param>
+    /// <param name="parameters">Parameters for the SQL statement.</param>
+    /// <returns>this.</returns>
+    /// <exception cref="ArgumentNullException">any of the arguments are <c>null</c>.</exception>
+    public QueryOptions<T> Where(string sql, object parameters)
     {
-        Options.Sql = sql;
-        Options.DbParameters = columnConstraints.ToDictionary();
+        if (parameters == null) throw new ArgumentNullException(nameof(parameters));
+        Options.Sql = sql ?? throw new ArgumentNullException(nameof(sql));
+        Options.DbParameters = parameters.ToDictionary();
         return this;
     }
 
+    /// <summary>
+    /// Do not load any children.
+    /// </summary>
+    /// <returns>this.</returns>
+    public QueryOptions<T> DoNotLoadChildren()
+    {
+        Options.LoadChildren = false;
+        return this;
+    }
+
+    /// <summary>
+    /// Ascending sort.
+    /// </summary>
+    /// <typeparam name="TProperty">Property to sort after.</typeparam>
+    /// <param name="property">Property selector</param>
+    /// <returns>this.</returns>
     public QueryOptions<T> OrderBy<TProperty>(Expression<Func<T, TProperty>> property)
     {
+        if (property == null) throw new ArgumentNullException(nameof(property));
         Options.OrderBy(property.GetMemberName());
         return this;
     }
 
+    /// <summary>
+    /// Descending sort.
+    /// </summary>
+    /// <typeparam name="TProperty">Property to sort after.</typeparam>
+    /// <param name="property">Property selector</param>
+    /// <returns>this.</returns>
     public QueryOptions<T> OrderByDescending<TProperty>(Expression<Func<T, TProperty>> property)
     {
+        if (property == null) throw new ArgumentNullException(nameof(property));
         Options.OrderByDescending(property.GetMemberName());
         return this;
     }
 
+    /// <summary>
+    /// Page result.
+    /// </summary>
+    /// <param name="pageNumber">One based index.</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <returns></returns>
     public QueryOptions<T> Paging(int pageNumber, int pageSize)
     {
         Options.PageSize = pageSize;
@@ -170,18 +213,4 @@ public class QueryOptions
     {
         return new QueryOptions<T>(parameters);
     }
-}
-
-internal class SortInstruction
-{
-    public SortInstruction(string name, bool isAscending, bool isPropertyName)
-    {
-        Name = name;
-        IsAscending = isAscending;
-        IsPropertyName = isPropertyName;
-    }
-
-    public string Name { get; set; }
-    public bool IsAscending { get; set; }
-    public bool IsPropertyName { get; }
 }

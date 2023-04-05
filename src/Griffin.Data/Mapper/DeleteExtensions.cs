@@ -8,7 +8,7 @@ namespace Griffin.Data.Mapper;
 /// <summary>
 /// Methods to delete entities.
 /// </summary>
-internal static class DeleteExtensions
+public static class DeleteExtensions
 {
     /// <summary>
     /// Delete a single entity.

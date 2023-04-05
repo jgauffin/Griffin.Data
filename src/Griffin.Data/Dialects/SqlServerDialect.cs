@@ -72,8 +72,9 @@ public class SqlServerDialect : ISqlDialect
             // SELECT * FROM TableName ORDER BY id OFFSET 10 ROWS FETCH NEXT 10 ROWS ONLY;
             if (!command.CommandText.Contains("ORDER BY", StringComparison.OrdinalIgnoreCase))
             {
-                command.CommandText += " ORDER BY " + mapping.Keys[0].ColumnName;
+                command.CommandText += $" ORDER BY {mapping.Keys[0].ColumnName}";
             }
+
             command.CommandText +=
                 $" OFFSET {options.PageSize * (options.PageNumber - 1)} ROWS FETCH NEXT {options.PageSize} ROWS ONLY";
 

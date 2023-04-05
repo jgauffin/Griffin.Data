@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using Griffin.Data.Helpers;
@@ -16,6 +17,7 @@ public class HasManyConfigurator<TParentEntity, TChildEntity> : IHasManyConfigur
 {
     private readonly PropertyInfo _propertyInfo;
     private ForeignKeyConfiguration<TParentEntity, TChildEntity>? _fkConfigurator;
+    private KeyValuePair<string, string>? _subsetColumn;
 
     /// <summary>
     /// </summary>
@@ -53,7 +55,10 @@ public class HasManyConfigurator<TParentEntity, TChildEntity> : IHasManyConfigur
         }
 
 
-        var mapping = new HasManyMapping<TParentEntity, TChildEntity>(fk, getter, setter);
+        var mapping = new HasManyMapping<TParentEntity, TChildEntity>(fk, getter, setter)
+        {
+            SubsetColumn = _subsetColumn
+        };
         return mapping;
     }
 
@@ -95,4 +100,24 @@ public class HasManyConfigurator<TParentEntity, TChildEntity> : IHasManyConfigur
         _fkConfigurator = new ForeignKeyConfiguration<TParentEntity, TChildEntity>(columnName);
         return _fkConfigurator;
     }
+
+    /// <summary>
+    /// A constant column value.
+    /// </summary>
+    /// <param name="columnName">Column to set value for.</param>
+    /// <param name="value">Value to set.</param>
+    /// <remarks>
+    ///<para>
+    ///Typically used when the same table is used as a child for multiple types of entities (or multiple properties in the same entity). This column identifies which parent the child entity is for.
+    /// </para>
+    /// </remarks>
+    public HasManyConfigurator<TParentEntity, TChildEntity> SubsetColumn(string columnName, string value)
+    {
+        if (columnName == null) throw new ArgumentNullException(nameof(columnName));
+        if (value == null) throw new ArgumentNullException(nameof(value));
+
+        _subsetColumn = new KeyValuePair<string, string>(columnName, value);
+        return this;
+    }
+
 }

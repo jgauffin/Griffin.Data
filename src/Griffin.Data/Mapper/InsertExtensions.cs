@@ -123,17 +123,25 @@ public static class InsertExtensions
                 if (referencedId == null)
                 {
                     await session.Insert(childEntity);
+                    return;
                 }
-                else if (childMapping.HasForeignKeyProperty)
+
+                var extraColumns = new Dictionary<string, object>();
+                if (childMapping.SubsetColumn != null)
+                {
+                    extraColumns.Add(childMapping.SubsetColumn.Value.Key, childMapping.SubsetColumn.Value.Value);
+                }
+
+                if (childMapping.HasForeignKeyProperty)
                 {
                     childMapping.SetForeignKey(childEntity, referencedId);
-                    await session.Insert(childEntity);
                 }
                 else
                 {
-                    await session.Insert(childEntity,
-                        new Dictionary<string, object> { { childMapping.ForeignKeyColumnName, referencedId } });
+                    extraColumns.Add(childMapping.ForeignKeyColumnName, referencedId);
                 }
+
+                await session.Insert(childEntity, extraColumns);
             });
         }
     }

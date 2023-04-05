@@ -7,13 +7,13 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(ProjectName).xml</DocumentationFile>
 
-		<Version>1.0.0-rc13</Version>
+		<Version>1.0.0-rc20</Version>
 		<PackageReleaseNotes>Fixed so the user is attached to the error contexts.</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<PropertyGroup>
 		<PackageId>Griffin.Data</PackageId>
-		<Authors>Coderr AB</Authors>
+		<Authors>Jonas Gauffin</Authors>
 		<Description>Lightweight ORM and Query mapper with change tracking, relationships (one to many + one to one).</Description>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<Copyright>Copyright 2023 © Jonas Gauffin. All rights reserved.</Copyright>

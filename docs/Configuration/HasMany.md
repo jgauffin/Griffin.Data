@@ -6,7 +6,7 @@ One to many means that one class has a collection of children in a property.
 ```csharp
 public class User
 {
-    public IList<Address> { get; set; }
+    public IList<Address> Addresses { get; set; }
 }
 ```
 
@@ -105,23 +105,46 @@ create table SomeChildren
 
 ## Inheritance
 
-Inheritance is not supported in has many relationships directly. You can however create a connection table that are used to tell which child type to load.
+Inheritance in one to many relationships are a challenge since the collection of children can have different subclasses. That means that the parent
+table cannot contain the type, nor the child tables (as that would require a query against all possible child tables).
+
+Therefore, inheritance is not supported in has many relationships directly. You can however create a connection table that are used to tell which child type to load.
 
 ```csharp
 public class SomeParent
 {
     public int Id { get; set; }
-    public IList<SomeChild> Children { get; set; }
+    public IList<ChildConnector> Children { get; set; }
 }
 
-public class ChildAction
-
-public interface IAction
+// Class used to tell which type the child is
+public class ChildConnector
 {
+    public int Id { get; set; }
 
+    // Must be included so that the correct connectors
+    // are loaded by the library.
+    public int ParentId  { get; set; }
+
+    // This property is used to load the correct type
+    // The type of field doesn't matter for the library.
+    // enum, string or int are the most common.
+    public string DataType { get; set; }
+
+    // The correct child is loaded into this property.
+    public IData { get; set; }
 }
 
-public class SomeChild
+// We need a base, can either be a class or an interface.
+public interface IData
+{
+    // All children must have a parent Id
+    // that referes to SomeParent in this case.
+    int ParentId { get; set; }
+}
+
+// Finally one of the sub classes.
+public class SomeData : IData
 {
     public int Id { get; set; }
     public int ParentId { get; set; }
@@ -129,7 +152,85 @@ public class SomeChild
 }
 ```
 
+Take advantage of this structure by moving all common column/properties into the ChildConnector class and then have only sub class specific data in the sub classes.
 
+The mappings looks like normal one to many mappings, but with a discriminator configuration:
+
+```csharp
+internal class SomeParentMapping : IEntityConfigurator<SomeParent>
+{
+    public void Configure(IClassMappingConfigurator<SomeParent> config)
+    {
+        config.Key(x => x.Id).AutoIncrement();
+
+        config.HasMany(x => x.Children)   // Child property in the arent class.
+            .ForeignKey(x => x.ParentId)  // FK property in the child class (SomeChild).
+            .References(x => x.Id);       // property in the main entity (SomeParent) that the FK references.
+        
+        config.MapRemaningProperties();
+    }
+}
+
+internal class ChildConnectorMapping : IEntityConfigurator<ChildConnector>
+{
+    public void Configure(IClassMappingConfigurator<ChildConnector> config)
+    {
+        config.Key(x => x.Id).AutoIncrement();
+
+        // subclass configuration is activated by the
+        // discriminator.
+        config.HasOne(x => x.Data)
+              .Discriminator(x => x.DataType, ChildSelector) 
+              .ForeignKey(x => x.ParentId)
+              .References(x => x.Id);
+
+        config.MapRemaningProperties();
+    }
+
+    private Type? ChildSelector(string arg)
+    {
+        return arg switch
+        {
+            "SomeData" => typeof(SomeData),
+            "MoreData" => typeof(Moredata),
+            _ => null
+        };
+    }    
+}
+
+
+internal class SomeChildMapping : IEntityConfigurator<SomeChild>
+{
+    public void Configure(IClassMappingConfigurator<SomeChild> config)
+    {
+        config.Key(x => x.Id).AutoIncrement();
+        config.MapRemaningProperties();
+    }
+}
+```
+
+The tables are the same, except the junction table and updated foreign keys.
+
+```sql
+create table SomeParents
+(
+    Id int not null identity primary key
+)
+
+create table ChildConnector
+(
+    Id int not null identity primary key,
+    SomeParentId int not null constraint FK_SomeParentId_SomeParents foreign key references SomeParents(Id)
+    DataType varchar(40) not null
+)
+
+create table SomeChildren
+(
+    Id int not null identity primary key,
+    SomeParentId int not null constraint FK_SomeParentId_SomeParents foreign key references SomeParents(Id)
+    SomeProperty varchar(40) not null
+)
+```
 
 ## Restrictions
 
@@ -141,67 +242,7 @@ The collection property must be an interface and not a concrete type.
 
 The following interfaces are supported:
 
-* IEnumerable<T>
-* IReadOnlyList<T>
-* IList<T>
-* T[] (arrays)
-
-### Foreign key property
-
-One to many relationships requires that the child table has a foreign key that points at a column in the parent entity.
-
-Example:
-
-
-
-
-
-#### Corresponding tables
-
-```sql
-create table Users
-(
-    Id int not null identity primary key,
-    FirstName varchar(20) not null
-)
-
-create table Addresses
-(
-    Id int not null identity primary key,
-    UserId int not null constraint FK_Addresses_Users foreign key references Users(Id)
-    PostalCode int not null
-)
-```
-
-#### Mappings
-
-And finally the mappings.
-
-```csharp
-internal class UserMapping : IEntityConfigurator<User>
-{
-    public void Configure(IClassMappingConfigurator<User> config)
-    {
-        config.TableName("Users");
-        config.Key(x => x.Id).AutoIncrement();
-
-        config.HasMany(x => x.Addresses) // Child property
-            .ForeignKey(x => x.UserId) // FK property in the child (address)
-            .References(x => x.Id); // property in the main entity (User) that the FK references
-        
-        config.MapRemaningProperties();
-    }
-}
-
-internal class AddressMapping : IEntityConfigurator<Address>
-{
-    public void Configure(IClassMappingConfigurator<Address> config)
-    {
-        config.TableName("Addresses");
-        config.Key(x => x.Id).AutoIncrement();
-        config.MapRemaningProperties();
-    }
-}
-```
-
-Has-many properties must use `IList<>`, `ICollection<>` or `IReadOnlyList<>` as their type.
+* `IEnumerable<T>`
+* `IReadOnlyList<T>`
+* `IList<T>`
+* `T[]` (arrays)

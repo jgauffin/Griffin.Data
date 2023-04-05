@@ -29,6 +29,8 @@ public class HasManyMapping<TParent, TChild> : RelationShipBase<TParent, TChild>
         _setter = setter ?? throw new ArgumentNullException(nameof(setter));
     }
 
+    public KeyValuePair<string, string>? SubsetColumn { get; set; }
+
     /// <inheritdoc />
     public IList CreateCollection()
     {
@@ -57,5 +59,14 @@ public class HasManyMapping<TParent, TChild> : RelationShipBase<TParent, TChild>
     {
         if (entity == null) throw new ArgumentNullException(nameof(entity));
         return _getter((TParent)entity);
+    }
+
+    /// <inheritdoc />
+    protected override void ApplyConstraints(IDictionary<string, object> dbParameters)
+    {
+        if (SubsetColumn != null)
+        {
+            dbParameters.Add(SubsetColumn.Value.Key, SubsetColumn.Value.Value);
+        }
     }
 }

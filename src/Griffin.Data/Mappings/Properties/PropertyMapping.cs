@@ -7,16 +7,16 @@ using Griffin.Data.Mapper;
 namespace Griffin.Data.Mappings.Properties;
 
 /// <summary>
-/// Maps a property, which are not in a relationship ("boho") and not a key.
+///     Maps a property, which are not in a relationship ("boho") and not a key.
 /// </summary>
 public class PropertyMapping : IFieldMapping
 {
     private readonly Type _entityType;
     private readonly Func<object, object>? _getter;
     private readonly Action<object, object>? _setter;
-    private bool _checkConverters = true;
     private bool _canReadFromDatabase;
     private bool _canWriteToDatabase;
+    private bool _checkConverters = true;
 
     /// <summary>
     /// </summary>
@@ -49,10 +49,8 @@ public class PropertyMapping : IFieldMapping
         set
         {
             if (value && _setter == null)
-            {
                 throw new MappingConfigurationException(_entityType,
                     $"Cannot mark property '${PropertyName}' as readable when there is no setter.");
-            }
             _canReadFromDatabase = value;
         }
     }
@@ -66,10 +64,8 @@ public class PropertyMapping : IFieldMapping
         set
         {
             if (value && _getter == null)
-            {
                 throw new MappingConfigurationException(_entityType,
                     $"Cannot mark property '${PropertyName}' as writable when there is no getter.");
-            }
             _canWriteToDatabase = value;
         }
     }
@@ -105,9 +101,14 @@ public class PropertyMapping : IFieldMapping
     /// </remarks>
     public Func<IDataRecord, object>? RecordToPropertyConverter { get; set; }
 
+    /// <summary>
+    ///     do not include in reads and writes. Remove once mapping is generated.
+    /// </summary>
+    public bool IsIgnored { get; set; }
+
 
     /// <inheritdoc />
-    public void SetColumnValue([NotNull]object instance, object value)
+    public void SetColumnValue([NotNull] object instance, object value)
     {
         if (instance == null) throw new ArgumentNullException(nameof(instance));
         if (_setter == null)

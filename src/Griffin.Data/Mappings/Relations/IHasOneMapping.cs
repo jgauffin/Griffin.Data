@@ -18,12 +18,12 @@ public interface IHasOneMapping : IRelationShip, IFieldAccessor
     /// <summary>
     /// Used to limit returned rows.
     /// </summary>
-    public KeyValuePair<string, string>? SubsetColumn { get; set; }
+    public KeyValuePair<string, string>? SubsetColumn { get; }
 
     /// <summary>
     /// Select type based on the parent property or the child record.
     /// </summary>
-    /// <param name="parentEntity">Parent entity, to allow the mapping tof etch the denominator property value.</param>
+    /// <param name="parentEntity">Parent entity, to allow the mapping tof etch the discriminator property value.</param>
     /// <returns></returns>
     Type? GetTypeUsingDiscriminator(object parentEntity);
 }
