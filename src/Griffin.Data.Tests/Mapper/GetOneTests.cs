@@ -15,21 +15,12 @@ public class GetOneTests : IntegrationTests
         item.Money.Should().Be(39093289238);
     }
 
-
     [Fact]
     public async Task Should_get_child_entities_per_default()
     {
         var actual = await Session.GetById<MainTable>(1);
 
         actual.Children.Should().NotBeEmpty();
-    }
-
-    [Fact]
-    public async Task Should_not_get_child_entities_when_turned_off()
-    {
-        var actual = await Session.First<MainTable>(new QueryOptions("", new { Id = 1 }) { LoadChildren = false });
-
-        actual.Children.Should().BeEmpty();
     }
 
     [Fact]
@@ -68,4 +59,11 @@ public class GetOneTests : IntegrationTests
         actual.Right.Value.Should().Be("Skip");
     }
 
+    [Fact]
+    public async Task Should_not_get_child_entities_when_turned_off()
+    {
+        var actual = await Session.First<MainTable>(new QueryOptions("", new { Id = 1 }) { LoadChildren = false });
+
+        actual.Children.Should().BeEmpty();
+    }
 }

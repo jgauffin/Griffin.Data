@@ -13,7 +13,9 @@ public class StringToEnum<TEnum> : ISingleValueConverter<string, TEnum> where TE
     public TEnum ColumnToProperty([NotNull] string value)
     {
         if (!Enum.TryParse<TEnum>(value, true, out var enumValue))
+        {
             throw new InvalidOperationException("Failed to convert '" + value + "' to enum " + typeof(TEnum));
+        }
 
         return enumValue;
     }

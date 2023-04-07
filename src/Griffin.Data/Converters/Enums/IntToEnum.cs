@@ -7,7 +7,7 @@ namespace Griffin.Data.Converters.Enums;
 ///     Store an enum as an int in the database.
 /// </summary>
 /// <typeparam name="TEnum">Type of enum to handle.</typeparam>
-public class IntToEnum<TEnum> : ISingleValueConverter<int, TEnum> where TEnum:notnull
+public class IntToEnum<TEnum> : ISingleValueConverter<int, TEnum> where TEnum : notnull
 {
     private readonly GenericToEnumConverter<int, TEnum> _converter = new();
 
@@ -22,7 +22,11 @@ public class IntToEnum<TEnum> : ISingleValueConverter<int, TEnum> where TEnum:no
     [return: NotNull]
     public int PropertyToColumn([DisallowNull] [NotNull] TEnum value)
     {
-        if (value == null) throw new ArgumentNullException(nameof(value));
+        if (value == null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
         return _converter.PropertyToColumn(value);
     }
 }

@@ -10,6 +10,6 @@ public class ForeignKeyColumn
     }
 
     public string Column { get; }
-    public Table ReferencedTable { get; }
     public string ReferencedColumn { get; }
+    public Table ReferencedTable { get; }
 }

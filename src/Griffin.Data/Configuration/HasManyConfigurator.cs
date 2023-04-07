@@ -13,7 +13,8 @@ namespace Griffin.Data.Configuration;
 /// </summary>
 /// <typeparam name="TParentEntity">Type of parent entity (that contains a collection property).</typeparam>
 /// <typeparam name="TChildEntity">Type of child (that is in the collection property).</typeparam>
-public class HasManyConfigurator<TParentEntity, TChildEntity> : IHasManyConfigurator where TParentEntity : notnull where TChildEntity : notnull
+public class HasManyConfigurator<TParentEntity, TChildEntity> : IHasManyConfigurator
+    where TParentEntity : notnull where TChildEntity : notnull
 {
     private readonly PropertyInfo _propertyInfo;
     private ForeignKeyConfiguration<TParentEntity, TChildEntity>? _fkConfigurator;
@@ -47,13 +48,15 @@ public class HasManyConfigurator<TParentEntity, TChildEntity> : IHasManyConfigur
         var getter = _propertyInfo.GenerateGetterDelegate<TParentEntity, object>();
         if (setter == null)
         {
-            throw new MappingConfigurationException(typeof(TParentEntity), "A HasMany property must have a setter or a backing field with the same name ('Users' => '_users').");
-        }
-        if (getter == null)
-        {
-            throw new MappingConfigurationException(typeof(TParentEntity), "A HasMany property must have a getter or a backing field with the same name ('Users' => '_users').");
+            throw new MappingConfigurationException(typeof(TParentEntity),
+                "A HasMany property must have a setter or a backing field with the same name ('Users' => '_users').");
         }
 
+        if (getter == null)
+        {
+            throw new MappingConfigurationException(typeof(TParentEntity),
+                "A HasMany property must have a getter or a backing field with the same name ('Users' => '_users').");
+        }
 
         var mapping = new HasManyMapping<TParentEntity, TChildEntity>(fk, getter, setter)
         {
@@ -61,7 +64,6 @@ public class HasManyConfigurator<TParentEntity, TChildEntity> : IHasManyConfigur
         };
         return mapping;
     }
-
 
     /// <summary>
     ///     FK in the child entity.
@@ -73,13 +75,14 @@ public class HasManyConfigurator<TParentEntity, TChildEntity> : IHasManyConfigur
         Expression<Func<TChildEntity, TForeignKeyProperty>> referencedPropertySelector)
     {
         if (_fkConfigurator != null)
+        {
             return _fkConfigurator;
+        }
 
         _fkConfigurator =
             new ForeignKeyConfiguration<TParentEntity, TChildEntity>(referencedPropertySelector.GetPropertyInfo());
         return _fkConfigurator;
     }
-
 
     /// <summary>
     ///     Point at the column in the table.
@@ -94,30 +97,39 @@ public class HasManyConfigurator<TParentEntity, TChildEntity> : IHasManyConfigur
     public ForeignKeyConfiguration<TParentEntity, TChildEntity> ForeignKeyColumn(string columnName)
     {
         if (_fkConfigurator != null)
+        {
             throw new MappingConfigurationException(typeof(TParentEntity),
                 "FK has already been configured for " + _propertyInfo.Name);
+        }
 
         _fkConfigurator = new ForeignKeyConfiguration<TParentEntity, TChildEntity>(columnName);
         return _fkConfigurator;
     }
 
     /// <summary>
-    /// A constant column value.
+    ///     A constant column value.
     /// </summary>
     /// <param name="columnName">Column to set value for.</param>
     /// <param name="value">Value to set.</param>
     /// <remarks>
-    ///<para>
-    ///Typically used when the same table is used as a child for multiple types of entities (or multiple properties in the same entity). This column identifies which parent the child entity is for.
-    /// </para>
+    ///     <para>
+    ///         Typically used when the same table is used as a child for multiple types of entities (or multiple properties in
+    ///         the same entity). This column identifies which parent the child entity is for.
+    ///     </para>
     /// </remarks>
     public HasManyConfigurator<TParentEntity, TChildEntity> SubsetColumn(string columnName, string value)
     {
-        if (columnName == null) throw new ArgumentNullException(nameof(columnName));
-        if (value == null) throw new ArgumentNullException(nameof(value));
+        if (columnName == null)
+        {
+            throw new ArgumentNullException(nameof(columnName));
+        }
+
+        if (value == null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
 
         _subsetColumn = new KeyValuePair<string, string>(columnName, value);
         return this;
     }
-
 }

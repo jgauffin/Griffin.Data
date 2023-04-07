@@ -1,7 +1,6 @@
-﻿namespace Griffin.Data.Tests.Entities
+﻿namespace Griffin.Data.Tests.Entities;
+
+public interface IAction
 {
-    public interface IAction
-    {
-        public int ChildId { get; set; }
-    }
+    public int ChildId { get; set; }
 }

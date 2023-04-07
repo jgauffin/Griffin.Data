@@ -24,7 +24,10 @@ public class PropertyMapping : IFieldMapping
     /// <param name="propertyType"></param>
     /// <param name="getter"></param>
     /// <param name="setter"></param>
-    public PropertyMapping(Type entityType, Type propertyType, Func<object, object>? getter,
+    public PropertyMapping(
+        Type entityType,
+        Type propertyType,
+        Func<object, object>? getter,
         Action<object, object>? setter)
     {
         PropertyType = propertyType ?? throw new ArgumentNullException(nameof(propertyType));
@@ -36,11 +39,6 @@ public class PropertyMapping : IFieldMapping
     }
 
     /// <summary>
-    ///     Type of property.
-    /// </summary>
-    public Type PropertyType { get; }
-
-    /// <summary>
     ///     Specifies if this property can be used when reading from the database.
     /// </summary>
     public bool CanReadFromDatabase
@@ -49,8 +47,11 @@ public class PropertyMapping : IFieldMapping
         set
         {
             if (value && _setter == null)
+            {
                 throw new MappingConfigurationException(_entityType,
                     $"Cannot mark property '${PropertyName}' as readable when there is no setter.");
+            }
+
             _canReadFromDatabase = value;
         }
     }
@@ -64,21 +65,14 @@ public class PropertyMapping : IFieldMapping
         set
         {
             if (value && _getter == null)
+            {
                 throw new MappingConfigurationException(_entityType,
                     $"Cannot mark property '${PropertyName}' as writable when there is no getter.");
+            }
+
             _canWriteToDatabase = value;
         }
     }
-
-    /// <summary>
-    ///     Converts from a property value to a column value.
-    /// </summary>
-    /// <remarks>
-    ///     <para>
-    ///         Used when the type differ, otherwise <c>null</c>.
-    ///     </para>
-    /// </remarks>
-    public Func<object, object>? PropertyToColumnConverter { get; set; }
 
     /// <summary>
     ///     Converts from a column value to a property value.
@@ -91,6 +85,26 @@ public class PropertyMapping : IFieldMapping
     public Func<object, object>? ColumnToPropertyConverter { get; set; }
 
     /// <summary>
+    ///     do not include in reads and writes. Remove once mapping is generated.
+    /// </summary>
+    public bool IsIgnored { get; set; }
+
+    /// <summary>
+    ///     Converts from a property value to a column value.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Used when the type differ, otherwise <c>null</c>.
+    ///     </para>
+    /// </remarks>
+    public Func<object, object>? PropertyToColumnConverter { get; set; }
+
+    /// <summary>
+    ///     Type of property.
+    /// </summary>
+    public Type PropertyType { get; }
+
+    /// <summary>
     ///     Converter used when this property requires multiple columns to generate a property value.
     /// </summary>
     /// <remarks>
@@ -101,23 +115,29 @@ public class PropertyMapping : IFieldMapping
     /// </remarks>
     public Func<IDataRecord, object>? RecordToPropertyConverter { get; set; }
 
-    /// <summary>
-    ///     do not include in reads and writes. Remove once mapping is generated.
-    /// </summary>
-    public bool IsIgnored { get; set; }
-
-
     /// <inheritdoc />
     public void SetColumnValue([NotNull] object instance, object value)
     {
-        if (instance == null) throw new ArgumentNullException(nameof(instance));
+        if (instance == null)
+        {
+            throw new ArgumentNullException(nameof(instance));
+        }
+
         if (_setter == null)
+        {
             throw new MappingException(instance,
                 $"No setter has been defined for property ${PropertyName}.");
+        }
 
         if (ColumnToPropertyConverter != null)
+        {
             value = ColumnToPropertyConverter(value);
-        else if (_checkConverters) _checkConverters = false;
+        }
+        else if (_checkConverters)
+        {
+            _checkConverters = false;
+        }
+
         //CreateConverters(value.GetType());
         _setter(instance, value);
     }
@@ -125,10 +145,16 @@ public class PropertyMapping : IFieldMapping
     /// <inheritdoc />
     public object? GetColumnValue([NotNull] object entity)
     {
-        if (entity == null) throw new ArgumentNullException(nameof(entity));
+        if (entity == null)
+        {
+            throw new ArgumentNullException(nameof(entity));
+        }
+
         if (_getter == null)
+        {
             throw new MappingException(entity,
                 $"No getter has been defined for property ${PropertyName}.");
+        }
 
         var propertyValue = _getter(entity);
         return ToColumnValue(propertyValue);

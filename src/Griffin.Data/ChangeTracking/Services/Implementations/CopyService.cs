@@ -4,21 +4,39 @@ using System.Collections.Generic;
 using System.Reflection;
 using Griffin.Data.Helpers;
 
-namespace Griffin.Data.ChangeTracking;
+namespace Griffin.Data.ChangeTracking.Services.Implementations;
 
-public interface ICopyService
-{
-    object Copy(object source);
-}
-
+/// <summary>
+///     Implementation of <see cref="ICopyService" />.
+/// </summary>
 public class CopyService : ICopyService
 {
-    public object Copy(object source, Dictionary<object, object> createdInstances)
+    /// <summary>
+    ///     Callback invoked each time an entity have been copied.
+    /// </summary>
+    public CopyCallbackHandler? Callback { get; set; }
+
+    /// <inheritdoc />
+    public object Copy(object source)
     {
-        if (source == null) throw new ArgumentNullException(nameof(source));
+        if (source == null)
+        {
+            throw new ArgumentNullException(nameof(source));
+        }
+
+        return Copy(null, source, 1, new Dictionary<object, object>());
+    }
+
+    private object Copy(object? parent, object source, int depth, Dictionary<object, object> createdInstances)
+    {
+        if (source == null)
+        {
+            throw new ArgumentNullException(nameof(source));
+        }
 
         var copy = Activator.CreateInstance(source.GetType(), true)!;
         createdInstances[source] = copy;
+        Callback?.Invoke(parent, source, copy, depth);
 
         var fields = source.GetType()
             .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
@@ -31,20 +49,27 @@ public class CopyService : ICopyService
             }
 
             var value = field.GetValue(source);
-            if (value == null) continue;
+            if (value == null)
+            {
+                continue;
+            }
 
-            if (field.FieldType.IsCollection()) value = CopyCollection(value, createdInstances);
+            if (createdInstances.TryGetValue(value, out var existingCopy))
+            {
+                field.SetValue(copy, existingCopy);
+            }
 
-            if (createdInstances.TryGetValue(value, out var existingCopy)) field.SetValue(copy, existingCopy);
+            var propertyCopy = field.FieldType.IsCollection()
+                ? CopyCollection(source, value, depth + 1, createdInstances)
+                : Copy(source, value, depth + 1, createdInstances);
 
-            value = Copy(value, createdInstances);
-            field.SetValue(copy, value);
+            field.SetValue(copy, propertyCopy);
         }
 
         return copy;
     }
 
-    private object CopyCollection(object value, Dictionary<object, object> createdInstances)
+    private object CopyCollection(object parent, object value, int depth, Dictionary<object, object> createdInstances)
     {
         object listCopy;
         Action<object> addMethod;
@@ -53,7 +78,7 @@ public class CopyService : ICopyService
         {
             var elementType = value.GetType().GetElementType()!;
             isSimple = elementType.IsSimpleType();
-            var length = (int)value.GetType().GetProperty("Count")!.GetValue(value)!;
+            var length = (int)value.GetType().GetProperty("Length")!.GetValue(value)!;
             var a = Array.CreateInstance(elementType, length);
             var index = 0;
             addMethod = item => a.SetValue(item, index++);
@@ -68,28 +93,30 @@ public class CopyService : ICopyService
             listCopy = l;
         }
 
-
         var list = (IEnumerable)value;
         if (isSimple)
+        {
             foreach (var source in list)
+            {
                 addMethod(source);
+            }
+        }
         else
+        {
             foreach (var source in list)
+            {
                 if (createdInstances.TryGetValue(source, out var copy))
                 {
                     addMethod(copy);
                 }
                 else
                 {
-                    var elementCopy = Copy(source, createdInstances);
+                    var elementCopy = Copy(parent, source, depth + 1, createdInstances);
                     addMethod(elementCopy);
                 }
+            }
+        }
 
         return listCopy;
-    }
-
-    public object Copy(object source)
-    {
-        return Copy(source, new Dictionary<object, object>());
     }
 }

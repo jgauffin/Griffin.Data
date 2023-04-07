@@ -30,6 +30,7 @@ create table SimpleAction
 
 create table Logs
 (
+	Id int not null identity primary key,
 	MainId int not null constraint FK_Logs_MainTable foreign key references MainTable(Id),
 	CreatedAtUtc datetime not null,
 	Message varchar(2500) not null

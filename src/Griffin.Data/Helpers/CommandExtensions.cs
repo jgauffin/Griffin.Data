@@ -15,20 +15,61 @@ namespace Griffin.Data;
 /// </summary>
 internal static class CommandExtensions
 {
-    public static InvalidDataException CreateDetailedException(this IDbCommand command, Exception ex)
-    {
-        var ps = command.Parameters.Cast<IDataParameter>().Select(x => $"{x.ParameterName}={x.Value}");
-        var e = new InvalidDataException(
-            $"{ex.Message}\r\n  SQL: '{command.CommandText}'\r\n  Parameters: {string.Join(", ", ps)}", ex);
-        return e;
-    }
-
     public static void AddParameter(this IDbCommand cmd, string name, object? value)
     {
         var p = cmd.CreateParameter();
         p.ParameterName = name;
         p.Value = value ?? DBNull.Value;
         cmd.Parameters.Add(p);
+    }
+
+    /// <summary>
+    ///     Apply where from an anonymous object.
+    /// </summary>
+    /// <param name="command">Command to apply WHERE statement to.</param>
+    /// <param name="mapping">Mapping used to translate between properties and columns.</param>
+    /// <param name="propertyConstraints">Property/Value pairs in an anonymous object.</param>
+    public static void ApplyConstraints(this IDbCommand command, ClassMapping mapping, object propertyConstraints)
+    {
+        var sql = " WHERE ";
+        var dict = propertyConstraints.ToDictionary();
+        foreach (var pair in dict)
+        {
+            if (pair.Value == null)
+            {
+                throw new InvalidOperationException($"Constraint '{pair.Key}' does not a value.");
+            }
+
+            var columnName = pair.Key;
+            var propertyName = pair.Key;
+
+            var property = mapping.Properties.FirstOrDefault(x => x.PropertyName == pair.Key);
+            if (property != null)
+            {
+                columnName = property.ColumnName;
+                propertyName = property.PropertyName;
+            }
+
+            if (pair.Value.GetType().IsCollection())
+            {
+                var values = string.Join(", ", ((IEnumerable)pair.Value).Cast<object>());
+                sql += $" {columnName} IN ({values}) AND";
+            }
+            else
+            {
+                sql += $" {columnName}=@{propertyName} AND";
+                var value = pair.Value;
+                if (property?.PropertyToColumnConverter != null)
+                {
+                    value = property.PropertyToColumnConverter(pair.Value);
+                }
+
+                AddParameter(command, propertyName, value);
+            }
+        }
+
+        sql = sql.Remove(sql.Length - 4, 4);
+        command.CommandText += sql;
     }
 
     /// <summary>
@@ -51,58 +92,29 @@ internal static class CommandExtensions
     }
 
     /// <summary>
-    ///     Apply where from an anonymous object.
-    /// </summary>
-    /// <param name="command">Command to apply WHERE statement to.</param>
-    /// <param name="mapping">Mapping used to translate between properties and columns.</param>
-    /// <param name="propertyConstraints">Property/Value pairs in an anonymous object.</param>
-    public static void ApplyConstraints(this IDbCommand command, ClassMapping mapping, object propertyConstraints)
-    {
-        var sql = " WHERE ";
-        var dict = propertyConstraints.ToDictionary();
-        foreach (var pair in dict)
-        {
-            if (pair.Value == null) throw new InvalidOperationException($"Constraint '{pair.Key}' does not a value.");
-
-            var columnName = pair.Key;
-            var propertyName = pair.Key;
-
-            var property = mapping.Properties.FirstOrDefault(x => x.PropertyName == pair.Key);
-            if (property != null)
-            {
-                columnName = property.ColumnName;
-                propertyName = property.PropertyName;
-            }
-
-            if (pair.Value.GetType().IsCollection())
-            {
-                var values = string.Join(", ", ((IEnumerable)pair.Value).Cast<object>());
-                sql += $" {columnName} IN ({values}) AND";
-            }
-            else
-            {
-                sql += $" {columnName}=@{propertyName} AND";
-                var value = pair.Value;
-                if (property?.PropertyToColumnConverter != null) value = property.PropertyToColumnConverter(pair.Value);
-
-                AddParameter(command, propertyName, value);
-            }
-        }
-
-        sql = sql.Remove(sql.Length - 4, 4);
-        command.CommandText += sql;
-    }
-
-    /// <summary>
     ///     Create a new database command (and enlist it in the transaction).
     /// </summary>
     /// <param name="transaction">Transaction to create command on.</param>
     /// <returns>Created command.</returns>
     public static DbCommand CreateCommand(this IDbTransaction transaction)
     {
+        if (transaction.Connection == null)
+        {
+            throw new InvalidOperationException(
+                "The transaction has been committed. You may not use the session any more.");
+        }
+
         var cmd = transaction.Connection!.CreateCommand();
         cmd.Transaction = transaction;
         return (DbCommand)cmd;
+    }
+
+    public static InvalidDataException CreateDetailedException(this IDbCommand command, Exception ex)
+    {
+        var ps = command.Parameters.Cast<IDataParameter>().Select(x => $"{x.ParameterName}={x.Value}");
+        var e = new InvalidDataException(
+            $"{ex.Message}\r\n  SQL: '{command.CommandText}'\r\n  Parameters: {string.Join(", ", ps)}", ex);
+        return e;
     }
 
     /// <summary>

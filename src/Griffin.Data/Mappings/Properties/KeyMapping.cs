@@ -4,21 +4,30 @@ using Griffin.Data.Mapper;
 
 namespace Griffin.Data.Mappings.Properties;
 
+public interface IKeyMapping : IFieldMapping
+{
+    /// <summary>
+    ///     This column is auto incremented (i.e. should not be specified in insert statements).
+    /// </summary>
+    bool IsAutoIncrement { get; }
+}
+
 /// <summary>
 ///     Mapping for a key column.
 /// </summary>
-public class KeyMapping : IFieldMapping
+public class KeyMapping<TEntity, TPropertyType> : IKeyMapping
 {
     private readonly Type _entityType;
-    private readonly Func<object, object?>? _getter;
-    private readonly Action<object, object>? _setter;
+    private readonly Func<TEntity, TPropertyType?>? _getter;
+    private readonly Action<TEntity, TPropertyType>? _setter;
+    private readonly TPropertyType? _defaultValue = default;
 
     /// <summary>
     /// </summary>
     /// <param name="entityType">Entity that this mapping belongs to.</param>
     /// <param name="getter">Method used to read from value from the entity property.</param>
     /// <param name="setter">Method used to write a value to the entity property.</param>
-    public KeyMapping(Type entityType, Func<object, object?>? getter, Action<object, object>? setter)
+    public KeyMapping(Type entityType, Func<TEntity, TPropertyType?>? getter, Action<TEntity, TPropertyType>? setter)
     {
         _entityType = entityType ?? throw new ArgumentNullException(nameof(entityType));
         _getter = getter;
@@ -36,13 +45,15 @@ public class KeyMapping : IFieldMapping
     /// <param name="instance">entity.</param>
     /// <param name="value">Value to set.</param>
     /// <exception cref="InvalidOperationException"></exception>
-    public void SetColumnValue([NotNull]object instance, object value)
+    public void SetColumnValue([NotNull] object instance, object value)
     {
         if (_setter == null)
+        {
             throw new MappingException(instance,
                 $"No setter has been defined for property ${PropertyName}.");
+        }
 
-        _setter(instance, value);
+        _setter((TEntity)instance, (TPropertyType)value);
     }
 
     /// <summary>
@@ -54,10 +65,18 @@ public class KeyMapping : IFieldMapping
     public object? GetColumnValue([NotNull] object entity)
     {
         if (_getter == null)
+        {
             throw new MappingException(entity,
                 $"No getter has been defined for property ${PropertyName}.");
+        }
 
-        return _getter(entity);
+        var value = _getter((TEntity)entity);
+        if (value == null || value.Equals(_defaultValue))
+        {
+            return null;
+        }
+
+        return value;
     }
 
     /// <summary>

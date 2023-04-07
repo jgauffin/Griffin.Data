@@ -12,7 +12,6 @@ namespace Griffin.Data;
 public class DbConfiguration
 {
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="connectionString">Standard ADO.NET Connection string used to connect to the database.</param>
     public DbConfiguration(string connectionString)
@@ -21,19 +20,19 @@ public class DbConfiguration
     }
 
     /// <summary>
-    ///     Registry used to load mappings.
-    /// </summary>
-    public IMappingRegistry MappingRegistry { get; set; } = new MappingRegistry();
-
-    /// <summary>
     ///     Standard ADO.NET Connection string used to connect to the database.
     /// </summary>
-    public string ConnectionString { get; private set; }
+    public string ConnectionString { get; }
 
     /// <summary>
     ///     Dialect used to apply DB engine specific SQL variants to generated statements.
     /// </summary>
     public ISqlDialect Dialect { get; set; } = new SqlServerDialect();
+
+    /// <summary>
+    ///     Registry used to load mappings.
+    /// </summary>
+    public IMappingRegistry MappingRegistry { get; set; } = new MappingRegistry();
 
     /// <summary>
     ///     Create a new active transaction.

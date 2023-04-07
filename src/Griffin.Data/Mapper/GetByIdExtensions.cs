@@ -9,7 +9,10 @@ public static class GetByIdExtensions
     {
         var mapping = session.GetMapping<T>();
 
-        if (mapping.Keys.Count != 1) throw new MappingException(typeof(T), "GetById requires a single key.");
+        if (mapping.Keys.Count != 1)
+        {
+            throw new MappingException(typeof(T), "GetById requires a single key.");
+        }
 
         var key = mapping.Keys[0];
 
@@ -22,7 +25,10 @@ public static class GetByIdExtensions
     {
         var mapping = session.GetMapping<T>();
 
-        if (mapping.Keys.Count != 1) throw new MappingException(typeof(T), "GetById requires a single key.");
+        if (mapping.Keys.Count != 1)
+        {
+            throw new MappingException(typeof(T), "GetById requires a single key.");
+        }
 
         var key = mapping.Keys[0];
 
@@ -35,7 +41,10 @@ public static class GetByIdExtensions
     {
         var mapping = session.GetMapping<T>();
 
-        if (mapping.Keys.Count != 1) throw new MappingException(typeof(T), "GetById requires a single key.");
+        if (mapping.Keys.Count != 1)
+        {
+            throw new MappingException(typeof(T), "GetById requires a single key.");
+        }
 
         var key = mapping.Keys[0];
 
@@ -48,7 +57,10 @@ public static class GetByIdExtensions
     {
         var mapping = session.GetMapping<T>();
 
-        if (mapping.Keys.Count != 1) throw new MappingException(typeof(T), "GetById requires a single key.");
+        if (mapping.Keys.Count != 1)
+        {
+            throw new MappingException(typeof(T), "GetById requires a single key.");
+        }
 
         var key = mapping.Keys[0];
 

@@ -23,9 +23,9 @@ public interface IFieldMapping : IFieldAccessor
     string PropertyName { get; }
 
     /// <summary>
-    /// Convert a property value to a column value.
+    ///     Convert a property value to a column value.
     /// </summary>
     /// <param name="value">Value to convert.</param>
     /// <returns>Converted value.</returns>
-    object ToColumnValue([NotNull]object value);
+    object ToColumnValue([NotNull] object value);
 }

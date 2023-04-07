@@ -14,11 +14,11 @@ namespace Griffin.Data.Configuration;
 /// <typeparam name="TChildEntity">Child (contains the FK).</typeparam>
 public class HasOneConfigurator<TParentEntity, TChildEntity> : IHasOneConfigurator where TParentEntity : notnull
 {
+    private readonly string _propertyName;
     private readonly Expression<Func<TParentEntity, TChildEntity>> _selector;
     private Discriminator<TParentEntity, TChildEntity>? _discriminator;
     private ForeignKeyConfiguration<TParentEntity, TChildEntity>? _fk;
     private KeyValuePair<string, string>? _subsetColumn;
-    private readonly string _propertyName;
 
     /// <summary>
     /// </summary>
@@ -56,13 +56,16 @@ public class HasOneConfigurator<TParentEntity, TChildEntity> : IHasOneConfigurat
             SubsetColumn = _subsetColumn
         };
 
-        if (_discriminator == null) return mapping;
+        if (_discriminator == null)
+        {
+            return mapping;
+        }
+
         mapping.DiscriminatorProperty =
             mappingRegistry.Get(typeof(TParentEntity)).GetProperty(_discriminator.PropertyName);
         mapping.DiscriminatorTypeSelector = _discriminator.TypeSelector;
         return mapping;
     }
-
 
     /// <summary>
     ///     A discriminator is used to tell which type of child type to load (in case of inheritance).
@@ -99,26 +102,6 @@ public class HasOneConfigurator<TParentEntity, TChildEntity> : IHasOneConfigurat
     }
 
     /// <summary>
-    /// A constant column value.
-    /// </summary>
-    /// <param name="columnName">Column to set value for.</param>
-    /// <param name="value">Value to set.</param>
-    /// <remarks>
-    ///<para>
-    ///Typically used when the same table is used as a child for multiple types of entities (or multiple properties in the same entity). This column identifies which parent the child entity is for.
-    /// </para>
-    /// </remarks>
-    public HasOneConfigurator<TParentEntity, TChildEntity> SubsetColumn(string columnName, string value)
-    {
-        if (columnName == null) throw new ArgumentNullException(nameof(columnName));
-        if (value == null) throw new ArgumentNullException(nameof(value));
-
-        _subsetColumn = new KeyValuePair<string, string>(columnName, value);
-        return this;
-    }
-
-
-    /// <summary>
     ///     Foreign key in the child entity.
     /// </summary>
     /// <typeparam name="TForeignKeyProperty">Type of FK.</typeparam>
@@ -145,5 +128,32 @@ public class HasOneConfigurator<TParentEntity, TChildEntity> : IHasOneConfigurat
     {
         _fk = new ForeignKeyConfiguration<TParentEntity, TChildEntity>(columnName);
         return _fk;
+    }
+
+    /// <summary>
+    ///     A constant column value.
+    /// </summary>
+    /// <param name="columnName">Column to set value for.</param>
+    /// <param name="value">Value to set.</param>
+    /// <remarks>
+    ///     <para>
+    ///         Typically used when the same table is used as a child for multiple types of entities (or multiple properties in
+    ///         the same entity). This column identifies which parent the child entity is for.
+    ///     </para>
+    /// </remarks>
+    public HasOneConfigurator<TParentEntity, TChildEntity> SubsetColumn(string columnName, string value)
+    {
+        if (columnName == null)
+        {
+            throw new ArgumentNullException(nameof(columnName));
+        }
+
+        if (value == null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
+        _subsetColumn = new KeyValuePair<string, string>(columnName, value);
+        return this;
     }
 }

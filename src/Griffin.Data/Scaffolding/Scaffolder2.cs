@@ -21,7 +21,10 @@ public class Scaffolder2
         {
             var folder = table.Namespace.Replace(".", "\\");
             var subDir = Path.Combine(directory, folder);
-            if (!Directory.Exists(subDir)) Directory.CreateDirectory(subDir);
+            if (!Directory.Exists(subDir))
+            {
+                Directory.CreateDirectory(subDir);
+            }
 
             var text = g1.Generate(table, tables);
             await File.WriteAllTextAsync(Path.Combine(subDir, table.ClassName + ".cs"), text);

@@ -12,9 +12,10 @@ public class Log
     {
     }
 
-    public int MainId { get; set; }
-
     public DateTime CreatedAtUtc { get; }
+    public int Id { get; set; }
+
+    public int MainId { get; set; }
 
     public string Message { get; }
 }

@@ -23,7 +23,9 @@ public class HasOneMapping<TParent, TChild> : RelationShipBase<TParent, TChild>,
     /// <param name="fk">Foreign key property in the child entity.</param>
     /// <param name="getter">Getter to fetch the child object from a parent property.</param>
     /// <param name="setter">Setter to assign the child entity to a parent property.</param>
-    public HasOneMapping(ForeignKeyMapping<TParent, TChild> fk, Func<TParent, TChild> getter,
+    public HasOneMapping(
+        ForeignKeyMapping<TParent, TChild> fk,
+        Func<TParent, TChild> getter,
         Action<TParent, TChild> setter) : base(fk, typeof(TChild))
     {
         _getter = getter;
@@ -73,12 +75,22 @@ public class HasOneMapping<TParent, TChild> : RelationShipBase<TParent, TChild>,
     /// <returns></returns>
     public Type? GetTypeUsingDiscriminator(object parentEntity)
     {
-        if (parentEntity == null) throw new ArgumentNullException(nameof(parentEntity));
+        if (parentEntity == null)
+        {
+            throw new ArgumentNullException(nameof(parentEntity));
+        }
+
         if (DiscriminatorProperty == null || DiscriminatorTypeSelector == null)
+        {
             throw new MappingConfigurationException(typeof(TParent),
                 $"A discriminator has not been configured correctly for {typeof(TChild).Name}.");
+        }
+
         var value = DiscriminatorProperty.GetColumnValue(parentEntity);
-        if (value == null) throw new MappingException(parentEntity, "Failed to get a discriminator value.");
+        if (value == null)
+        {
+            throw new MappingException(parentEntity, "Failed to get a discriminator value.");
+        }
 
         return DiscriminatorTypeSelector(value);
     }
@@ -86,6 +98,9 @@ public class HasOneMapping<TParent, TChild> : RelationShipBase<TParent, TChild>,
     /// <inheritdoc />
     protected override void ApplyConstraints(IDictionary<string, object> dbParameters)
     {
-        if (_subsetColumn != null) dbParameters.Add(_subsetColumn.Value.Key, _subsetColumn.Value.Value);
+        if (_subsetColumn != null)
+        {
+            dbParameters.Add(_subsetColumn.Value.Key, _subsetColumn.Value.Value);
+        }
     }
 }

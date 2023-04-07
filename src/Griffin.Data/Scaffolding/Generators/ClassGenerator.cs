@@ -6,7 +6,7 @@ using Griffin.Data.Scaffolding.Meta;
 namespace Griffin.Data.Scaffolding.Generators;
 
 /// <summary>
-/// Generate a entity class.
+///     Generate a entity class.
 /// </summary>
 public class ClassGenerator
 {
@@ -32,15 +32,22 @@ public class ClassGenerator
         };
 
     /// <summary>
-    /// Generate an entity class from a table.
+    ///     Generate an entity class from a table.
     /// </summary>
     /// <param name="table">Table to generate for.</param>
     /// <param name="allTables">All read tables (required to be able to build relations).</param>
     /// <returns>Generated class (including namespace).</returns>
     public string Generate(Table table, IReadOnlyList<Table> allTables)
     {
-        if (table == null) throw new ArgumentNullException(nameof(table));
-        if (allTables == null) throw new ArgumentNullException(nameof(allTables));
+        if (table == null)
+        {
+            throw new ArgumentNullException(nameof(table));
+        }
+
+        if (allTables == null)
+        {
+            throw new ArgumentNullException(nameof(allTables));
+        }
 
         var sb = new TabbedStringBuilder();
         if (table.Namespace.Length > 0)
@@ -62,9 +69,13 @@ public class ClassGenerator
             }
 
             if (column.PropertyType == typeof(string))
+            {
                 sb.AppendLine($" = \"{column.DefaultValue}\";");
+            }
             else
+            {
                 sb.AppendLine($" = {column.DefaultValue};");
+            }
         }
 
         foreach (var reference in table.References)
@@ -78,8 +89,10 @@ public class ClassGenerator
 
         sb.DedentAppendLine("}");
 
-        if (table.Namespace.Length > 0) sb.DedentAppendLine("}");
-
+        if (table.Namespace.Length > 0)
+        {
+            sb.DedentAppendLine("}");
+        }
 
         return sb.ToString();
     }

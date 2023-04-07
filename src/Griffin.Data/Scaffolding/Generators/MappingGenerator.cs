@@ -29,11 +29,18 @@ public class MappingGenerator
         foreach (var column in table.Columns)
         {
             if (column.IsPrimaryKey)
+            {
                 sb.Append($"config.Key(x => x.{column.PropertyName}).AutoIncrement()");
+            }
             else
+            {
                 sb.Append($"config.Property(x => x.{column.PropertyName})");
+            }
 
-            if (column.ColumnName != column.PropertyName) sb.Append($".ColumnName(\"{column.ColumnName}\")");
+            if (column.ColumnName != column.PropertyName)
+            {
+                sb.Append($".ColumnName(\"{column.ColumnName}\")");
+            }
 
             sb.AppendLine(";");
         }

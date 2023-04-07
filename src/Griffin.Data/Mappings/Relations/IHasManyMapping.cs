@@ -12,15 +12,15 @@ namespace Griffin.Data.Mappings.Relations;
 public interface IHasManyMapping : IFieldAccessor, IRelationShip
 {
     /// <summary>
+    ///     Used to limit returned rows.
+    /// </summary>
+    public KeyValuePair<string, string>? SubsetColumn { get; set; }
+
+    /// <summary>
     ///     Create a new (generic) collection for the child property.
     /// </summary>
     /// <returns>Created collection.</returns>
     IList CreateCollection();
-
-    /// <summary>
-    /// Used to limit returned rows.
-    /// </summary>
-    public KeyValuePair<string, string>? SubsetColumn { get; set; }
 
     /// <summary>
     ///     Visit all items in the collection.

@@ -86,45 +86,91 @@ public class Inflector
     public static Inflector Instance { get; } = new();
 
     /// <summary>
-    ///     Adds the irregular rule.
+    ///     Adds the ordinal suffix.
     /// </summary>
-    /// <param name="singular">The singular.</param>
-    /// <param name="plural">The plural.</param>
-    private void AddIrregularRule(string singular, string plural)
+    /// <param name="number">The number.</param>
+    /// <returns></returns>
+    public string AddOrdinalSuffix(string number)
     {
-        AddPluralRule(string.Concat("(", singular[0], ")", singular[1..], "$"),
-            string.Concat("$1", plural[1..]));
-        AddSingularRule(string.Concat("(", plural[0], ")", plural[1..], "$"),
-            string.Concat("$1", singular[1..]));
+        if (IsStringNumeric(number))
+        {
+            var n = int.Parse(number);
+            var nMod100 = n % 100;
+
+            if (nMod100 >= 11 && nMod100 <= 13)
+            {
+                return string.Concat(number, "th");
+            }
+
+            switch (n % 10)
+            {
+                case 1:
+                    return string.Concat(number, "st");
+                case 2:
+                    return string.Concat(number, "nd");
+                case 3:
+                    return string.Concat(number, "rd");
+                default:
+                    return string.Concat(number, "th");
+            }
+        }
+
+        return number;
     }
 
     /// <summary>
-    ///     Adds the unknown count rule.
+    ///     Adds the underscores.
+    /// </summary>
+    /// <param name="pascalCasedWord">The pascal cased word.</param>
+    /// <returns></returns>
+    public string AddUnderscores(string pascalCasedWord)
+    {
+        return
+            Regex.Replace(
+                Regex.Replace(Regex.Replace(pascalCasedWord, @"([A-Z]+)([A-Z][a-z])", "$1_$2"), @"([a-z\d])([A-Z])",
+                    "$1_$2"), @"[-\s]", "_").ToLower();
+    }
+
+    /// <summary>
+    ///     Converts the underscores to dashes.
+    /// </summary>
+    /// <param name="underscoredWord">The underscored word.</param>
+    /// <returns></returns>
+    public string ConvertUnderscoresToDashes(string underscoredWord)
+    {
+        return underscoredWord.Replace('_', '-');
+    }
+
+    /// <summary>
+    ///     Determine whether the passed string is numeric, by attempting to parse it to a double
+    /// </summary>
+    /// <param name="str">The string to evaluated for numeric conversion</param>
+    /// <returns>
+    ///     <c>true</c> if the string can be converted to a number; otherwise, <c>false</c>.
+    /// </returns>
+    public bool IsStringNumeric(string str)
+    {
+        return double.TryParse(str, NumberStyles.Float, NumberFormatInfo.CurrentInfo, out _);
+    }
+
+    /// <summary>
+    ///     Makes the initial caps.
     /// </summary>
     /// <param name="word">The word.</param>
-    private void AddUnknownCountRule(string word)
+    /// <returns></returns>
+    public string MakeInitialCaps(string word)
     {
-        _uncounTableCollection.Add(word.ToLower());
+        return string.Concat(word.Substring(0, 1).ToUpper(), word.Substring(1).ToLower());
     }
 
     /// <summary>
-    ///     Adds the plural rule.
+    ///     Makes the initial lower case.
     /// </summary>
-    /// <param name="rule">The rule.</param>
-    /// <param name="replacement">The replacement.</param>
-    private void AddPluralRule(string rule, string replacement)
+    /// <param name="word">The word.</param>
+    /// <returns></returns>
+    public string MakeInitialLowerCase(string word)
     {
-        _plurals.Add(new InflectorRule(rule, replacement));
-    }
-
-    /// <summary>
-    ///     Adds the singular rule.
-    /// </summary>
-    /// <param name="rule">The rule.</param>
-    /// <param name="replacement">The replacement.</param>
-    private void AddSingularRule(string rule, string replacement)
-    {
-        _singulars.Add(new InflectorRule(rule, replacement));
+        return string.Concat(word.Substring(0, 1).ToLower(), word.Substring(1));
     }
 
     /// <summary>
@@ -148,26 +194,13 @@ public class Inflector
     }
 
     /// <summary>
-    ///     Applies the rules.
+    ///     Converts the string to human case.
     /// </summary>
-    /// <param name="rules">The rules.</param>
-    /// <param name="word">The word.</param>
+    /// <param name="lowercaseAndUnderscoredWord">The lowercase and underscored word.</param>
     /// <returns></returns>
-    private string ApplyRules(IList<InflectorRule> rules, string word)
+    public string ToHumanCase(string lowercaseAndUnderscoredWord)
     {
-        var result = word;
-        if (!_uncounTableCollection.Contains(word.ToLower()))
-            for (var i = rules.Count - 1; i >= 0; i--)
-            {
-                var currentPass = rules[i].Apply(word);
-                if (currentPass != null)
-                {
-                    result = currentPass;
-                    break;
-                }
-            }
-
-        return result;
+        return MakeInitialCaps(Regex.Replace(lowercaseAndUnderscoredWord, @"_", " "));
     }
 
     /// <summary>
@@ -182,101 +215,70 @@ public class Inflector
     }
 
     /// <summary>
-    ///     Converts the string to human case.
+    ///     Adds the irregular rule.
     /// </summary>
-    /// <param name="lowercaseAndUnderscoredWord">The lowercase and underscored word.</param>
-    /// <returns></returns>
-    public string ToHumanCase(string lowercaseAndUnderscoredWord)
+    /// <param name="singular">The singular.</param>
+    /// <param name="plural">The plural.</param>
+    private void AddIrregularRule(string singular, string plural)
     {
-        return MakeInitialCaps(Regex.Replace(lowercaseAndUnderscoredWord, @"_", " "));
-    }
-
-
-    /// <summary>
-    ///     Adds the underscores.
-    /// </summary>
-    /// <param name="pascalCasedWord">The pascal cased word.</param>
-    /// <returns></returns>
-    public string AddUnderscores(string pascalCasedWord)
-    {
-        return
-            Regex.Replace(
-                Regex.Replace(Regex.Replace(pascalCasedWord, @"([A-Z]+)([A-Z][a-z])", "$1_$2"), @"([a-z\d])([A-Z])",
-                    "$1_$2"), @"[-\s]", "_").ToLower();
+        AddPluralRule(string.Concat("(", singular[0], ")", singular[1..], "$"),
+            string.Concat("$1", plural[1..]));
+        AddSingularRule(string.Concat("(", plural[0], ")", plural[1..], "$"),
+            string.Concat("$1", singular[1..]));
     }
 
     /// <summary>
-    ///     Makes the initial caps.
+    ///     Adds the plural rule.
+    /// </summary>
+    /// <param name="rule">The rule.</param>
+    /// <param name="replacement">The replacement.</param>
+    private void AddPluralRule(string rule, string replacement)
+    {
+        _plurals.Add(new InflectorRule(rule, replacement));
+    }
+
+    /// <summary>
+    ///     Adds the singular rule.
+    /// </summary>
+    /// <param name="rule">The rule.</param>
+    /// <param name="replacement">The replacement.</param>
+    private void AddSingularRule(string rule, string replacement)
+    {
+        _singulars.Add(new InflectorRule(rule, replacement));
+    }
+
+    /// <summary>
+    ///     Adds the unknown count rule.
     /// </summary>
     /// <param name="word">The word.</param>
-    /// <returns></returns>
-    public string MakeInitialCaps(string word)
+    private void AddUnknownCountRule(string word)
     {
-        return string.Concat(word.Substring(0, 1).ToUpper(), word.Substring(1).ToLower());
+        _uncounTableCollection.Add(word.ToLower());
     }
 
     /// <summary>
-    ///     Makes the initial lower case.
+    ///     Applies the rules.
     /// </summary>
+    /// <param name="rules">The rules.</param>
     /// <param name="word">The word.</param>
     /// <returns></returns>
-    public string MakeInitialLowerCase(string word)
+    private string ApplyRules(IList<InflectorRule> rules, string word)
     {
-        return string.Concat(word.Substring(0, 1).ToLower(), word.Substring(1));
-    }
-
-
-    /// <summary>
-    ///     Determine whether the passed string is numeric, by attempting to parse it to a double
-    /// </summary>
-    /// <param name="str">The string to evaluated for numeric conversion</param>
-    /// <returns>
-    ///     <c>true</c> if the string can be converted to a number; otherwise, <c>false</c>.
-    /// </returns>
-    public bool IsStringNumeric(string str)
-    {
-        return double.TryParse(str, NumberStyles.Float, NumberFormatInfo.CurrentInfo, out _);
-    }
-
-    /// <summary>
-    ///     Adds the ordinal suffix.
-    /// </summary>
-    /// <param name="number">The number.</param>
-    /// <returns></returns>
-    public string AddOrdinalSuffix(string number)
-    {
-        if (IsStringNumeric(number))
+        var result = word;
+        if (!_uncounTableCollection.Contains(word.ToLower()))
         {
-            var n = int.Parse(number);
-            var nMod100 = n % 100;
-
-            if (nMod100 >= 11 && nMod100 <= 13)
-                return string.Concat(number, "th");
-
-            switch (n % 10)
+            for (var i = rules.Count - 1; i >= 0; i--)
             {
-                case 1:
-                    return string.Concat(number, "st");
-                case 2:
-                    return string.Concat(number, "nd");
-                case 3:
-                    return string.Concat(number, "rd");
-                default:
-                    return string.Concat(number, "th");
+                var currentPass = rules[i].Apply(word);
+                if (currentPass != null)
+                {
+                    result = currentPass;
+                    break;
+                }
             }
         }
 
-        return number;
-    }
-
-    /// <summary>
-    ///     Converts the underscores to dashes.
-    /// </summary>
-    /// <param name="underscoredWord">The underscored word.</param>
-    /// <returns></returns>
-    public string ConvertUnderscoresToDashes(string underscoredWord)
-    {
-        return underscoredWord.Replace('_', '-');
+        return result;
     }
 
     #region Nested type: InflectorRule
@@ -308,11 +310,15 @@ public class Inflector
         public string? Apply(string word)
         {
             if (!_regex.IsMatch(word))
+            {
                 return null;
+            }
 
             var replace = _regex.Replace(word, _replacement);
             if (word == word.ToUpper())
+            {
                 replace = replace.ToUpper();
+            }
 
             return replace;
         }

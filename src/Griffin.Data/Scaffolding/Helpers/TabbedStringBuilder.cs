@@ -9,6 +9,12 @@ public class TabbedStringBuilder
     private int _indents;
     private string _spacing = "";
 
+    public void Append(string str)
+    {
+        EnsureSpacing();
+        _sb.Append(str);
+    }
+
     public void AppendLine(string? str = null)
     {
         if (str == null)
@@ -28,17 +34,27 @@ public class TabbedStringBuilder
         Indent();
     }
 
+    public void Dedent()
+    {
+        _indents--;
+        _spacing = "".PadLeft(_indents * 4, ' ');
+    }
+
     public void DedentAppendLine(string? str = null)
     {
         Dedent();
         AppendLine(str);
     }
 
-
-    public void Append(string str)
+    public void Indent()
     {
-        EnsureSpacing();
-        _sb.Append(str);
+        _indents++;
+        _spacing = "".PadLeft(_indents * 4, ' ');
+    }
+
+    public override string ToString()
+    {
+        return _sb.ToString();
     }
 
     private void EnsureSpacing()
@@ -48,22 +64,5 @@ public class TabbedStringBuilder
             _indented = true;
             _sb.Append(_spacing);
         }
-    }
-
-    public void Indent()
-    {
-        _indents++;
-        _spacing = "".PadLeft(_indents * 4, ' ');
-    }
-
-    public void Dedent()
-    {
-        _indents--;
-        _spacing = "".PadLeft(_indents * 4, ' ');
-    }
-
-    public override string ToString()
-    {
-        return _sb.ToString();
     }
 }

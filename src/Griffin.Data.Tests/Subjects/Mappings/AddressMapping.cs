@@ -1,42 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Griffin.Data.Configuration;
+﻿using Griffin.Data.Configuration;
 
-namespace Griffin.Data.Tests.Subjects.Mappings
+namespace Griffin.Data.Tests.Subjects.Mappings;
+
+internal class AddressMapping : IEntityConfigurator<Address>
 {
-    internal class AddressMapping : IEntityConfigurator<Address>
+    public void Configure(IClassMappingConfigurator<Address> config)
     {
-        public void Configure(IClassMappingConfigurator<Address> config)
-        {
-            config.TableName("Addresses");
-            config.Key(x => x.Id).AutoIncrement();
-            config.MapRemainingProperties();
-        }
+        config.TableName("Addresses");
+        config.Key(x => x.Id).AutoIncrement();
+        config.MapRemainingProperties();
     }
+}
 
-    internal class UserMapping : IEntityConfigurator<User>
+internal class UserMapping : IEntityConfigurator<User>
+{
+    public void Configure(IClassMappingConfigurator<User> config)
     {
-        public void Configure(IClassMappingConfigurator<User> config)
-        {
-            config.TableName("Users");
-            config.Key(x => x.Id).AutoIncrement();
-            config.HasMany(x => x.Addresses)
-                .ForeignKey(x => x.UserId)
-                .References(x => x.Id);
+        config.TableName("Users");
+        config.Key(x => x.Id).AutoIncrement();
+        config.HasMany(x => x.Addresses)
+            .ForeignKey(x => x.UserId)
+            .References(x => x.Id);
 
-            config.MapRemainingProperties();
-        }
+        config.MapRemainingProperties();
     }
+}
 
-    internal class DataMapping : IEntityConfigurator<Data>
+internal class DataMapping : IEntityConfigurator<Data>
+{
+    public void Configure(IClassMappingConfigurator<Data> config)
     {
-        public void Configure(IClassMappingConfigurator<Data> config)
-        {
-            config.MapRemainingProperties();
-        }
+        config.MapRemainingProperties();
     }
-
 }

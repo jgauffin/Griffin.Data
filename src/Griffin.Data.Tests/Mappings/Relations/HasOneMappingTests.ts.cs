@@ -1,7 +1,4 @@
 ﻿using FluentAssertions;
-using Griffin.Data.Configuration;
-using Griffin.Data.Mapper;
-using Griffin.Data.Mappings;
 using Griffin.Data.Mappings.Properties;
 using Griffin.Data.Mappings.Relations;
 using Griffin.Data.Tests.Subjects;
@@ -19,14 +16,6 @@ public class HasOneMappingTests
     }
 
     [Fact]
-    public void Should_use_discriminator()
-    {
-        var actual = _hasOneMapping.GetTypeUsingDiscriminator(new User());
-
-        actual.Should().Be<AdminData>();
-    }
-
-    [Fact]
     public void Should_not_has_a_discriminator_as_default()
     {
         var fkAccessor = new PropertyMapping(typeof(Subjects.Data), typeof(int), x => ((Subjects.Data)x).UserId,
@@ -40,13 +29,21 @@ public class HasOneMappingTests
         sut.HaveDiscriminator.Should().BeFalse();
     }
 
-    private void SetData(User arg1, Subjects.Data arg2)
+    [Fact]
+    public void Should_use_discriminator()
     {
-        arg1.Data = arg2;
+        var actual = _hasOneMapping.GetTypeUsingDiscriminator(new User());
+
+        actual.Should().Be<AdminData>();
     }
 
     private Subjects.Data GetData(User arg)
     {
         return arg.Data!;
+    }
+
+    private void SetData(User arg1, Subjects.Data arg2)
+    {
+        arg1.Data = arg2;
     }
 }

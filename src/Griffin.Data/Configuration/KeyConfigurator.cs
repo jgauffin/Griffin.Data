@@ -10,15 +10,29 @@ namespace Griffin.Data.Configuration;
 /// <typeparam name="TProperty">Property the for this key.</typeparam>
 public class KeyConfigurator<TEntity, TProperty>
 {
-    private readonly KeyMapping _mapping;
+    private readonly KeyMapping<TEntity, TProperty> _mapping;
 
     /// <summary>
     /// </summary>
     /// <param name="mapping"></param>
     /// <exception cref="ArgumentNullException"></exception>
-    public KeyConfigurator(KeyMapping mapping)
+    public KeyConfigurator(KeyMapping<TEntity, TProperty> mapping)
     {
         _mapping = mapping ?? throw new ArgumentNullException(nameof(mapping));
+    }
+
+    /// <summary>
+    ///     The column is auto-incremented by the database engine.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Means that this data layer will not specify it but fetch it before/after the insert statement (depending on the
+    ///         DB engine).
+    ///     </para>
+    /// </remarks>
+    public void AutoIncrement()
+    {
+        _mapping.IsAutoIncrement = true;
     }
 
     /// <summary>
@@ -34,19 +48,5 @@ public class KeyConfigurator<TEntity, TProperty>
     public void ColumnName(string name)
     {
         _mapping.ColumnName = name ?? throw new ArgumentNullException(nameof(name));
-    }
-
-    /// <summary>
-    ///     The column is auto-incremented by the database engine.
-    /// </summary>
-    /// <remarks>
-    ///     <para>
-    ///         Means that this data layer will not specify it but fetch it before/after the insert statement (depending on the
-    ///         DB engine).
-    ///     </para>
-    /// </remarks>
-    public void AutoIncrement()
-    {
-        _mapping.IsAutoIncrement = true;
     }
 }

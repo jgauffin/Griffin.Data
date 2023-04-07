@@ -61,36 +61,9 @@ internal class PostGreSqlSchemaReader : SchemaReader
             var primaryKey = GetPK(tbl.Name);
             var pkColumn = tbl.Columns.SingleOrDefault(x => x.Name.ToLower().Trim() == primaryKey.ToLower().Trim());
             if (pkColumn != null)
+            {
                 pkColumn.IsPrimaryKey = true;
-        }
-
-
-        return result;
-    }
-
-
-    private List<Column> LoadColumns(Table tbl)
-    {
-        using var cmd = _factory.CreateCommand();
-        cmd.Connection = _connection;
-        cmd.CommandText = COLUMN_SQL;
-
-        var p = cmd.CreateParameter();
-        p.ParameterName = "@tableName";
-        p.Value = tbl.Name;
-        cmd.Parameters.Add(p);
-
-        var result = new List<Column>();
-        using IDataReader rdr = cmd.ExecuteReader();
-        while (rdr.Read())
-        {
-            var col = new Column();
-            col.Name = rdr["column_name"].ToString();
-            col.PropertyName = CleanUp(col.Name);
-            col.PropertyType = GetPropertyType(rdr["udt_name"].ToString());
-            col.IsNullable = rdr["is_nullable"].ToString() == "YES";
-            col.IsAutoIncrement = rdr["column_default"].ToString().StartsWith("nextval(");
-            result.Add(col);
+            }
         }
 
         return result;
@@ -162,5 +135,32 @@ internal class PostGreSqlSchemaReader : SchemaReader
             default:
                 return "string";
         }
+    }
+
+    private List<Column> LoadColumns(Table tbl)
+    {
+        using var cmd = _factory.CreateCommand();
+        cmd.Connection = _connection;
+        cmd.CommandText = COLUMN_SQL;
+
+        var p = cmd.CreateParameter();
+        p.ParameterName = "@tableName";
+        p.Value = tbl.Name;
+        cmd.Parameters.Add(p);
+
+        var result = new List<Column>();
+        using IDataReader rdr = cmd.ExecuteReader();
+        while (rdr.Read())
+        {
+            var col = new Column();
+            col.Name = rdr["column_name"].ToString();
+            col.PropertyName = CleanUp(col.Name);
+            col.PropertyType = GetPropertyType(rdr["udt_name"].ToString());
+            col.IsNullable = rdr["is_nullable"].ToString() == "YES";
+            col.IsAutoIncrement = rdr["column_default"].ToString().StartsWith("nextval(");
+            result.Add(col);
+        }
+
+        return result;
     }
 }

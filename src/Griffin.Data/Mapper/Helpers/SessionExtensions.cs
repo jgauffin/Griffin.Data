@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using Griffin.Data.Dialects;
 using Griffin.Data.Helpers;
 using Griffin.Data.Mappings;
 
@@ -12,79 +11,6 @@ namespace Griffin.Data.Mapper.Helpers;
 
 internal static class SessionExtensions
 {
-    [return: NotNull]
-    public static async Task<TEntity> GetSingle<TEntity>(this DbCommand command, ClassMapping mapping) where TEntity : notnull
-    {
-        await using var reader = await command.ExecuteReaderAsync();
-
-        if (!await reader.ReadAsync())
-        {
-            throw new EntityNotFoundException(typeof(TEntity), command);
-        }
-
-        var entity = (TEntity)mapping.CreateInstance(reader);
-        reader.Map(entity, mapping);
-        return entity;
-    }
-
-    public static async Task<TEntity?> GetSingleOrDefault<TEntity>(this DbCommand command, ClassMapping mapping)
-    {
-        await using var reader = await command.ExecuteReaderAsync();
-
-        if (!await reader.ReadAsync())
-        {
-            return default;
-        }
-
-        var entity = (TEntity)mapping.CreateInstance(reader);
-        reader.Map(entity, mapping);
-        return entity;
-    }
-
-    public static async Task<object> GetSingle(this DbCommand command, ClassMapping mapping)
-    {
-        await using var reader = await command.ExecuteReaderAsync();
-
-        if (!await reader.ReadAsync())
-        {
-            throw new EntityNotFoundException(mapping.EntityType, command);
-        }
-
-        var entity = mapping.CreateInstance(reader);
-        reader.Map(entity, mapping);
-        return entity;
-    }
-
-    public static async Task<object> GetSingle(this DbCommand command, ClassMapping mapping, QueryOptions options)
-    {
-        await using var reader = await command.ExecuteReaderAsync();
-
-        if (!await reader.ReadAsync())
-        {
-            throw new EntityNotFoundException(mapping.EntityType, command);
-        }
-
-        var factory = options.Factory ?? mapping.CreateInstance;
-        var entity = factory(reader);
-        reader.Map(entity, mapping);
-        return entity;
-    }
-
-    public static async Task<object?> GetSingleOrDefault(this DbCommand command, ClassMapping mapping, QueryOptions options)
-    {
-        await using var reader = await command.ExecuteReaderAsync();
-
-        if (!await reader.ReadAsync())
-        {
-            return null;
-        }
-
-        var factory = options.Factory ?? mapping.CreateInstance;
-        var entity = factory(reader);
-        reader.Map(entity, mapping);
-        return entity;
-    }
-
     public static DbCommand CreateQueryCommand(this Session session, Type entityType, QueryOptions options)
     {
         var mapping = session.GetMapping(entityType);
@@ -130,6 +56,83 @@ internal static class SessionExtensions
         return cmd;
     }
 
+    [return: NotNull]
+    public static async Task<TEntity> GetSingle<TEntity>(this DbCommand command, ClassMapping mapping)
+        where TEntity : notnull
+    {
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            throw new EntityNotFoundException(typeof(TEntity), command);
+        }
+
+        var entity = (TEntity)mapping.CreateInstance(reader);
+        reader.Map(entity, mapping);
+        return entity;
+    }
+
+    public static async Task<object> GetSingle(this DbCommand command, ClassMapping mapping)
+    {
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            throw new EntityNotFoundException(mapping.EntityType, command);
+        }
+
+        var entity = mapping.CreateInstance(reader);
+        reader.Map(entity, mapping);
+        return entity;
+    }
+
+    public static async Task<object> GetSingle(this DbCommand command, ClassMapping mapping, QueryOptions options)
+    {
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            throw new EntityNotFoundException(mapping.EntityType, command);
+        }
+
+        var factory = options.Factory ?? mapping.CreateInstance;
+        var entity = factory(reader);
+        reader.Map(entity, mapping);
+        return entity;
+    }
+
+    public static async Task<TEntity?> GetSingleOrDefault<TEntity>(this DbCommand command, ClassMapping mapping)
+    {
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            return default;
+        }
+
+        var entity = (TEntity)mapping.CreateInstance(reader);
+        reader.Map(entity, mapping);
+        return entity;
+    }
+
+    public static async Task<object?> GetSingleOrDefault(
+        this DbCommand command,
+        ClassMapping mapping,
+        QueryOptions options)
+    {
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            return null;
+        }
+
+        var factory = options.Factory ?? mapping.CreateInstance;
+        var entity = factory(reader);
+        reader.Map(entity, mapping);
+        return entity;
+    }
+
     private static void AddConstraintDbParameters(this DbCommand cmd, IDictionary<string, object> parameters)
     {
         if (parameters.Count == 0)
@@ -159,9 +162,6 @@ internal static class SessionExtensions
             }
         }
 
-
         cmd.CommandText += sql.Remove(sql.Length - 4, 4);
-
-
     }
 }

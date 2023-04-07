@@ -7,7 +7,7 @@ using System.Linq;
 namespace Griffin.Data.Meta.Engines;
 
 /// <summary>
-/// Schema reader for Oracle SQL.
+///     Schema reader for Oracle SQL.
 /// </summary>
 internal class OracleSchemaReader : SchemaReader
 {
@@ -65,45 +65,12 @@ internal class OracleSchemaReader : SchemaReader
             var PrimaryKey = GetPK(tbl.Name);
             var pkColumn = tbl.Columns.SingleOrDefault(x => x.Name.ToLower().Trim() == PrimaryKey.ToLower().Trim());
             if (pkColumn != null)
+            {
                 pkColumn.IsPrimaryKey = true;
+            }
         }
-
 
         return result;
-    }
-
-
-    private List<Column> LoadColumns(Table tbl)
-    {
-        using (var cmd = _factory.CreateCommand())
-        {
-            cmd.Connection = _connection;
-            cmd.CommandText = ColumnSql;
-            cmd.GetType().GetProperty("BindByName").SetValue(cmd, true, null);
-
-            var p = cmd.CreateParameter();
-            p.ParameterName = ":tableName";
-            p.Value = tbl.Name;
-            cmd.Parameters.Add(p);
-
-            var result = new List<Column>();
-            using (IDataReader rdr = cmd.ExecuteReader())
-            {
-                while (rdr.Read())
-                {
-                    var col = new Column();
-                    col.Name = rdr["ColumnName"].ToString();
-                    col.PropertyName = CleanUp(col.Name);
-                    col.PropertyType = GetPropertyType(rdr["DataType"].ToString(),
-                        rdr["DataType"] == DBNull.Value ? null : rdr["DataType"].ToString());
-                    col.IsNullable = rdr["IsNullable"].ToString() == "YES";
-                    col.IsAutoIncrement = true;
-                    result.Add(col);
-                }
-            }
-
-            return result;
-        }
     }
 
     private string GetPK(string table)
@@ -128,7 +95,9 @@ and ucc.position = 1";
             var result = cmd.ExecuteScalar();
 
             if (result != null)
+            {
                 return result.ToString();
+            }
         }
 
         return "";
@@ -182,8 +151,43 @@ and ucc.position = 1";
         }
 
         if (sqlType == "number" && dataScale == "0")
+        {
             return "long";
+        }
 
         return sysType;
+    }
+
+    private List<Column> LoadColumns(Table tbl)
+    {
+        using (var cmd = _factory.CreateCommand())
+        {
+            cmd.Connection = _connection;
+            cmd.CommandText = ColumnSql;
+            cmd.GetType().GetProperty("BindByName").SetValue(cmd, true, null);
+
+            var p = cmd.CreateParameter();
+            p.ParameterName = ":tableName";
+            p.Value = tbl.Name;
+            cmd.Parameters.Add(p);
+
+            var result = new List<Column>();
+            using (IDataReader rdr = cmd.ExecuteReader())
+            {
+                while (rdr.Read())
+                {
+                    var col = new Column();
+                    col.Name = rdr["ColumnName"].ToString();
+                    col.PropertyName = CleanUp(col.Name);
+                    col.PropertyType = GetPropertyType(rdr["DataType"].ToString(),
+                        rdr["DataType"] == DBNull.Value ? null : rdr["DataType"].ToString());
+                    col.IsNullable = rdr["IsNullable"].ToString() == "YES";
+                    col.IsAutoIncrement = true;
+                    result.Add(col);
+                }
+            }
+
+            return result;
+        }
     }
 }

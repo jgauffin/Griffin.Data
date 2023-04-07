@@ -17,7 +17,6 @@ internal class MySqlSchemaReader : SchemaReader
     {
         var result = new TableCollection();
 
-
         var cmd = factory.CreateCommand();
         cmd.Connection = connection;
         cmd.CommandText = TABLE_SQL;
@@ -39,7 +38,6 @@ internal class MySqlSchemaReader : SchemaReader
                 }
             }
         }
-
 
         //this will return everything for the DB
         var schema = connection.GetSchema("COLUMNS");

@@ -23,31 +23,13 @@ public class ClassMappingTests
     }
 
     [Fact]
-    public void Should_get_an_existing_property()
+    public void Should_find_an_existing_key()
     {
-        var prop = _mapping.GetProperty("FirstName");
-
-        var actual = prop.GetColumnValue(new User { FirstName = "J" });
-
-        actual.Should().Be("J");
-    }
-
-    [Fact]
-    public void Should_get_an_existing_key()
-    {
-        var prop = _mapping.GetProperty("Id");
+        var prop = _mapping.FindPropertyByName("id")!;
 
         var actual = prop.GetColumnValue(new User { Id = 3 });
 
         actual.Should().Be(3);
-    }
-
-    [Fact]
-    public void Should_throw_if_property_is_not_found()
-    {
-        var actual = () => _mapping.GetProperty("SomeProperty");
-
-        actual.Should().Throw<MappingException>();
     }
 
     [Fact]
@@ -71,12 +53,30 @@ public class ClassMappingTests
     }
 
     [Fact]
-    public void Should_find_an_existing_key()
+    public void Should_get_an_existing_key()
     {
-        var prop = _mapping.FindPropertyByName("id")!;
+        var prop = _mapping.GetProperty("Id");
 
         var actual = prop.GetColumnValue(new User { Id = 3 });
 
         actual.Should().Be(3);
+    }
+
+    [Fact]
+    public void Should_get_an_existing_property()
+    {
+        var prop = _mapping.GetProperty("FirstName");
+
+        var actual = prop.GetColumnValue(new User { FirstName = "J" });
+
+        actual.Should().Be("J");
+    }
+
+    [Fact]
+    public void Should_throw_if_property_is_not_found()
+    {
+        var actual = () => _mapping.GetProperty("SomeProperty");
+
+        actual.Should().Throw<MappingException>();
     }
 }

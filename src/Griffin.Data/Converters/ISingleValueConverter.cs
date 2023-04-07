@@ -12,7 +12,7 @@ namespace Griffin.Data.Converters;
 ///         Converters are used when the types differs and there are no implicit cast between the data types.
 ///     </para>
 /// </remarks>
-public interface ISingleValueConverter<TColumn, TProperty> where TColumn: notnull where TProperty: notnull
+public interface ISingleValueConverter<TColumn, TProperty> where TColumn : notnull where TProperty : notnull
 {
     /// <summary>
     ///     Convert a column value to a property value.

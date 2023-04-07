@@ -34,20 +34,29 @@ public static class UpdateExtensions
     ///         built in change tracker or by calling CRUD manually for each child).
     ///     </para>
     /// </remarks>
-    public static async Task Update(this Session session, object entity,
+    public static async Task Update(
+        this Session session,
+        object entity,
         IDictionary<string, object>? extraUpdateColumns = null,
         IDictionary<string, object>? extraDbConstraints = null)
     {
-        if (entity == null) throw new ArgumentNullException(nameof(entity));
+        if (entity == null)
+        {
+            throw new ArgumentNullException(nameof(entity));
+        }
 
         var mapping = session.GetMapping(entity.GetType());
         await using var command = session.CreateCommand();
         await session.UpdateEntity(mapping, entity, command, extraUpdateColumns, extraDbConstraints);
     }
 
-
-    private static async Task UpdateEntity(this Session session, ClassMapping mapping, object entity, DbCommand command,
-        IDictionary<string, object>? extraUpdateColumns, IDictionary<string, object>? extraDbConstraints)
+    private static async Task UpdateEntity(
+        this Session session,
+        ClassMapping mapping,
+        object entity,
+        DbCommand command,
+        IDictionary<string, object>? extraUpdateColumns,
+        IDictionary<string, object>? extraDbConstraints)
     {
         var columns = "";
         var where = "";
@@ -56,8 +65,10 @@ public static class UpdateExtensions
         {
             var value = key.GetColumnValue(entity);
             if (value == null)
+            {
                 throw new MappingException(entity,
                     $"Property '{key.PropertyName}' is a key and may not be null.");
+            }
 
             where += $"{key.ColumnName} = @{key.PropertyName}, ";
             command.AddParameter(key.PropertyName, value);
@@ -66,25 +77,32 @@ public static class UpdateExtensions
         foreach (var property in mapping.Properties)
         {
             var value = property.GetColumnValue(entity);
-            if (value == null) continue;
+            if (value == null)
+            {
+                continue;
+            }
 
             columns += $"{property.ColumnName} = @{property.PropertyName}, ";
             command.AddParameter(property.PropertyName, value);
         }
 
         if (extraUpdateColumns != null)
+        {
             foreach (var extraColumn in extraUpdateColumns)
             {
                 columns += $"{extraColumn.Key} = @{extraColumn.Key}, ";
                 command.AddParameter(extraColumn.Key, extraColumn.Value);
             }
+        }
 
         if (extraDbConstraints != null)
+        {
             foreach (var extraColumn in extraDbConstraints)
             {
                 where += $"{extraColumn.Key} = @{extraColumn.Key}, ";
                 command.AddParameter(extraColumn.Key, extraColumn.Value);
             }
+        }
 
         columns = columns.Remove(columns.Length - 2, 2);
         where = where.Remove(where.Length - 2, 2);

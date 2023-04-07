@@ -12,7 +12,11 @@ internal static class FetchChildrenOperations
 {
     internal static async Task GetChildren<TParent>(this Session session, [DisallowNull] TParent parentEntity)
     {
-        if (parentEntity == null) throw new ArgumentNullException(nameof(parentEntity));
+        if (parentEntity == null)
+        {
+            throw new ArgumentNullException(nameof(parentEntity));
+        }
+
         if (typeof(TParent) == typeof(object))
         {
             throw new ArgumentException("Entity type cannot be 'object'.");
@@ -23,7 +27,7 @@ internal static class FetchChildrenOperations
         var options = new QueryOptions();
         foreach (var hasManyMapping in parentMapping.Collections)
         {
-            options.DbParameters= hasManyMapping.CreateDbConstraints(new[] { parentEntity });
+            options.DbParameters = hasManyMapping.CreateDbConstraints(new[] { parentEntity });
             var collection = hasManyMapping.CreateCollection();
             await session.Query(hasManyMapping.ChildEntityType, options, collection);
             hasManyMapping.SetColumnValue(parentEntity, collection);
@@ -31,20 +35,29 @@ internal static class FetchChildrenOperations
 
         foreach (var hasOneMapping in parentMapping.Children)
         {
-            options.DbParameters= hasOneMapping.CreateDbConstraints(new[] { parentEntity });
+            options.DbParameters = hasOneMapping.CreateDbConstraints(new[] { parentEntity });
 
             var childType = hasOneMapping.ChildEntityType;
             if (hasOneMapping.HaveDiscriminator)
+            {
                 childType = hasOneMapping.GetTypeUsingDiscriminator(parentEntity) ?? hasOneMapping.ChildEntityType;
+            }
 
             var child = await session.FirstOrDefault(childType, options);
-            if (child != null) hasOneMapping.SetColumnValue(parentEntity, child);
+            if (child != null)
+            {
+                hasOneMapping.SetColumnValue(parentEntity, child);
+            }
         }
     }
 
     internal static async Task GetChildren(this Session session, Type parentType, [DisallowNull] object parentEntity)
     {
-        if (parentEntity == null) throw new ArgumentNullException(nameof(parentEntity));
+        if (parentEntity == null)
+        {
+            throw new ArgumentNullException(nameof(parentEntity));
+        }
+
         if (parentType == typeof(object))
         {
             throw new ArgumentException("Entity type cannot be 'object'.");
@@ -67,17 +80,24 @@ internal static class FetchChildrenOperations
 
             var childType = hasOneMapping.ChildEntityType;
             if (hasOneMapping.HaveDiscriminator)
+            {
                 childType = hasOneMapping.GetTypeUsingDiscriminator(parentEntity) ?? hasOneMapping.ChildEntityType;
+            }
 
             var child = await session.FirstOrDefault(childType, options);
-            if (child != null) hasOneMapping.SetColumnValue(parentEntity, child);
+            if (child != null)
+            {
+                hasOneMapping.SetColumnValue(parentEntity, child);
+            }
         }
     }
 
     internal static async Task GetChildrenForMany(this Session session, Type parentType, IList parents)
     {
-        if (parents == null) throw new ArgumentNullException(nameof(parents));
-
+        if (parents == null)
+        {
+            throw new ArgumentNullException(nameof(parents));
+        }
 
         var options = new QueryOptions();
         var parentMapping = session.GetMapping(parentType);
@@ -156,7 +176,8 @@ internal static class FetchChildrenOperations
     }
 
     /// <summary>
-    /// Used to load values for multiple parents at the same time using a discriminator (i.e. child entities have sub classes).
+    ///     Used to load values for multiple parents at the same time using a discriminator (i.e. child entities have sub
+    ///     classes).
     /// </summary>
     /// <param name="session"></param>
     /// <param name="parentMapping"></param>
@@ -164,8 +185,11 @@ internal static class FetchChildrenOperations
     /// <param name="parents"></param>
     /// <returns></returns>
     /// <exception cref="MappingException"></exception>
-    private static async Task FetchUsingDiscriminator(Session session, ClassMapping parentMapping,
-        IHasOneMapping hasOneMapping, IEnumerable parents)
+    private static async Task FetchUsingDiscriminator(
+        Session session,
+        ClassMapping parentMapping,
+        IHasOneMapping hasOneMapping,
+        IEnumerable parents)
     {
         var discriminatorIndex = new Dictionary<Type, IList>();
         var parentIndex = new Dictionary<object, object>();

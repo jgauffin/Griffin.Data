@@ -9,16 +9,27 @@ using Griffin.Data.Mappings;
 namespace Griffin.Data.Dialects;
 
 /// <summary>
-/// Adapter for Microsoft SQL Server.
+///     Adapter for Microsoft SQL Server.
 /// </summary>
 public class SqlServerDialect : ISqlDialect
 {
     /// <inheritdoc />
     public async Task Insert(ClassMapping mapping, object entity, IDbCommand command)
     {
-        if (mapping == null) throw new ArgumentNullException(nameof(mapping));
-        if (entity == null) throw new ArgumentNullException(nameof(entity));
-        if (command == null) throw new ArgumentNullException(nameof(command));
+        if (mapping == null)
+        {
+            throw new ArgumentNullException(nameof(mapping));
+        }
+
+        if (entity == null)
+        {
+            throw new ArgumentNullException(nameof(entity));
+        }
+
+        if (command == null)
+        {
+            throw new ArgumentNullException(nameof(command));
+        }
 
         var auto = mapping.Keys.FirstOrDefault(x => x.IsAutoIncrement);
         if (auto == null)
@@ -32,13 +43,23 @@ public class SqlServerDialect : ISqlDialect
         auto.SetColumnValue(entity, result);
     }
 
-
     /// <inheritdoc />
     public async Task Update(ClassMapping mapping, object entity, DbCommand command)
     {
-        if (mapping == null) throw new ArgumentNullException(nameof(mapping));
-        if (entity == null) throw new ArgumentNullException(nameof(entity));
-        if (command == null) throw new ArgumentNullException(nameof(command));
+        if (mapping == null)
+        {
+            throw new ArgumentNullException(nameof(mapping));
+        }
+
+        if (entity == null)
+        {
+            throw new ArgumentNullException(nameof(entity));
+        }
+
+        if (command == null)
+        {
+            throw new ArgumentNullException(nameof(command));
+        }
 
         await command.ExecuteNonQueryAsync();
     }
@@ -46,9 +67,20 @@ public class SqlServerDialect : ISqlDialect
     /// <inheritdoc />
     public void ApplyQueryOptions(ClassMapping mapping, DbCommand command, QueryOptions options)
     {
-        if (mapping == null) throw new ArgumentNullException(nameof(mapping));
-        if (command == null) throw new ArgumentNullException(nameof(command));
-        if (options == null) throw new ArgumentNullException(nameof(options));
+        if (mapping == null)
+        {
+            throw new ArgumentNullException(nameof(mapping));
+        }
+
+        if (command == null)
+        {
+            throw new ArgumentNullException(nameof(command));
+        }
+
+        if (options == null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
 
         if (options.Sorts.Any())
         {
@@ -77,7 +109,6 @@ public class SqlServerDialect : ISqlDialect
 
             command.CommandText +=
                 $" OFFSET {options.PageSize * (options.PageNumber - 1)} ROWS FETCH NEXT {options.PageSize} ROWS ONLY";
-
         }
     }
 }

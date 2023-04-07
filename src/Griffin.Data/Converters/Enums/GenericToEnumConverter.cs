@@ -26,7 +26,10 @@ internal class GenericToEnumConverter<TColumn, TEnum>
     /// <exception cref="ArgumentException"></exception>
     public GenericToEnumConverter()
     {
-        if (!typeof(TEnum).IsEnum) throw new ArgumentException("Type must be an enum", nameof(TEnum));
+        if (!typeof(TEnum).IsEnum)
+        {
+            throw new ArgumentException("Type must be an enum", nameof(TEnum));
+        }
 
         var values = Enum.GetValues(typeof(TEnum));
         _isFlags = typeof(TEnum).GetCustomAttribute<FlagsAttribute>() != null;
@@ -54,7 +57,10 @@ internal class GenericToEnumConverter<TColumn, TEnum>
     [return: NotNull]
     public TEnum ColumnToProperty(TColumn value)
     {
-        if (!_isFlags) EnsureEnumValue(value);
+        if (!_isFlags)
+        {
+            EnsureEnumValue(value);
+        }
 
         return _converter(value)!;
     }
@@ -62,7 +68,11 @@ internal class GenericToEnumConverter<TColumn, TEnum>
     [return: NotNull]
     public TColumn PropertyToColumn([DisallowNull] [NotNull] TEnum value)
     {
-        if (value == null) throw new ArgumentNullException(nameof(value));
+        if (value == null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
         return (TColumn)Convert.ChangeType(value, typeof(TColumn));
     }
 
@@ -70,9 +80,16 @@ internal class GenericToEnumConverter<TColumn, TEnum>
     {
         var isFound = false;
         foreach (var enumValue in _values)
+        {
             if (enumValue?.Equals(value) == true)
+            {
                 isFound = true;
+            }
+        }
 
-        if (!isFound) throw new InvalidOperationException($"Failed to find value {value} in enum {typeof(TEnum)}.");
+        if (!isFound)
+        {
+            throw new InvalidOperationException($"Failed to find value {value} in enum {typeof(TEnum)}.");
+        }
     }
 }

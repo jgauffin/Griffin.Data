@@ -1,7 +1,6 @@
-﻿namespace TestApp.Entities
+﻿namespace TestApp.Entities;
+
+public interface IAction
 {
-    public interface IAction
-    {
-        public int ChildId { get; set; }
-    }
+    public int ChildId { get; set; }
 }

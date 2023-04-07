@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Griffin.Data.Mapper;
+﻿using Griffin.Data.Mapper;
 using Griffin.Data.Tests.Entities;
 
 namespace Griffin.Data.Tests;
@@ -20,5 +19,4 @@ public class FlowTest : IntegrationTests
         await Session.GetById<MainTable2>(t.Id);
         await Session.List<MainTable2>("Money = @money", new { money = 5 });
     }
-
 }

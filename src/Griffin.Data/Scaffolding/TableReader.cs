@@ -11,6 +11,60 @@ namespace Griffin.Data.Scaffolding;
 
 public class TableReader
 {
+    public async Task AddForeignKeys(IDictionary<string, Table> tables, IDbConnection connection)
+    {
+        var sql =
+            @"SELECT fk.name, OBJECT_NAME(fk.parent_object_id) 'ParentTable', c1.name 'ParentColumn', OBJECT_NAME(fk.referenced_object_id) 'ReferencedTable', c2.name 'ReferencedColumn'
+FROM sys.foreign_keys fk
+INNER JOIN sys.foreign_key_columns fkc ON fkc.constraint_object_id = fk.object_id
+INNER JOIN sys.columns c1 ON fkc.parent_column_id = c1.column_id AND fkc.parent_object_id = c1.object_id
+INNER JOIN sys.columns c2 ON fkc.referenced_column_id = c2.column_id AND fkc.referenced_object_id = c2.object_id";
+
+        await using var cmd = (DbCommand)connection.CreateCommand();
+        cmd.CommandText = sql;
+        await using var reader = await cmd.ExecuteReaderAsync();
+        var found = false;
+        while (await reader.ReadAsync())
+        {
+            found = true;
+            var parentTable = reader.GetString(1);
+            var foreignKeyColumn = reader.GetString(2);
+            var referencedTable = reader.GetString(3);
+            var referencedColumn = reader.GetString(4);
+            if (!tables.TryGetValue(parentTable, out var p))
+            {
+                continue;
+            }
+
+            if (!tables.TryGetValue(referencedTable, out var r))
+            {
+                continue;
+            }
+
+            p.ForeignKeys.Add(new ForeignKeyColumn(foreignKeyColumn, p, referencedColumn));
+            r.References.Add(new Reference(referencedColumn, p, foreignKeyColumn));
+        }
+
+        if (!found)
+        {
+            foreach (var table in tables.Values)
+            foreach (var column in table.Columns)
+            {
+                if (!column.PropertyName.EndsWith("Id"))
+                {
+                    continue;
+                }
+
+                var className = column.PropertyName.Replace("Id", "");
+                var referencedTable = tables.Values.FirstOrDefault(x => x.ClassName == className);
+                if (referencedTable != null)
+                {
+                    referencedTable.References.Add(new Reference("Id", table, column.PropertyName));
+                }
+            }
+        }
+    }
+
     public async Task<IReadOnlyList<Table>> Generate(IDbConnection connection)
     {
         var sql =
@@ -69,7 +123,10 @@ ORDER BY c.TABLE_SCHEMA,c.TABLE_NAME, c.ORDINAL_POSITION
         foreach (var ns in namespaces)
         {
             var nsTables = tables.Values.Where(x => x.ClassName.StartsWith(ns) && x.Namespace == "");
-            foreach (var nsTable in nsTables) nsTable.Namespace = ns.Pluralize();
+            foreach (var nsTable in nsTables)
+            {
+                nsTable.Namespace = ns.Pluralize();
+            }
         }
 
         return tables.Values.ToList();
@@ -85,11 +142,18 @@ ORDER BY c.TABLE_SCHEMA,c.TABLE_NAME, c.ORDINAL_POSITION
             while (true)
             {
                 word = ReduceWordString(word);
-                if (word == "") break;
+                if (word == "")
+                {
+                    break;
+                }
 
                 for (var j = i + 1; j < names.Length; j++)
+                {
                     if (names[j].StartsWith(word) && !namespaces.Contains(word))
+                    {
                         namespaces.Add(word);
+                    }
+                }
             }
         }
 
@@ -99,53 +163,15 @@ ORDER BY c.TABLE_SCHEMA,c.TABLE_NAME, c.ORDINAL_POSITION
     private string ReduceWordString(string name)
     {
         for (var i = name.Length - 1; i > 0; i--)
+        {
             if (char.IsUpper(name[i]))
+            {
                 return name.Substring(0, i);
+            }
+        }
 
         return "";
     }
-
-
-    public async Task AddForeignKeys(IDictionary<string, Table> tables, IDbConnection connection)
-    {
-        var sql =
-            @"SELECT fk.name, OBJECT_NAME(fk.parent_object_id) 'ParentTable', c1.name 'ParentColumn', OBJECT_NAME(fk.referenced_object_id) 'ReferencedTable', c2.name 'ReferencedColumn'
-FROM sys.foreign_keys fk
-INNER JOIN sys.foreign_key_columns fkc ON fkc.constraint_object_id = fk.object_id
-INNER JOIN sys.columns c1 ON fkc.parent_column_id = c1.column_id AND fkc.parent_object_id = c1.object_id
-INNER JOIN sys.columns c2 ON fkc.referenced_column_id = c2.column_id AND fkc.referenced_object_id = c2.object_id";
-
-        await using var cmd = (DbCommand)connection.CreateCommand();
-        cmd.CommandText = sql;
-        await using var reader = await cmd.ExecuteReaderAsync();
-        var found = false;
-        while (await reader.ReadAsync())
-        {
-            found = true;
-            var parentTable = reader.GetString(1);
-            var foreignKeyColumn = reader.GetString(2);
-            var referencedTable = reader.GetString(3);
-            var referencedColumn = reader.GetString(4);
-            if (!tables.TryGetValue(parentTable, out var p)) continue;
-            if (!tables.TryGetValue(referencedTable, out var r)) continue;
-
-            p.ForeignKeys.Add(new ForeignKeyColumn(foreignKeyColumn, p, referencedColumn));
-            r.References.Add(new Reference(referencedColumn, p, foreignKeyColumn));
-        }
-
-        if (!found)
-            foreach (var table in tables.Values)
-            foreach (var column in table.Columns)
-            {
-                if (!column.PropertyName.EndsWith("Id")) continue;
-
-                var className = column.PropertyName.Replace("Id", "");
-                var referencedTable = tables.Values.FirstOrDefault(x => x.ClassName == className);
-                if (referencedTable != null)
-                    referencedTable.References.Add(new Reference("Id", table, column.PropertyName));
-            }
-    }
-
 
     private static Type ToCSharpType(string sqlType)
     {

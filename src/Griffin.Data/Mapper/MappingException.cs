@@ -26,11 +26,14 @@ public class MappingException : Exception
     public MappingException(object entity, string errorMessage)
         : base(errorMessage)
     {
-        if (entity == null) throw new ArgumentNullException(nameof(entity));
+        if (entity == null)
+        {
+            throw new ArgumentNullException(nameof(entity));
+        }
+
         EntityType = entity.GetType();
         Entity = entity;
     }
-
 
     /// <summary>
     ///     Entity that mapping failed for.

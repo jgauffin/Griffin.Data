@@ -69,43 +69,12 @@ internal class SqlServerCeSchemaReader : SchemaReader
             var PrimaryKey = GetPK(tbl.Name);
             var pkColumn = tbl.Columns.SingleOrDefault(x => x.Name.ToLower().Trim() == PrimaryKey.ToLower().Trim());
             if (pkColumn != null)
+            {
                 pkColumn.IsPrimaryKey = true;
+            }
         }
-
 
         return result;
-    }
-
-
-    private List<Column> LoadColumns(Table tbl)
-    {
-        using (var cmd = _factory.CreateCommand())
-        {
-            cmd.Connection = _connection;
-            cmd.CommandText = COLUMN_SQL;
-
-            var p = cmd.CreateParameter();
-            p.ParameterName = "@tableName";
-            p.Value = tbl.Name;
-            cmd.Parameters.Add(p);
-
-            var result = new List<Column>();
-            using (IDataReader rdr = cmd.ExecuteReader())
-            {
-                while (rdr.Read())
-                {
-                    var col = new Column();
-                    col.Name = rdr["ColumnName"].ToString();
-                    col.PropertyName = CleanUp(col.Name);
-                    col.PropertyType = GetPropertyType(rdr["DataType"].ToString());
-                    col.IsNullable = rdr["IsNullable"].ToString() == "YES";
-                    col.IsAutoIncrement = rdr["AUTOINC_INCREMENT"] != DBNull.Value;
-                    result.Add(col);
-                }
-            }
-
-            return result;
-        }
     }
 
     private string GetPK(string table)
@@ -130,7 +99,9 @@ internal class SqlServerCeSchemaReader : SchemaReader
             var result = cmd.ExecuteScalar();
 
             if (result != null)
+            {
                 return result.ToString();
+            }
         }
 
         return "";
@@ -186,5 +157,36 @@ internal class SqlServerCeSchemaReader : SchemaReader
         }
 
         return sysType;
+    }
+
+    private List<Column> LoadColumns(Table tbl)
+    {
+        using (var cmd = _factory.CreateCommand())
+        {
+            cmd.Connection = _connection;
+            cmd.CommandText = COLUMN_SQL;
+
+            var p = cmd.CreateParameter();
+            p.ParameterName = "@tableName";
+            p.Value = tbl.Name;
+            cmd.Parameters.Add(p);
+
+            var result = new List<Column>();
+            using (IDataReader rdr = cmd.ExecuteReader())
+            {
+                while (rdr.Read())
+                {
+                    var col = new Column();
+                    col.Name = rdr["ColumnName"].ToString();
+                    col.PropertyName = CleanUp(col.Name);
+                    col.PropertyType = GetPropertyType(rdr["DataType"].ToString());
+                    col.IsNullable = rdr["IsNullable"].ToString() == "YES";
+                    col.IsAutoIncrement = rdr["AUTOINC_INCREMENT"] != DBNull.Value;
+                    result.Add(col);
+                }
+            }
+
+            return result;
+        }
     }
 }

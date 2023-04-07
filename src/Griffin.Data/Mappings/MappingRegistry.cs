@@ -33,7 +33,9 @@ public class MappingRegistry : IMappingRegistry
 
         var str = string.Join(", ", _scannedAssemblies.Select(x => x.GetName().Name));
         if (!_mappings.TryGetValue(type, out var mapper))
+        {
             throw new MissingMappingException(type, str);
+        }
 
         return mapper;
     }
@@ -41,7 +43,11 @@ public class MappingRegistry : IMappingRegistry
     /// <inheritdoc />
     public ClassMapping Get([NotNull] Type type)
     {
-        if (type == null) throw new ArgumentNullException(nameof(type));
+        if (type == null)
+        {
+            throw new ArgumentNullException(nameof(type));
+        }
+
         if (!_mappings.Any())
         {
             Scan(Assembly.GetExecutingAssembly());
@@ -50,9 +56,30 @@ public class MappingRegistry : IMappingRegistry
 
         var str = string.Join(", ", _scannedAssemblies.Select(x => x.GetName().Name));
         if (!_mappings.TryGetValue(type, out var mapper))
+        {
             throw new MissingMappingException(type, str);
+        }
 
         return mapper;
+    }
+
+    /// <summary>
+    ///     Add a mapping.
+    /// </summary>
+    /// <param name="mapping">Mapping to add.</param>
+    /// <remarks>
+    ///     <para>
+    ///         Will replace any existing mapping for the specified entity type.
+    ///     </para>
+    /// </remarks>
+    public void Add(ClassMapping mapping)
+    {
+        if (mapping == null)
+        {
+            throw new ArgumentNullException(nameof(mapping));
+        }
+
+        _mappings[mapping.EntityType] = mapping;
     }
 
     /// <summary>
@@ -79,9 +106,15 @@ public class MappingRegistry : IMappingRegistry
     /// <exception cref="InvalidOperationException"></exception>
     public void Scan([NotNull] Assembly assembly)
     {
-        if (assembly == null) throw new ArgumentNullException(nameof(assembly));
+        if (assembly == null)
+        {
+            throw new ArgumentNullException(nameof(assembly));
+        }
+
         if (_scannedAssemblies.Contains(assembly))
+        {
             throw new InvalidOperationException($"Assembly '{assembly.GetName().Name}' has already been scanned.");
+        }
 
         _scannedAssemblies.Add(assembly);
 
@@ -101,28 +134,19 @@ public class MappingRegistry : IMappingRegistry
 
             var mapping = Activator.CreateInstance(pair.type);
             var method = pair.type.GetMethod("Configure");
-            if (method == null) throw new InvalidOperationException($"Failed to find 'Configure' in {pair.type}.");
+            if (method == null)
+            {
+                throw new InvalidOperationException($"Failed to find 'Configure' in {pair.type}.");
+            }
 
             method.Invoke(mapping, new object[] { configurator });
 
             _mappings[entityType] = configurator.BuildMapping();
         }
 
-        foreach (var mapping in builders) mapping.BuildRelations(this);
-    }
-
-    /// <summary>
-    ///     Add a mapping.
-    /// </summary>
-    /// <param name="mapping">Mapping to add.</param>
-    /// <remarks>
-    ///     <para>
-    ///         Will replace any existing mapping for the specified entity type.
-    ///     </para>
-    /// </remarks>
-    public void Add(ClassMapping mapping)
-    {
-        if (mapping == null) throw new ArgumentNullException(nameof(mapping));
-        _mappings[mapping.EntityType] = mapping;
+        foreach (var mapping in builders)
+        {
+            mapping.BuildRelations(this);
+        }
     }
 }

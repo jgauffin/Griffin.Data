@@ -16,7 +16,7 @@ public class ClassMapping
 {
     private readonly List<IHasOneMapping> _children = new();
     private readonly List<IHasManyMapping> _collections = new();
-    private readonly List<KeyMapping> _keys;
+    private readonly List<IKeyMapping> _keys;
     private readonly List<PropertyMapping> _properties;
 
     /// <summary>
@@ -25,7 +25,10 @@ public class ClassMapping
     /// <param name="tableName">Table that the entity is stored in.</param>
     /// <param name="keys">Keys used to be able to find a specific entity.</param>
     /// <param name="properties">All properties to read data into.</param>
-    public ClassMapping(Type entityType, string tableName, List<KeyMapping> keys,
+    public ClassMapping(
+        Type entityType,
+        string tableName,
+        List<IKeyMapping> keys,
         List<PropertyMapping> properties)
     {
         EntityType = entityType ?? throw new ArgumentNullException(nameof(entityType));
@@ -35,19 +38,9 @@ public class ClassMapping
     }
 
     /// <summary>
-    ///     Class that this is a mapping for.
+    ///     One to one relations.
     /// </summary>
-    public Type EntityType { get; }
-
-    /// <summary>
-    ///     Properties to fill with data.
-    /// </summary>
-    public IReadOnlyList<PropertyMapping> Properties => _properties;
-
-    /// <summary>
-    ///     Keys used to identify a specific entity.
-    /// </summary>
-    public IReadOnlyList<KeyMapping> Keys => _keys;
+    public IReadOnlyList<IHasOneMapping> Children => _children;
 
     /// <summary>
     ///     One to many relations.
@@ -55,9 +48,19 @@ public class ClassMapping
     public IReadOnlyList<IHasManyMapping> Collections => _collections;
 
     /// <summary>
-    ///     One to one relations.
+    ///     Class that this is a mapping for.
     /// </summary>
-    public IReadOnlyList<IHasOneMapping> Children => _children;
+    public Type EntityType { get; }
+
+    /// <summary>
+    ///     Keys used to identify a specific entity.
+    /// </summary>
+    public IReadOnlyList<IKeyMapping> Keys => _keys;
+
+    /// <summary>
+    ///     Properties to fill with data.
+    /// </summary>
+    public IReadOnlyList<PropertyMapping> Properties => _properties;
 
     /// <summary>
     ///     Table that the entity is stored in.
@@ -75,6 +78,43 @@ public class ClassMapping
     }
 
     /// <summary>
+    ///     Create an instance using the data record (which allows us to use non default constructors).
+    /// </summary>
+    /// <param name="record">Record set.</param>
+    /// <returns>Created entity.</returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    [return: NotNull]
+    public object CreateInstance(IDataRecord record)
+    {
+        if (record == null)
+        {
+            throw new ArgumentNullException(nameof(record));
+        }
+
+        return Activator.CreateInstance(EntityType, true);
+    }
+
+    /// <summary>
+    ///     Find a specific property (looks in keys and properties for the given name, using case insensitive search).
+    /// </summary>
+    /// <param name="propertyOrColumnName">Property or column name.</param>
+    /// <returns>Property if found; otherwise <c>null</c>.</returns>
+    public IFieldMapping? FindPropertyByName(string propertyOrColumnName)
+    {
+        if (propertyOrColumnName == null)
+        {
+            throw new ArgumentNullException(nameof(propertyOrColumnName));
+        }
+
+        return (IFieldMapping?)Properties.FirstOrDefault(x =>
+                   x.PropertyName.Equals(propertyOrColumnName, StringComparison.OrdinalIgnoreCase) ||
+                   x.ColumnName.Equals(propertyOrColumnName, StringComparison.OrdinalIgnoreCase))
+               ?? Keys.FirstOrDefault(x =>
+                   x.PropertyName.Equals(propertyOrColumnName, StringComparison.OrdinalIgnoreCase) ||
+                   x.ColumnName.Equals(propertyOrColumnName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
     ///     Get a specific property (looks in keys and properties for the given name, using case insensitive search).
     /// </summary>
     /// <param name="propertyName">Property name.</param>
@@ -88,39 +128,15 @@ public class ClassMapping
                    $"Failed to find property {propertyName}.");
     }
 
-    /// <summary>
-    ///     Find a specific property (looks in keys and properties for the given name, using case insensitive search).
-    /// </summary>
-    /// <param name="propertyOrColumnName">Property or column name.</param>
-    /// <returns>Property if found; otherwise <c>null</c>.</returns>
-    public IFieldMapping? FindPropertyByName(string propertyOrColumnName)
-    {
-        if (propertyOrColumnName == null) throw new ArgumentNullException(nameof(propertyOrColumnName));
-
-        return (IFieldMapping?)Properties.FirstOrDefault(x =>
-                   x.PropertyName.Equals(propertyOrColumnName, StringComparison.OrdinalIgnoreCase) ||
-                   x.ColumnName.Equals(propertyOrColumnName, StringComparison.OrdinalIgnoreCase))
-               ?? Keys.FirstOrDefault(x =>
-                   x.PropertyName.Equals(propertyOrColumnName, StringComparison.OrdinalIgnoreCase) ||
-                   x.ColumnName.Equals(propertyOrColumnName, StringComparison.OrdinalIgnoreCase));
-    }
-
-    /// <summary>
-    ///     Create an instance using the data record (which allows us to use non default constructors).
-    /// </summary>
-    /// <param name="record">Record set.</param>
-    /// <returns>Created entity.</returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    [return: NotNull]
-    public object CreateInstance(IDataRecord record)
-    {
-        if (record == null) throw new ArgumentNullException(nameof(record));
-        return Activator.CreateInstance(EntityType, true);
-    }
-
     /// <inheritdoc />
     public override string ToString()
     {
         return EntityType.Name;
+    }
+
+    public IRelationShip? GetRelation(Type childType)
+    {
+        return(IRelationShip?) _children.FirstOrDefault(x => x.ChildEntityType == childType)
+               ?? _collections.FirstOrDefault(x => x.ChildEntityType == childType);
     }
 }

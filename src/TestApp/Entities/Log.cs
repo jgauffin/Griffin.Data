@@ -13,10 +13,10 @@ public class Log
         Message = "";
     }
 
+    public DateTime CreatedAtUtc { get; }
+
     public int Id { get; set; }
     public int MainId { get; set; }
-
-    public DateTime CreatedAtUtc { get; }
 
     public string Message { get; }
 }

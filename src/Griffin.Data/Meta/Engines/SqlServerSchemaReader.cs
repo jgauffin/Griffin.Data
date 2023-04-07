@@ -72,48 +72,13 @@ internal class SqlServerSchemaReader : SchemaReader
             // Mark the primary key
             var primaryKey = GetPrimaryKey(tbl.Name);
             var pkColumn = tbl.Columns.SingleOrDefault(x => x.Name.ToLower().Trim() == primaryKey.ToLower().Trim());
-            if (pkColumn != null) pkColumn.IsPrimaryKey = true;
+            if (pkColumn != null)
+            {
+                pkColumn.IsPrimaryKey = true;
+            }
         }
-
 
         return result;
-    }
-
-
-    private List<Column> LoadColumns(Table tbl)
-    {
-        using (var cmd = _factory.CreateCommand())
-        {
-            cmd.Connection = _connection;
-            cmd.CommandText = COLUMN_SQL;
-
-            var p = cmd.CreateParameter();
-            p.ParameterName = "@tableName";
-            p.Value = tbl.Name;
-            cmd.Parameters.Add(p);
-
-            p = cmd.CreateParameter();
-            p.ParameterName = "@schemaName";
-            p.Value = tbl.Schema;
-            cmd.Parameters.Add(p);
-
-            var result = new List<Column>();
-            using (IDataReader rdr = cmd.ExecuteReader())
-            {
-                while (rdr.Read())
-                {
-                    var col = new Column();
-                    col.Name = rdr["ColumnName"].ToString();
-                    col.PropertyName = CleanUp(col.Name);
-                    col.PropertyType = GetPropertyType(rdr["DataType"].ToString());
-                    col.IsNullable = rdr["IsNullable"].ToString() == "YES";
-                    col.IsAutoIncrement = (int)rdr["IsIdentity"] == 1;
-                    result.Add(col);
-                }
-            }
-
-            return result;
-        }
     }
 
     private string GetPrimaryKey(string table)
@@ -138,7 +103,9 @@ internal class SqlServerSchemaReader : SchemaReader
             var result = cmd.ExecuteScalar();
 
             if (result != null)
+            {
                 return result.ToString();
+            }
         }
 
         return "";
@@ -200,5 +167,41 @@ internal class SqlServerSchemaReader : SchemaReader
         }
 
         return sysType;
+    }
+
+    private List<Column> LoadColumns(Table tbl)
+    {
+        using (var cmd = _factory.CreateCommand())
+        {
+            cmd.Connection = _connection;
+            cmd.CommandText = COLUMN_SQL;
+
+            var p = cmd.CreateParameter();
+            p.ParameterName = "@tableName";
+            p.Value = tbl.Name;
+            cmd.Parameters.Add(p);
+
+            p = cmd.CreateParameter();
+            p.ParameterName = "@schemaName";
+            p.Value = tbl.Schema;
+            cmd.Parameters.Add(p);
+
+            var result = new List<Column>();
+            using (IDataReader rdr = cmd.ExecuteReader())
+            {
+                while (rdr.Read())
+                {
+                    var col = new Column();
+                    col.Name = rdr["ColumnName"].ToString();
+                    col.PropertyName = CleanUp(col.Name);
+                    col.PropertyType = GetPropertyType(rdr["DataType"].ToString());
+                    col.IsNullable = rdr["IsNullable"].ToString() == "YES";
+                    col.IsAutoIncrement = (int)rdr["IsIdentity"] == 1;
+                    result.Add(col);
+                }
+            }
+
+            return result;
+        }
     }
 }

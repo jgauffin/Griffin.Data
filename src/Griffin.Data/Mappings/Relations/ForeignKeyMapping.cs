@@ -33,25 +33,6 @@ public class ForeignKeyMapping<TParentEntity, TChildEntity> : IFieldAccessor, IF
     }
 
     /// <summary>
-    /// Get id from the parent entity.
-    /// </summary>
-    /// <param name="parentEntity">Entity to fetch id from</param>
-    /// <returns>id if found; otherwise <c>null</c>.</returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="MappingException"></exception>
-    public object? GetReferencedId([DisallowNull] TParentEntity parentEntity)
-    {
-        if (parentEntity == null) throw new ArgumentNullException(nameof(parentEntity));
-        if (_referencedProperty == null)
-        {
-            throw new MappingException(parentEntity,
-                "A parent property reference has not been configured.");
-        }
-
-        return _referencedProperty.GetColumnValue(parentEntity);
-    }
-    
-    /// <summary>
     ///     Column to insert the foreign key in.
     /// </summary>
     /// <remarks>
@@ -59,18 +40,26 @@ public class ForeignKeyMapping<TParentEntity, TChildEntity> : IFieldAccessor, IF
     ///         Specified instead of the property if the child entity do not contain a property for the FK.
     ///     </para>
     /// </remarks>
-    public string ForeignKeyColumnName { get; private set; }
+    public string ForeignKeyColumnName { get; }
 
     /// <summary>
-    /// Has a foreign key property configured.
+    ///     Has a foreign key property configured.
     /// </summary>
     public bool HasProperty => _foreignKey != null;
 
     /// <inheritdoc />
-    public void SetColumnValue([NotNull]object childEntity, object value)
+    public void SetColumnValue([NotNull] object childEntity, object value)
     {
-        if (childEntity == null) throw new ArgumentNullException(nameof(childEntity));
-        if (value == null) throw new ArgumentNullException(nameof(value));
+        if (childEntity == null)
+        {
+            throw new ArgumentNullException(nameof(childEntity));
+        }
+
+        if (value == null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
         if (_foreignKey == null)
         {
             throw new MappingException(childEntity,
@@ -83,7 +72,11 @@ public class ForeignKeyMapping<TParentEntity, TChildEntity> : IFieldAccessor, IF
     /// <inheritdoc />
     public object? GetColumnValue([NotNull] object childEntity)
     {
-        if (childEntity == null) throw new ArgumentNullException(nameof(childEntity));
+        if (childEntity == null)
+        {
+            throw new ArgumentNullException(nameof(childEntity));
+        }
+
         if (_foreignKey == null)
         {
             throw new MappingException(childEntity,
@@ -91,5 +84,28 @@ public class ForeignKeyMapping<TParentEntity, TChildEntity> : IFieldAccessor, IF
         }
 
         return _foreignKey.GetColumnValue(childEntity);
+    }
+
+    /// <summary>
+    ///     Get id from the parent entity.
+    /// </summary>
+    /// <param name="parentEntity">Entity to fetch id from</param>
+    /// <returns>id if found; otherwise <c>null</c>.</returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="MappingException"></exception>
+    public object? GetReferencedId([DisallowNull] TParentEntity parentEntity)
+    {
+        if (parentEntity == null)
+        {
+            throw new ArgumentNullException(nameof(parentEntity));
+        }
+
+        if (_referencedProperty == null)
+        {
+            throw new MappingException(parentEntity,
+                "A parent property reference has not been configured.");
+        }
+
+        return _referencedProperty.GetColumnValue(parentEntity);
     }
 }

@@ -37,7 +37,27 @@ public class PropertyConfigurator<TEntity, TProperty> where TProperty : notnull
     {
         _mapping.ColumnName = name ?? throw new ArgumentNullException(nameof(name));
         return this;
+    }
 
+    /// <summary>
+    ///     Handle conversions between the column and property types.
+    /// </summary>
+    /// <typeparam name="TColumn">Column data type.</typeparam>
+    /// <param name="converter">Converter to use.</param>
+    /// <remarks>
+    ///     <para>
+    ///         The column type and the property type differs and there is no automatic conversion between them.
+    ///     </para>
+    /// </remarks>
+    public void Converter<TColumn>(ISingleValueConverter<TColumn, TProperty> converter) where TColumn : notnull
+    {
+        if (converter == null)
+        {
+            throw new ArgumentNullException(nameof(converter));
+        }
+
+        _mapping.ColumnToPropertyConverter = columnValue => converter.ColumnToProperty((TColumn)columnValue);
+        _mapping.PropertyToColumnConverter = propertyValue => converter.PropertyToColumn((TProperty)propertyValue);
     }
 
     /// <summary>
@@ -64,25 +84,11 @@ public class PropertyConfigurator<TEntity, TProperty> where TProperty : notnull
     /// </remarks>
     public void RecordToProperty(Func<IDataRecord, TProperty> recordToPropertyConverter)
     {
-        if (recordToPropertyConverter == null) throw new ArgumentNullException(nameof(recordToPropertyConverter));
+        if (recordToPropertyConverter == null)
+        {
+            throw new ArgumentNullException(nameof(recordToPropertyConverter));
+        }
 
         _mapping.RecordToPropertyConverter = record => recordToPropertyConverter(record)!;
-    }
-
-    /// <summary>
-    ///     Handle conversions between the column and property types.
-    /// </summary>
-    /// <typeparam name="TColumn">Column data type.</typeparam>
-    /// <param name="converter">Converter to use.</param>
-    /// <remarks>
-    ///     <para>
-    ///         The column type and the property type differs and there is no automatic conversion between them.
-    ///     </para>
-    /// </remarks>
-    public void Converter<TColumn>(ISingleValueConverter<TColumn, TProperty> converter) where TColumn: notnull
-    {
-        if (converter == null) throw new ArgumentNullException(nameof(converter));
-        _mapping.ColumnToPropertyConverter = columnValue => converter.ColumnToProperty((TColumn)columnValue);
-        _mapping.PropertyToColumnConverter = propertyValue => converter.PropertyToColumn((TProperty)propertyValue);
     }
 }

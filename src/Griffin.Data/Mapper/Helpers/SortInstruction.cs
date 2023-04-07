@@ -9,7 +9,8 @@ internal class SortInstruction
         IsPropertyName = isPropertyName;
     }
 
-    public string Name { get; set; }
     public bool IsAscending { get; set; }
     public bool IsPropertyName { get; }
+
+    public string Name { get; set; }
 }

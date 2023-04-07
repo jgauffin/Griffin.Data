@@ -6,12 +6,12 @@ using Griffin.Data.Mappings.Relations;
 namespace Griffin.Data.Mapper;
 
 /// <summary>
-/// Methods to delete entities.
+///     Methods to delete entities.
 /// </summary>
 public static class DeleteExtensions
 {
     /// <summary>
-    /// Delete a single entity.
+    ///     Delete a single entity.
     /// </summary>
     /// <param name="session">Session to delete in.</param>
     /// <param name="entity">Entity to delete.</param>
@@ -19,13 +19,27 @@ public static class DeleteExtensions
     /// <exception cref="ArgumentNullException">Any of the arguments was not specified.</exception>
     public static async Task Delete(this Session session, object entity)
     {
-        if (session == null) throw new ArgumentNullException(nameof(session));
-        if (entity == null) throw new ArgumentNullException(nameof(entity));
+        if (session == null)
+        {
+            throw new ArgumentNullException(nameof(session));
+        }
+
+        if (entity == null)
+        {
+            throw new ArgumentNullException(nameof(entity));
+        }
 
         var mapping = session.GetMapping(entity.GetType());
 
-        foreach (var childMapping in mapping.Children) await session.DeleteChildren(entity, childMapping);
-        foreach (var childMapping in mapping.Collections) await session.DeleteCollection(entity, childMapping);
+        foreach (var childMapping in mapping.Children)
+        {
+            await session.DeleteChildren(entity, childMapping);
+        }
+
+        foreach (var childMapping in mapping.Collections)
+        {
+            await session.DeleteCollection(entity, childMapping);
+        }
 
         await using var command = session.CreateCommand();
         command.CommandText = $"DELETE FROM {mapping.TableName}";
@@ -34,7 +48,7 @@ public static class DeleteExtensions
     }
 
     /// <summary>
-    /// Delete a single entity.
+    ///     Delete a single entity.
     /// </summary>
     /// <param name="session">Session to delete in.</param>
     /// <param name="key"></param>
@@ -42,8 +56,15 @@ public static class DeleteExtensions
     /// <exception cref="ArgumentNullException">Any of the arguments was not specified.</exception>
     public static async Task DeleteByKey<T>(this Session session, object key)
     {
-        if (session == null) throw new ArgumentNullException(nameof(session));
-        if (key == null) throw new ArgumentNullException(nameof(key));
+        if (session == null)
+        {
+            throw new ArgumentNullException(nameof(session));
+        }
+
+        if (key == null)
+        {
+            throw new ArgumentNullException(nameof(key));
+        }
 
         var mapping = session.GetMapping<T>();
 
@@ -54,20 +75,39 @@ public static class DeleteExtensions
 
         var keyProperty = mapping.Keys[0];
 
-        foreach (var childMapping in mapping.Children) await session.DeleteChildren(mapping, childMapping);
-        foreach (var childMapping in mapping.Collections) await session.DeleteCollection(mapping, childMapping);
+        foreach (var childMapping in mapping.Children)
+        {
+            await session.DeleteChildren(mapping, childMapping);
+        }
+
+        foreach (var childMapping in mapping.Collections)
+        {
+            await session.DeleteCollection(mapping, childMapping);
+        }
 
         await using var command = session.CreateCommand();
-        command.CommandText = $"DELETE FROM {mapping.TableName} WHERE {keyProperty.ColumnName} = @{keyProperty.PropertyName}";
+        command.CommandText =
+            $"DELETE FROM {mapping.TableName} WHERE {keyProperty.ColumnName} = @{keyProperty.PropertyName}";
         command.AddParameter(keyProperty.PropertyName, key);
         await command.ExecuteNonQueryAsync();
     }
 
     private static async Task DeleteChildren(this Session session, object parentEntity, IHasOneMapping hasOne)
     {
-        if (session == null) throw new ArgumentNullException(nameof(session));
-        if (parentEntity == null) throw new ArgumentNullException(nameof(parentEntity));
-        if (hasOne == null) throw new ArgumentNullException(nameof(hasOne));
+        if (session == null)
+        {
+            throw new ArgumentNullException(nameof(session));
+        }
+
+        if (parentEntity == null)
+        {
+            throw new ArgumentNullException(nameof(parentEntity));
+        }
+
+        if (hasOne == null)
+        {
+            throw new ArgumentNullException(nameof(hasOne));
+        }
 
         var entity = hasOne.GetColumnValue(parentEntity);
         if (entity == null)
@@ -97,7 +137,6 @@ public static class DeleteExtensions
             }
         }
 
-
         await using var command = session.CreateCommand();
         command.CommandText =
             $"DELETE FROM {mapping.TableName} WHERE {hasOne.ForeignKeyColumnName} = @{hasOne.ForeignKeyColumnName}";
@@ -108,9 +147,8 @@ public static class DeleteExtensions
         await command.ExecuteNonQueryAsync();
     }
 
-
     /// <summary>
-    /// Delete a child collection.
+    ///     Delete a child collection.
     /// </summary>
     /// <param name="session"></param>
     /// <param name="parentEntity"></param>
@@ -118,15 +156,27 @@ public static class DeleteExtensions
     /// <returns></returns>
     /// <exception cref="ArgumentNullException"></exception>
     /// <remarks>
-    ///<para>
-    ///But before we can delete it, we must check so that the elements do not have any children. If they do, they must be deleted first.
-    /// </para>
+    ///     <para>
+    ///         But before we can delete it, we must check so that the elements do not have any children. If they do, they must
+    ///         be deleted first.
+    ///     </para>
     /// </remarks>
     private static async Task DeleteCollection(this Session session, object parentEntity, IHasManyMapping hasMany)
     {
-        if (session == null) throw new ArgumentNullException(nameof(session));
-        if (parentEntity == null) throw new ArgumentNullException(nameof(parentEntity));
-        if (hasMany == null) throw new ArgumentNullException(nameof(hasMany));
+        if (session == null)
+        {
+            throw new ArgumentNullException(nameof(session));
+        }
+
+        if (parentEntity == null)
+        {
+            throw new ArgumentNullException(nameof(parentEntity));
+        }
+
+        if (hasMany == null)
+        {
+            throw new ArgumentNullException(nameof(hasMany));
+        }
 
         var mapping = session.GetMapping(hasMany.ChildEntityType);
         var collection = hasMany.GetColumnValue(parentEntity);
@@ -155,13 +205,10 @@ public static class DeleteExtensions
                         continue;
                     }
 
-
                     await session.DeleteCollection(value, childHasMany);
                 }
             });
         }
-
-        
 
         await using var command = session.CreateCommand();
         command.CommandText =

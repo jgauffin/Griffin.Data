@@ -11,6 +11,8 @@ namespace Griffin.Data.Dialects;
 /// </summary>
 public interface ISqlDialect
 {
+    void ApplyQueryOptions(ClassMapping mapping, DbCommand command, QueryOptions options);
+
     /// <summary>
     ///     Execute an INSERT statement.
     /// </summary>
@@ -33,7 +35,4 @@ public interface ISqlDialect
     Task Insert(ClassMapping mapping, object entity, IDbCommand command);
 
     Task Update(ClassMapping mapping, object entity, DbCommand command);
-
-
-    void ApplyQueryOptions(ClassMapping mapping, DbCommand command, QueryOptions options);
 }

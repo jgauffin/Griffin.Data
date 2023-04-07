@@ -6,12 +6,11 @@ using Griffin.Data.Meta.Engines;
 namespace Griffin.Data.Meta;
 
 /// <summary>
-/// Helper methods.
+///     Helper methods.
 /// </summary>
 public class Helpers
 {
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="providerName">ADO.NET provider to use.</param>
     /// <param name="connectionString">Connection string to the DB.</param>
@@ -22,24 +21,24 @@ public class Helpers
     }
 
     /// <summary>
-    /// Suffix to add to every generated class.
-    /// </summary>
-    public string ClassSuffix { get; set; } = "";
-
-    /// <summary>
-    /// Prefix to add to every generated class.
+    ///     Prefix to add to every generated class.
     /// </summary>
     public string ClassPrefix { get; set; } = "";
 
     /// <summary>
-    /// Connection string to open a connection with.
+    ///     Suffix to add to every generated class.
     /// </summary>
-    protected string ConnectionString { get; private set; }
+    public string ClassSuffix { get; set; } = "";
 
     /// <summary>
-    /// Selected SQL provider.
+    ///     Connection string to open a connection with.
     /// </summary>
-    protected string ProviderName { get; private set; }
+    protected string ConnectionString { get; }
+
+    /// <summary>
+    ///     Selected SQL provider.
+    /// </summary>
+    protected string ProviderName { get; }
 
     private TableCollection LoadTables()
     {
@@ -88,7 +87,6 @@ public class Helpers
 
         conn.Close();
 
-
         var rxClean =
             new Regex(
                 "^(Equals|GetHashCode|GetType|ToString|repo|Save|IsNew|Insert|Update|Delete|Exists|SingleOrDefault|Single|First|FirstOrDefault|Fetch|Page|Query)$");
@@ -101,7 +99,9 @@ public class Helpers
 
                 // Make sure property name doesn't clash with class name
                 if (c.PropertyName == t.ClassName)
+                {
                     c.PropertyName = "_" + c.PropertyName;
+                }
             }
         }
 

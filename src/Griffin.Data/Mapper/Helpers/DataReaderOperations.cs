@@ -19,16 +19,28 @@ internal static class DataReaderOperations
     /// <exception cref="ArgumentNullException">Any of the fields are null.</exception>
     public static void Map<T>(this IDataRecord record, [DisallowNull] T entity, ClassMapping mapping)
     {
-        if (record == null) throw new ArgumentNullException(nameof(record));
+        if (record == null)
+        {
+            throw new ArgumentNullException(nameof(record));
+        }
 
-        if (entity == null) throw new ArgumentNullException(nameof(entity));
+        if (entity == null)
+        {
+            throw new ArgumentNullException(nameof(entity));
+        }
 
-        if (mapping == null) throw new ArgumentNullException(nameof(mapping));
+        if (mapping == null)
+        {
+            throw new ArgumentNullException(nameof(mapping));
+        }
 
         var values = new object[record.FieldCount];
         record.GetValues(values);
         var names = new string[record.FieldCount];
-        for (var i = 0; i < record.FieldCount; i++) names[i] = record.GetName(i);
+        for (var i = 0; i < record.FieldCount; i++)
+        {
+            names[i] = record.GetName(i);
+        }
 
         foreach (var property in mapping.Keys)
         {
@@ -38,10 +50,16 @@ internal static class DataReaderOperations
 
         foreach (var property in mapping.Properties)
         {
-            if (!property.CanReadFromDatabase) continue;
+            if (!property.CanReadFromDatabase)
+            {
+                continue;
+            }
 
             var value = record[property.ColumnName];
-            if (value is DBNull) continue;
+            if (value is DBNull)
+            {
+                continue;
+            }
 
             //if (property.ToPropertyConverter != null)
             //{
@@ -53,7 +71,7 @@ internal static class DataReaderOperations
     }
 
     /// <summary>
-    /// Map a record to an entity.
+    ///     Map a record to an entity.
     /// </summary>
     /// <typeparam name="T">Type of entity.</typeparam>
     /// <param name="reader">Record reader</param>
@@ -62,7 +80,10 @@ internal static class DataReaderOperations
     /// <exception cref="ArgumentNullException">Any of the fields are null.</exception>
     public static async Task MapAll<T>(this DbDataReader reader, ClassMapping mapping, Action<T> addMethod)
     {
-        if (mapping == null) throw new ArgumentNullException(nameof(mapping));
+        if (mapping == null)
+        {
+            throw new ArgumentNullException(nameof(mapping));
+        }
 
         //TODO: Create a list of property accessors here
         // and loop through them using the int index in the record
@@ -85,10 +106,16 @@ internal static class DataReaderOperations
 
             foreach (var property in mapping.Properties)
             {
-                if (!property.CanReadFromDatabase) continue;
+                if (!property.CanReadFromDatabase)
+                {
+                    continue;
+                }
 
                 var value = reader[property.ColumnName];
-                if (value is DBNull) continue;
+                if (value is DBNull)
+                {
+                    continue;
+                }
 
                 //if (property.ToPropertyConverter != null)
                 //{
@@ -100,18 +127,24 @@ internal static class DataReaderOperations
         }
     }
 
-
     /// <summary>
-    /// Map a record to an entity.
+    ///     Map a record to an entity.
     /// </summary>
     /// <param name="reader">Record reader</param>
     /// <param name="addMethod">Method to invoke for each generated entity.</param>
     /// <param name="mapping">Mapping used to lookup columns/properties.</param>
     /// <param name="itemFactory">Factory which can be used to create sub classes for each given row.</param>
     /// <exception cref="ArgumentNullException">Any of the fields are null.</exception>
-    public static async Task MapAll(this DbDataReader reader, ClassMapping mapping, Action<object> addMethod, Func<IDataRecord, object>? itemFactory = null)
+    public static async Task MapAll(
+        this DbDataReader reader,
+        ClassMapping mapping,
+        Action<object> addMethod,
+        Func<IDataRecord, object>? itemFactory = null)
     {
-        if (mapping == null) throw new ArgumentNullException(nameof(mapping));
+        if (mapping == null)
+        {
+            throw new ArgumentNullException(nameof(mapping));
+        }
 
         //TODO: Create a list of property accessors here
         // and loop through them using the int index in the record
@@ -135,10 +168,16 @@ internal static class DataReaderOperations
 
             foreach (var property in mapping.Properties)
             {
-                if (!property.CanReadFromDatabase) continue;
+                if (!property.CanReadFromDatabase)
+                {
+                    continue;
+                }
 
                 var value = reader[property.ColumnName];
-                if (value is DBNull) continue;
+                if (value is DBNull)
+                {
+                    continue;
+                }
 
                 //if (property.ToPropertyConverter != null)
                 //{

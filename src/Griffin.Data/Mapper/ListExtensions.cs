@@ -18,10 +18,14 @@ public static class ListExtensions
     /// <param name="session">Session to load in.</param>
     /// <param name="options">Options used to limit the search result.</param>
     /// <returns>Found entities.</returns>
-    public static async Task<List<TEntity>> List<TEntity>(this Session session, QueryOptions<TEntity> options) where TEntity: notnull
+    public static async Task<List<TEntity>> List<TEntity>(this Session session, QueryOptions<TEntity> options)
+        where TEntity : notnull
     {
         var entities = await session.Query(options);
-        foreach (var entity in entities) session.Track(entity);
+        foreach (var entity in entities)
+        {
+            session.Track(entity);
+        }
 
         return entities;
     }
@@ -49,7 +53,9 @@ public static class ListExtensions
     ///     used in the SQL query.
     /// </param>
     /// <returns>Found entities.</returns>
-    public static async Task<List<TEntity>> List<TEntity>(this Session session, string query,
+    public static async Task<List<TEntity>> List<TEntity>(
+        this Session session,
+        string query,
         object constraints) where TEntity : notnull
     {
         return await session.List(new QueryOptions<TEntity>(query, constraints));
@@ -66,7 +72,10 @@ public static class ListExtensions
     {
         var collection = (IList)Activator.CreateInstance(typeof(IList<>).MakeGenericType(entityType));
         await session.Query(entityType, options, collection);
-        foreach (var entity in collection) session.Track(entity);
+        foreach (var entity in collection)
+        {
+            session.Track(entity);
+        }
 
         return collection;
     }
@@ -82,12 +91,18 @@ public static class ListExtensions
     ///     used in the SQL query.
     /// </param>
     /// <returns>A generic list (for the specified entity type), but returned as <c>IList</c>.</returns>
-    public static async Task<IList> List(this Session session, Type entityType, string? query = null,
+    public static async Task<IList> List(
+        this Session session,
+        Type entityType,
+        string? query = null,
         object? constraints = null)
     {
         var collection = (IList)Activator.CreateInstance(typeof(IList<>).MakeGenericType(entityType));
         await session.Query(entityType, new QueryOptions(query, constraints), collection);
-        foreach (var entity in collection) session.Track(entity);
+        foreach (var entity in collection)
+        {
+            session.Track(entity);
+        }
 
         return collection;
     }

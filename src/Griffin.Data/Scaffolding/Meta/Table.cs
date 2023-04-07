@@ -13,10 +13,10 @@ public class Table
     }
 
     public string ClassName { get; }
-
-    public string TableName { get; set; }
     public List<Column> Columns { get; set; } = new();
     public ICollection<ForeignKeyColumn> ForeignKeys { get; set; } = new List<ForeignKeyColumn>();
-    public ICollection<Reference> References { get; set; } = new List<Reference>();
     public string Namespace { get; set; } = "";
+    public ICollection<Reference> References { get; set; } = new List<Reference>();
+
+    public string TableName { get; set; }
 }

@@ -9,7 +9,7 @@ namespace Griffin.Data.Converters.Dates;
 public class UtcToLocal : ISingleValueConverter<DateTime, DateTime>
 {
     /// <inheritdoc />
-    public DateTime ColumnToProperty([NotNull]DateTime utcTime)
+    public DateTime ColumnToProperty([NotNull] DateTime utcTime)
     {
         return utcTime.ToLocalTime();
     }

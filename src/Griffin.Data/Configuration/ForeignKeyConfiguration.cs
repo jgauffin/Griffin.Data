@@ -24,7 +24,11 @@ public class ForeignKeyConfiguration<TParentEntity, TChildEntity>
     /// <param name="propertyInfo">Property info for the FK in the child class.</param>
     public ForeignKeyConfiguration(PropertyInfo propertyInfo)
     {
-        if (propertyInfo == null) throw new ArgumentNullException(nameof(propertyInfo));
+        if (propertyInfo == null)
+        {
+            throw new ArgumentNullException(nameof(propertyInfo));
+        }
+
         _fkPropertyName = propertyInfo.Name;
     }
 
@@ -37,17 +41,6 @@ public class ForeignKeyConfiguration<TParentEntity, TChildEntity>
     public ForeignKeyConfiguration(string columnName)
     {
         _columnName = columnName ?? throw new ArgumentNullException(nameof(columnName));
-    }
-
-    /// <summary>
-    ///     Property in the parent entity that the FK points at.
-    /// </summary>
-    /// <typeparam name="TReferencedProperty">Referenced property type.</typeparam>
-    /// <param name="referencedPropertySelector">Expression used to select the property.</param>
-    public void References<TReferencedProperty>(
-        Expression<Func<TParentEntity, TReferencedProperty>> referencedPropertySelector)
-    {
-        _referencedPropertyName = referencedPropertySelector.GetMemberName();
     }
 
     /// <summary>
@@ -73,5 +66,16 @@ public class ForeignKeyConfiguration<TParentEntity, TChildEntity>
             throw new MappingConfigurationException(typeof(TChildEntity), "A foreign key has not been configured.");
         var mapping = new ForeignKeyMapping<TParentEntity, TChildEntity>(columnName, fk, referenced);
         return mapping;
+    }
+
+    /// <summary>
+    ///     Property in the parent entity that the FK points at.
+    /// </summary>
+    /// <typeparam name="TReferencedProperty">Referenced property type.</typeparam>
+    /// <param name="referencedPropertySelector">Expression used to select the property.</param>
+    public void References<TReferencedProperty>(
+        Expression<Func<TParentEntity, TReferencedProperty>> referencedPropertySelector)
+    {
+        _referencedPropertyName = referencedPropertySelector.GetMemberName();
     }
 }

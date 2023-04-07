@@ -11,7 +11,11 @@ internal class EntityNotFoundException : Exception
 
     public EntityNotFoundException(Type entityType, object constraints)
     {
-        if (constraints == null) throw new ArgumentNullException(nameof(constraints));
+        if (constraints == null)
+        {
+            throw new ArgumentNullException(nameof(constraints));
+        }
+
         EntityType = entityType ?? throw new ArgumentNullException(nameof(entityType));
         Constraints = constraints.ToDictionary();
         _constraintsStr = string.Join(", ", Constraints.Select(x => $"{x.Key}: {x.Value}"));
@@ -20,15 +24,19 @@ internal class EntityNotFoundException : Exception
     public EntityNotFoundException(Type entityType, IDbCommand command)
     {
         var ps = new Dictionary<string, object>();
-        foreach (IDataParameter parameter in command.Parameters) ps[parameter.ParameterName] = parameter.Value;
+        foreach (IDataParameter parameter in command.Parameters)
+        {
+            ps[parameter.ParameterName] = parameter.Value;
+        }
 
         EntityType = entityType;
         Constraints = ps;
         _constraintsStr = string.Join(", ", ps.Select(x => $"{x.Key}: {x.Value}"));
     }
 
-    public Type EntityType { get; }
     public IDictionary<string, object> Constraints { get; }
+
+    public Type EntityType { get; }
 
     public override string Message =>
         $"{EntityType.Name}: Failed to find an entity using constraints '{_constraintsStr}'";

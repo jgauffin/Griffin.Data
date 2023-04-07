@@ -4,12 +4,12 @@ using Griffin.Data.Mappings.Relations;
 namespace Griffin.Data.Configuration;
 
 /// <summary>
-/// Allows the main class get the configuration from the generic HasMany implementation.
+///     Allows the main class get the configuration from the generic HasMany implementation.
 /// </summary>
 public interface IHasManyConfigurator
 {
     /// <summary>
-    /// Name of the collection property in the parent entity.
+    ///     Name of the collection property in the parent entity.
     /// </summary>
     string PropertyName { get; }
 

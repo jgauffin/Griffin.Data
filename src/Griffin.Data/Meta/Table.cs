@@ -4,7 +4,7 @@ using System.Linq;
 namespace Griffin.Data.Meta;
 
 /// <summary>
-/// A class.
+///     A class.
 /// </summary>
 public class Table
 {
@@ -13,16 +13,13 @@ public class Table
     public List<Column> Columns { get; set; }
     public bool Ignore { get; set; }
     public bool IsView { get; set; }
-    public string Name { get; set; }
-    public string? Schema { get; set; }
-    public string SequenceName { get; set; }
-
-    public Column PrimaryKey
-    {
-        get { return Columns.SingleOrDefault(x => x.IsPrimaryKey); }
-    }
 
     public Column this[string columnName] => GetColumn(columnName);
+    public string Name { get; set; }
+
+    public Column PrimaryKey => Columns.SingleOrDefault(x => x.IsPrimaryKey);
+    public string? Schema { get; set; }
+    public string SequenceName { get; set; }
 
     public Column GetColumn(string columnName)
     {

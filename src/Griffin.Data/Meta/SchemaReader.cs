@@ -7,10 +7,19 @@ internal abstract class SchemaReader
 {
     private static readonly Regex rxCleanUp = new(@"[^\w\d_]", RegexOptions.Compiled);
 
+    public abstract TableCollection ReadSchema(DbConnection connection, DbProviderFactory factory);
+
+    public void WriteLine(string o)
+    {
+    }
+
     protected virtual string CleanUp(string name)
     {
         var str = rxCleanUp.Replace(name, "_");
-        if (char.IsDigit(str[0])) str = "_" + str;
+        if (char.IsDigit(str[0]))
+        {
+            str = "_" + str;
+        }
 
         return str;
     }
@@ -24,14 +33,10 @@ internal abstract class SchemaReader
             col.PropertyType != "Microsoft.SqlServer.Types.SqlGeography" &&
             col.PropertyType != "Microsoft.SqlServer.Types.SqlGeometry"
            )
+        {
             result = "?";
+        }
+
         return result;
-    }
-
-
-    public abstract TableCollection ReadSchema(DbConnection connection, DbProviderFactory factory);
-
-    public void WriteLine(string o)
-    {
     }
 }

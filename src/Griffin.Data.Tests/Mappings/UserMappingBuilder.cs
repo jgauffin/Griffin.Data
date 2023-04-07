@@ -8,7 +8,7 @@ internal class RegistryBuilder
 {
     public static MappingRegistry Build()
     {
-        List<object> configs=  new List<object>();
+        var configs = new List<object>();
         var userConfig = new ClassMappingConfigurator<User>();
         userConfig.Key(x => x.Id);
 
@@ -17,8 +17,8 @@ internal class RegistryBuilder
             .References(x => x.Id);
 
         userConfig.HasOne(x => x.Data)
-            .Discriminator(x=>x.State, state => typeof(AdminData))
-            .ForeignKey(x => x!.UserId)//TODO: How to remove the warning.
+            .Discriminator(x => x.State, state => typeof(AdminData))
+            .ForeignKey(x => x!.UserId) //TODO: How to remove the warning.
             .References(x => x.Id);
 
         userConfig.MapRemainingProperties();
@@ -42,21 +42,29 @@ internal class RegistryBuilder
 
         var mappings = BuildMappings(configs);
         var reg = new MappingRegistry();
-        foreach (var mapping in mappings) reg.Add(mapping);
+        foreach (var mapping in mappings)
+        {
+            reg.Add(mapping);
+        }
 
         BuildRelations(reg, configs);
-
 
         return reg;
     }
 
     public static IEnumerable<ClassMapping> BuildMappings(IReadOnlyList<object> items)
     {
-        foreach (var item in items) yield return ((IMappingBuilder)item).BuildMapping();
+        foreach (var item in items)
+        {
+            yield return ((IMappingBuilder)item).BuildMapping();
+        }
     }
 
     public static void BuildRelations(IMappingRegistry registry, IReadOnlyList<object> items)
     {
-        foreach (var item in items) ((IMappingBuilder)item).BuildRelations(registry);
+        foreach (var item in items)
+        {
+            ((IMappingBuilder)item).BuildRelations(registry);
+        }
     }
 }

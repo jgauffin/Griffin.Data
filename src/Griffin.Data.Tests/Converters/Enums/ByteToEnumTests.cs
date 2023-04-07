@@ -1,41 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Griffin.Data.Converters.Enums;
 
-namespace Griffin.Data.Tests.Converters.Enums
+namespace Griffin.Data.Tests.Converters.Enums;
+
+public class ByteToEnumTests
 {
-    public class ByteToEnumTests
+    [Fact]
+    public void Should_be_able_to_convert_to_byte()
     {
-        enum B
-        {
-            A,
-            B, 
-            C
-        }
+        var sut = new ByteToEnum<B>();
+        var actual = sut.PropertyToColumn(B.C);
 
-        [Fact]
-        public void Should_be_able_to_convert_to_byte()
-        {
+        actual.Should().Be((byte)B.C);
+    }
 
-            var sut = new ByteToEnum<B>();
-            var actual  =sut.PropertyToColumn(B.C);
+    [Fact]
+    public void Should_be_able_to_convert_to_enum()
+    {
+        var sut = new ByteToEnum<B>();
+        var actual = sut.ColumnToProperty(1);
 
-            actual.Should().Be((byte)B.C);
-        }
+        actual.Should().Be(B.B);
+    }
 
-        [Fact]
-        public void Should_be_able_to_convert_to_enum()
-        {
-
-            var sut = new ByteToEnum<B>();
-            var actual = sut.ColumnToProperty(1);
-
-            actual.Should().Be(B.B);
-        }
+    private enum B
+    {
+        A,
+        B,
+        C
     }
 }

@@ -13,10 +13,10 @@ internal class MainTableMapping : IEntityConfigurator<MainTable>
         config.Property(x => x.Money);
         config.Property(x => x.Rocks);
 
-        config.HasMany(x=>x.Children)
-            .ForeignKey(x=>x.MainId)
-            .References(x=>x.Id);
-        
+        config.HasMany(x => x.Children)
+            .ForeignKey(x => x.MainId)
+            .References(x => x.Id);
+
         config.HasMany(x => x.Logs)
             .ForeignKey(x => x.MainId)
             .References(x => x.Id);

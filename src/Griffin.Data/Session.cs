@@ -1,6 +1,12 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
+using System.Threading.Tasks;
+using Griffin.Data.ChangeTracking;
 using Griffin.Data.Dialects;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mappings;
@@ -12,48 +18,130 @@ namespace Griffin.Data;
 /// </summary>
 public class Session : IDisposable
 {
-    private readonly IEntityTracker? _entityTracker;
+    private readonly IChangeTracker? _changeTracker;
     private readonly IMappingRegistry _registry;
     private bool _done;
+    private bool _commitOnDispose = false;
 
-    /// <summary>
-    /// </summary>
-    /// <param name="configuration">Configuration to use.</param>
-    public Session(DbConfiguration configuration)
+    ///  <summary>
+    ///  </summary>
+    ///  <param name="configuration">Configuration to use.</param>
+    ///  <param name="changeTrackers">A list of zero or one change trackers.</param>
+    ///  <remarks>
+    /// <para>
+    /// Some IoC containers requires a IEnumerable instead of nullable for optional parameters.
+    ///  </para>
+    ///  </remarks>
+    public Session(DbConfiguration configuration, IEnumerable<IChangeTracker> changeTrackers)
     {
         Transaction = configuration.BeginTransaction();
         _registry = configuration.MappingRegistry;
         Dialect = configuration.Dialect;
+        _changeTracker = changeTrackers.FirstOrDefault();
+    }
+
+    /// <summary>
+    /// </summary>
+    /// <param name="configuration">Configuration to use.</param>
+    /// <param name="changeTracker">Optional change tracker.</param>
+    public Session(DbConfiguration configuration, IChangeTracker? changeTracker = null)
+    {
+        Transaction = configuration.BeginTransaction();
+        _registry = configuration.MappingRegistry;
+        Dialect = configuration.Dialect;
+        _changeTracker = changeTracker;
     }
 
     /// <summary>
     /// </summary>
     /// <param name="transaction">Transaction to use.</param>
     /// <param name="registry">Registry to lookup mappings in.</param>
-    internal Session(IDbTransaction transaction, IMappingRegistry registry)
+    /// <param name="changeTracker"></param>
+    internal Session(
+        IDbTransaction transaction,
+        IMappingRegistry registry,
+        IChangeTracker changeTracker)
     {
         Transaction = transaction;
         _registry = registry;
+        _changeTracker = changeTracker;
     }
-
-    /// <summary>
-    ///     Current DB transaction.
-    /// </summary>
-    public IDbTransaction Transaction { get; }
 
     /// <summary>
     ///     Dialect used to apply DB engine specific SQL statements.
     /// </summary>
     public ISqlDialect Dialect { get; set; } = new SqlServerDialect();
 
+    /// <summary>
+    ///     Current DB transaction.
+    /// </summary>
+    public IDbTransaction Transaction { get; }
+
     /// <inheritdoc />
     public void Dispose()
     {
         var con = Transaction.Connection;
-        if (!_done) Transaction.Rollback();
+        if (_commitOnDispose)
+        {
+            Transaction.Commit();
+        }
+        else if (!_done)
+        {
+            Transaction.Rollback();
+        }
 
         Transaction.Dispose();
         con.Dispose();
+    }
+
+    public async Task ApplyChangeTracking()
+    {
+        if (_changeTracker != null)
+        {
+            await _changeTracker.ApplyChanges(this);
+        }
+
+    }
+
+    /// <summary>
+    ///     Save all changes.
+    /// </summary>
+    /// <remarks>
+    ///     <para>When change tracking is not used, it simply means that the transaction is committed.</para>
+    ///     <para>
+    ///         When using change tracking, all entities (and their child entities) will be compared to the snapshot and
+    ///         persisted accordingly.
+    ///     </para>
+    /// </remarks>
+    public async Task SaveChanges(bool commit = true)
+    {
+        if (_changeTracker != null)
+        {
+            await _changeTracker.ApplyChanges(this);
+        }
+
+        if (commit)
+        {
+            Transaction.Commit();
+        }
+        else
+        {
+            _commitOnDispose = true;
+        }
+        
+        _done = true;
+    }
+
+    /// <summary>
+    ///     Track changes.
+    /// </summary>
+    /// <param name="item">Item to track.</param>
+    /// <remarks>
+    ///     <para>Should only be used for loaded entities and not when invoking CRUD methods.</para>
+    /// </remarks>
+    public void Track(object item)
+    {
+        _changeTracker?.Track(item);
     }
 
     internal DbCommand CreateCommand()
@@ -72,34 +160,7 @@ public class Session : IDisposable
         {
             throw new MappingException(entityType, "You should get hte mapping for the concrete type instead.");
         }
+
         return _registry.Get(entityType);
-    }
-
-    /// <summary>
-    ///     Save all changes.
-    /// </summary>
-    /// <remarks>
-    ///     <para>When change tracking is not used, it simply means that the transaction is committed.</para>
-    ///     <para>
-    ///         When using change tracking, all entities (and their child entities) will be compared to the snapshot and
-    ///         persisted accordingly.
-    ///     </para>
-    /// </remarks>
-    public void SaveChanges()
-    {
-        Transaction.Commit();
-        _done = true;
-    }
-
-    /// <summary>
-    ///     Track changes.
-    /// </summary>
-    /// <param name="item">Item to track.</param>
-    /// <remarks>
-    ///     <para>Should only be used for loaded entities and not when invoking CRUD methods.</para>
-    /// </remarks>
-    public void Track(object item)
-    {
-        _entityTracker?.Track(item);
     }
 }

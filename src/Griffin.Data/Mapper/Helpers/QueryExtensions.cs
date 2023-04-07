@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
-using Griffin.Data;
 using Griffin.Data.Helpers;
 
 namespace Griffin.Data.Mapper.Helpers;
@@ -42,7 +39,10 @@ internal static class QueryExtensions
         return items;
     }
 
-    public static async Task Query(this Session session, Type entityType, QueryOptions options,
+    public static async Task Query(
+        this Session session,
+        Type entityType,
+        QueryOptions options,
         IList collection)
     {
         var mapping = session.GetMapping(entityType);
@@ -63,8 +63,5 @@ internal static class QueryExtensions
         {
             await session.GetChildrenForMany(entityType, collection);
         }
-
     }
-
-
 }
