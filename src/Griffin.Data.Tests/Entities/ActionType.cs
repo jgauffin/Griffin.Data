@@ -1,8 +1,8 @@
-namespace Griffin.Data.Tests.Entities;
+﻿namespace Griffin.Data.Tests.Entities;
 
 public enum ActionType
 {
-    Created = 0,
-    Active = 1,
-    Disabled = 2
+    Disabled = 0,
+    Simple = 1,
+    Extra = 2
 }

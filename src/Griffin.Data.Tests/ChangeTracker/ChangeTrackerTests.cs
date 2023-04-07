@@ -77,5 +77,22 @@ public class ChangeTrackerTests : IntegrationTests
         await Session.ApplyChangeTracking();
 
         var result = await Session.GetById<MainTable>(main.Id);
+        result.Logs[1].Message.Should().Be("Hejsan");
+        result.Children[0].Action.Should().BeNull();
     }
+
+    [Fact]
+    public async Task Should_be_able_to_swap_child()
+    {
+        var main = await Session.GetById<MainTable>(1);
+        main.Children[0].ActionType = ActionType.Extra;
+        main.Children[0].Action = new ExtraAction(){Extra = "Yo"};
+
+        await Session.ApplyChangeTracking();
+
+        var result = await Session.GetById<MainTable>(main.Id);
+        result.Children[0].Action.As<ExtraAction>().Extra.Should().Be("Yo");
+    }
+
+    //TODO: Should be able to switch child (=> delete/insert).
 }

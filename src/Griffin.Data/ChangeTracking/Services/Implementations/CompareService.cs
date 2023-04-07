@@ -78,10 +78,20 @@ public class CompareService
             return;
         }
 
+        // check if the are of the mapping type
         if (snapshot.GetType() != current.GetType())
         {
-            throw new InvalidOperationException(
-                $"Expected to compare two objects of same type. Got {snapshot.GetType()} and {current.GetType()}");
+            // Swapped child entity
+            if (snapshot.GetType().BaseType != current.GetType().BaseType)
+            {
+                throw new InvalidOperationException(
+                    $"Expected to compare two objects of same type. Got {snapshot.GetType()} and {current.GetType()}");
+            }
+
+            _diff.Added(parent, current, depth);
+            _diff.Removed(parent, snapshot, depth);
+            return;
+
         }
 
         var isEqual = true;

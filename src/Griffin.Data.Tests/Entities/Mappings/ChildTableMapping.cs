@@ -19,8 +19,8 @@ internal class ChildTableMapping : IEntityConfigurator<ChildTable>
     {
         return arg switch
         {
-            ActionType.Created => typeof(ExtraAction),
-            ActionType.Active => typeof(SimpleAction),
+            ActionType.Extra => typeof(ExtraAction),
+            ActionType.Simple => typeof(SimpleAction),
             _ => null
         };
     }

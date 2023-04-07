@@ -151,9 +151,8 @@ internal static class SessionExtensions
             if (kvp.Value.GetType().IsCollection())
             {
                 //TODO: support non digit types.
-                var values = string.Join(", ", (IEnumerable)kvp.Value);
+                var values = string.Join(", ", ((IEnumerable<object>)kvp.Value));
                 sql += $"{kvp.Key} IN ({values}) AND ";
-                cmd.AddParameter(kvp.Key, kvp.Value);
             }
             else
             {

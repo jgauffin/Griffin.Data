@@ -32,7 +32,7 @@ public class DeleteTests : IntegrationTests
         {
             Children = new[]
             {
-                new ChildTable { ActionType = ActionType.Active, Action = new ExtraAction { Extra = "333" } }
+                new ChildTable { ActionType = ActionType.Extra, Action = new ExtraAction { Extra = "333" } }
             }
         };
         await Session.Insert(sut);

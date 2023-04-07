@@ -136,7 +136,33 @@ public class ClassMapping
 
     public IRelationShip? GetRelation(Type childType)
     {
-        return(IRelationShip?) _children.FirstOrDefault(x => x.ChildEntityType == childType)
-               ?? _collections.FirstOrDefault(x => x.ChildEntityType == childType);
+        // We need this loop since mappings are registered using the base type
+        // while child properties contains a concrete instances.
+
+        Type? type = childType;
+        while (type != null)
+        {
+            var relation= (IRelationShip?)_children.FirstOrDefault(x => x.ChildEntityType == type)
+                   ?? _collections.FirstOrDefault(x => x.ChildEntityType == type);
+            if (relation != null)
+            {
+                return relation;
+            }
+
+            type = type.BaseType;
+        }
+
+        // The base type can also be an interface.
+        foreach (var @interface in childType.GetInterfaces())
+        {
+            var relation = (IRelationShip?)_children.FirstOrDefault(x => x.ChildEntityType == @interface)
+                           ?? _collections.FirstOrDefault(x => x.ChildEntityType == @interface);
+            if (relation != null)
+            {
+                return relation;
+            }
+        }
+
+        return null;
     }
 }
