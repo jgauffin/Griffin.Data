@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using Griffin.Data.Helpers;
 using Griffin.Data.Scaffolding.Helpers;
 using Griffin.Data.Scaffolding.Queries.Meta;
 
@@ -49,7 +51,10 @@ public class QueryRunnerGenerator : IQueryGenerator
         sb.AppendLine($@"public class {meta.QueryName}Runner :  ListRunner<{meta.QueryName}ResultItem>, IQueryRunner<{meta.QueryName}, {meta.QueryName}Result>");
         sb.AppendLineIndent("{");
 
-        sb.AppendLine($"public {meta.QueryName}Runner(Session session) : base(session) {{}}");
+        sb.AppendLine($"public {meta.QueryName}Runner(Session session) : base(session)");
+        sb.AppendLine("{");
+        sb.AppendLine("}");
+        sb.AppendLine();
 
         GenerateQueryMethod(meta, sb);
         GenerateMapMethod(meta, sb);
@@ -164,6 +169,24 @@ public class QueryRunnerGenerator : IQueryGenerator
         foreach (var parameter in meta.Parameters)
         {
             sb.AppendLine($"command.AddParameter(\"{parameter.Name}\", query.{char.ToUpper(parameter.Name[0])}{parameter.Name[1..]});");
+        }
+
+        if (meta.UsePaging)
+        {
+            sb.AppendLine("if (query.PageNumber != null)");
+            sb.AppendLineIndent("{");
+            sb.AppendLine($"Session.Dialect.ApplyPaging(command, \"{meta.Columns[0].Name}\", query.PageNumber.Value, query.PageSize);");
+            sb.DedentAppendLine("}");
+            sb.AppendLine();
+        }
+
+        if (meta.UseSorting)
+        {
+            sb.AppendLine("if (query.SortEntries.Any())");
+            sb.AppendLineIndent("{");
+            sb.AppendLine("Session.Dialect.ApplySorting(command, query.SortEntries);");
+            sb.DedentAppendLine("}");
+            sb.AppendLine();
         }
 
         sb.AppendLine($"return new {meta.QueryName}Result {{ Items = await MapRecords(command) }};");

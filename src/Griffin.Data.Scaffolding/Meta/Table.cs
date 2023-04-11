@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Griffin.Data.Helpers;
 using Griffin.Data.Scaffolding.Helpers;
 
 namespace Griffin.Data.Scaffolding.Meta;

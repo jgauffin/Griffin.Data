@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>gf</ToolCommandName>
+        <PackageOutputPath>./nupkg</PackageOutputPath>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+        <Version>2.0.0-rc01</Version>
+        <PackageReleaseNotes>Added custom change tracker which can be used with externally built entities.</PackageReleaseNotes>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>Griffin.Data.Scaffolding</PackageId>
+        <Authors>Jonas Gauffin</Authors>
+        <Description>Scaffolding for Griffin.Data - Uses a database to generate entities, mappings and queries for your data layer.</Description>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <Copyright>Copyright 2023 © Jonas Gauffin. All rights reserved.</Copyright>
+        <PackageTags>data-mapper, orm, sqlserver, queries</PackageTags>
+        <PackageProjectUrl>https://github.com/jgauffin/griffin.data</PackageProjectUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Griffin.Data\Griffin.Data.csproj" />
+    </ItemGroup>
+
+</Project>

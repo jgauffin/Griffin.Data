@@ -1,4 +1,6 @@
-﻿declare @name varchar(40) = 'hej';
+﻿--paging
+--sorting
+declare @name varchar(40) = 'hej';
 
 select *
 from maintable

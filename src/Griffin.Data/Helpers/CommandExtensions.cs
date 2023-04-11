@@ -5,10 +5,9 @@ using System.Data;
 using System.Data.Common;
 using System.IO;
 using System.Linq;
-using Griffin.Data.Helpers;
 using Griffin.Data.Mappings;
 
-namespace Griffin.Data;
+namespace Griffin.Data.Helpers;
 
 /// <summary>
 ///     Helper extensions for commands.

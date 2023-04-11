@@ -15,7 +15,7 @@ internal static class SessionExtensions
         var mapping = session.GetMapping(entityType);
 
         var sql = options.Sql ?? "";
-        var cmd = session.Transaction.CreateCommand();
+        var cmd = CommandExtensions.CreateCommand(session.Transaction);
 
         if (string.IsNullOrEmpty(sql))
         {
@@ -42,7 +42,7 @@ internal static class SessionExtensions
             // the SQL statement contained our names which mean that we cannot modify them (i.e. change property to column names).
             foreach (var parameter in options.Parameters)
             {
-                cmd.AddParameter(parameter.Key, parameter.Value);
+                CommandExtensions.AddParameter(cmd, parameter.Key, parameter.Value);
             }
         }
 
@@ -156,7 +156,7 @@ internal static class SessionExtensions
             else
             {
                 sql += $"{kvp.Key} = @{kvp.Key} AND ";
-                cmd.AddParameter(kvp.Key, kvp.Value);
+                CommandExtensions.AddParameter(cmd, kvp.Key, kvp.Value);
             }
         }
 

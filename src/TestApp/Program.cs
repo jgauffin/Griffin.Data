@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Data.SqlClient;
+using System.Reflection;
 using Griffin.Data;
 using Griffin.Data.ChangeTracking;
 using Griffin.Data.Configuration;
@@ -15,7 +16,10 @@ var connectionString = "Data Source=.;Initial Catalog=GriffinData;Integrated Sec
 
 var gen = new QueryScaffolder();
 var dir = Path.GetFullPath("..\\..\\..", Environment.CurrentDirectory);
-await gen.Generate(connectionString, dir);
+
+var con = new SqlConnection(connectionString);
+con.Open();
+await gen.Generate(con, dir);
 
 return;
 

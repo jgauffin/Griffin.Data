@@ -5,7 +5,10 @@ using Griffin.Data.Queries;
 
 public class ListUsersRunner :  ListRunner<ListUsersResultItem>, IQueryRunner<ListUsers, ListUsersResult>
 {
-    public ListUsersRunner(Session session) : base(session) {}
+    public ListUsersRunner(Session session) : base(session)
+    {
+    }
+
     public async Task<ListUsersResult> Execute(ListUsers query)
     {
         await using var command = Session.CreateCommand();
@@ -14,6 +17,16 @@ public class ListUsersRunner :  ListRunner<ListUsersResultItem>, IQueryRunner<Li
                                  where name=@name;        ";
 
         command.AddParameter("name", query.Name);
+        if (query.PageNumber != null)
+        {
+            Session.Dialect.ApplyPaging(command, "Id", query.PageNumber.Value, query.PageSize);
+        }
+
+        if (query.SortEntries.Any())
+        {
+            Session.Dialect.ApplySorting(command, query.SortEntries);
+        }
+
         return new ListUsersResult { Items = await MapRecords(command) };
     }
     protected override void MapRecord(IDataRecord record, ListUsersResultItem item)

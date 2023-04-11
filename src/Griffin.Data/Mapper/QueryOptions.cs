@@ -23,9 +23,9 @@ public class QueryOptions<T>
         Session = session;
 
         Options.Sql = sql;
-        Options.Parameters = constraints.ToDictionary();
+        Options.DbParameters = constraints.ToDictionary();
     }
-
+    
     /// <summary>
     /// </summary>
     /// <param name="constraints">
@@ -57,7 +57,7 @@ public class QueryOptions<T>
     }
 
     /// <summary>
-    ///     Ascending sort.
+    ///     IsAscending sort.
     /// </summary>
     /// <typeparam name="TProperty">Property to sort after.</typeparam>
     /// <param name="property">Property selector</param>

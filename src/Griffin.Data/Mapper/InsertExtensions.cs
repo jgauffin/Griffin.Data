@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Griffin.Data.Helpers;
 using Griffin.Data.Mappings;
 
 namespace Griffin.Data.Mapper;
@@ -32,7 +33,7 @@ public static class InsertExtensions
 
         var mapping = session.GetMapping(entity.GetType());
         await using var command = session.CreateCommand();
-        await session.InsertEntity(mapping, entity, command);
+        await session.InsertEntity(mapping, entity, command, extraColumns);
         await session.InsertOneRelationShip(entity, mapping);
         await session.InsertManyRelationShip(entity, mapping);
     }
@@ -61,7 +62,7 @@ public static class InsertExtensions
         foreach (var entity in entities)
         {
             await using var command = session.CreateCommand();
-            await session.InsertEntity(mapping, entity, command);
+            await session.InsertEntity(mapping, entity, command, extraColumns);
         }
     }
 
@@ -69,7 +70,8 @@ public static class InsertExtensions
         this Session session,
         ClassMapping mapping,
         object entity,
-        IDbCommand command)
+        IDbCommand command,
+        IDictionary<string, object>? extraColumns = null)
     {
         if (session == null)
         {
@@ -112,7 +114,7 @@ public static class InsertExtensions
             columns += $"{key.ColumnName}, ";
             values += $"@{key.PropertyName}, ";
 
-            command.AddParameter(key.PropertyName, value);
+            CommandExtensions.AddParameter(command, key.PropertyName, value);
         }
 
         foreach (var property in mapping.Properties)
@@ -126,8 +128,20 @@ public static class InsertExtensions
             columns += $"{property.ColumnName}, ";
             values += $"@{property.PropertyName}, ";
 
-            command.AddParameter(property.PropertyName, value);
+            CommandExtensions.AddParameter(command, property.PropertyName, value);
         }
+
+        if (extraColumns != null)
+        {
+            foreach (var column in extraColumns)
+            {
+                columns += $"{column.Key}, ";
+                values += $"@{column.Key}, ";
+
+                CommandExtensions.AddParameter(command, column.Key, column.Value);
+            }
+        }
+
 
         columns = columns.Remove(columns.Length - 2, 2);
         values = values.Remove(values.Length - 2, 2);

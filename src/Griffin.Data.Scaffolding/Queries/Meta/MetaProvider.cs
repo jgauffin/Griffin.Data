@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.Text;
-using Griffin.Data.Meta;
+﻿using System.Data;
+using Griffin.Data.Helpers;
 using Griffin.Data.Scaffolding.Meta;
 
 namespace Griffin.Data.Scaffolding.Queries.Meta
@@ -73,7 +70,9 @@ namespace Griffin.Data.Scaffolding.Queries.Meta
                 Columns = columns,
                 Parameters = parameters,
                 QueryName = queryName,
-                SqlQuery = queryFile.Query
+                SqlQuery = queryFile.Query,
+                UseSorting = queryFile.UseSorting,
+                UsePaging = queryFile.UsePaging
             };
         }
     }

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Griffin.Data.ChangeTracking;
 using Griffin.Data.Configuration;
 using Griffin.Data.Dialects;
+using Griffin.Data.Helpers;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mappings;
 
@@ -144,7 +145,7 @@ public class Session : IDisposable
 
     public DbCommand CreateCommand()
     {
-        return Transaction.CreateCommand();
+        return CommandExtensions.CreateCommand(Transaction);
     }
 
     internal ClassMapping GetMapping<T>()

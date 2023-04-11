@@ -2,6 +2,7 @@
 using System.Data;
 using Griffin.Data.Configuration;
 using Griffin.Data.Converters;
+using Griffin.Data.Converters.Enums;
 using Griffin.Data.Mapper;
 
 namespace Griffin.Data.Mappings.Properties;
@@ -16,6 +17,7 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping
     private readonly Action<TEntity, TProperty>? _setter;
     private bool _canReadFromDatabase;
     private bool _canWriteToDatabase;
+    private bool _enumIsConfigured;
 
     /// <summary>
     /// </summary>
@@ -35,7 +37,74 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping
         _setter = setter;
         CanWriteToDatabase = _getter != null;
         CanReadFromDatabase = _setter != null;
+        var nullableType = Nullable.GetUnderlyingType(PropertyType);
+        if (!PropertyType.IsEnum && nullableType?.IsEnum != true)
+        {
+            return;
+        }
+
+        PropertyToColumnConverter = x =>
+        {
+            if (x == null)
+            {
+                return null!;
+            }
+
+            if (!_enumIsConfigured)
+            {
+                return (int)x;
+            }
+
+            return PropertyToColumnConverter!(x);
+        };
+        ColumnToPropertyConverter = x =>
+        {
+            if (x == null)
+            {
+                return null!;
+            }
+
+            SelectEnumConverter(x);
+            return ColumnToPropertyConverter!(x);
+        };
     }
+
+    private void SelectEnumConverter(object x)
+    {
+        _enumIsConfigured = true;
+        if (x.GetType() == typeof(short))
+        {
+            var converter = new GenericToEnumConverter<short, TProperty>();
+            PropertyToColumnConverter = x => converter.PropertyToColumn((TProperty)x);
+            ColumnToPropertyConverter = x => converter.ColumnToProperty((short)x);
+        }
+        else if (x.GetType() == typeof(byte))
+        {
+            var converter = new GenericToEnumConverter<byte, TProperty>();
+            PropertyToColumnConverter = x => converter.PropertyToColumn((TProperty)x);
+            ColumnToPropertyConverter = x => converter.ColumnToProperty((byte)x);
+        }
+        else if (x.GetType() == typeof(string))
+        {
+            PropertyToColumnConverter = y => y.ToString();
+            ColumnToPropertyConverter = y =>
+            {
+                if (!Enum.TryParse(typeof(TProperty), (string)y, true, out var enumValue))
+                {
+                    throw new InvalidOperationException("Failed to convert '" + y + "' to enum " + typeof(TProperty));
+                }
+
+                return enumValue;
+            };
+        }
+        else
+        {
+            var converter2 = new GenericToEnumConverter<int, TProperty>();
+            PropertyToColumnConverter = x => converter2.PropertyToColumn((TProperty)x);
+            ColumnToPropertyConverter = x => converter2.ColumnToProperty((int)x);
+        }
+    }
+
 
     /// <summary>
     ///     Specifies if this property can be used when reading from the database.

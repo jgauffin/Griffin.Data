@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Griffin.Data.Helpers;
 using Griffin.Data.Mappings.Relations;
 
 namespace Griffin.Data.Mapper;
@@ -88,7 +89,7 @@ public static class DeleteExtensions
         await using var command = session.CreateCommand();
         command.CommandText =
             $"DELETE FROM {mapping.TableName} WHERE {keyProperty.ColumnName} = @{keyProperty.PropertyName}";
-        command.AddParameter(keyProperty.PropertyName, key);
+        CommandExtensions.AddParameter(command, keyProperty.PropertyName, key);
         await command.ExecuteNonQueryAsync();
     }
 
@@ -142,7 +143,7 @@ public static class DeleteExtensions
             $"DELETE FROM {mapping.TableName} WHERE {hasOne.ForeignKeyColumnName} = @{hasOne.ForeignKeyColumnName}";
 
         var fkValue = hasOne.GetReferencedId(parentEntity);
-        command.AddParameter(hasOne.ForeignKeyColumnName, fkValue);
+        CommandExtensions.AddParameter(command, hasOne.ForeignKeyColumnName, fkValue);
 
         await command.ExecuteNonQueryAsync();
     }
@@ -215,7 +216,7 @@ public static class DeleteExtensions
             $"DELETE FROM {mapping.TableName} WHERE {hasMany.ForeignKeyColumnName} = @{hasMany.ForeignKeyColumnName}";
 
         var fkValue = hasMany.GetReferencedId(parentEntity);
-        command.AddParameter(hasMany.ForeignKeyColumnName, fkValue);
+        CommandExtensions.AddParameter(command, hasMany.ForeignKeyColumnName, fkValue);
 
         await command.ExecuteNonQueryAsync();
     }

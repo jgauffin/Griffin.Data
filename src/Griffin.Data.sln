@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Griffin.Data.Tests", "Griff
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestApp", "TestApp\TestApp.csproj", "{A68D532D-16DD-4E1B-ABB0-B2B43461ADEF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Data.Scaffolding", "Griffin.Data.Scaffolding\Griffin.Data.Scaffolding.csproj", "{9C8AC6C5-CEE1-4B84-904D-A86DDD364DFF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{A68D532D-16DD-4E1B-ABB0-B2B43461ADEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A68D532D-16DD-4E1B-ABB0-B2B43461ADEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A68D532D-16DD-4E1B-ABB0-B2B43461ADEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C8AC6C5-CEE1-4B84-904D-A86DDD364DFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C8AC6C5-CEE1-4B84-904D-A86DDD364DFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C8AC6C5-CEE1-4B84-904D-A86DDD364DFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C8AC6C5-CEE1-4B84-904D-A86DDD364DFF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

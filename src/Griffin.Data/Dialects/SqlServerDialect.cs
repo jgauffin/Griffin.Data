@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
+using Griffin.Data.Helpers;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mappings;
+using Griffin.Data.Queries;
 
 namespace Griffin.Data.Dialects;
 
@@ -48,6 +51,38 @@ public class SqlServerDialect : ISqlDialect
         {
             throw command.CreateDetailedException(ex);
         }
+    }
+
+    public void ApplyPaging(IDbCommand command, string keyColumn, int pageNumber, int? pageSize)
+    {
+        var ps = pageSize ?? 100;
+        if (pageNumber == 1)
+        {
+            var pos = command.CommandText.IndexOf("SELECT", StringComparison.OrdinalIgnoreCase);
+            command.CommandText = command.CommandText.Insert(pos + 7, $"TOP({ps}) ");
+        }
+        else
+        {
+            // SELECT * FROM TableName ORDER BY id OFFSET 10 ROWS FETCH NEXT 10 ROWS ONLY;
+            if (!command.CommandText.Contains("ORDER BY", StringComparison.OrdinalIgnoreCase))
+            {
+                command.CommandText += $" ORDER BY {keyColumn}";
+            }
+
+            command.CommandText +=
+                $" OFFSET {ps * (pageNumber - 1)} ROWS FETCH NEXT {ps} ROWS ONLY";
+        }
+    }
+
+    public void ApplySorting(IDbCommand command, IList<SortEntry> entries)
+    {
+        command.CommandText += " ORDER BY ";
+        foreach (var sort in entries)
+        {
+            command.CommandText += $"{sort.Name} {(sort.IsAscending ? "ASC" : "DESC")}, ";
+        }
+
+        command.CommandText = command.CommandText.Remove(command.CommandText.Length - 2, 2);
     }
 
     /// <inheritdoc />

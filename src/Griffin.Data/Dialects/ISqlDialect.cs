@@ -1,8 +1,10 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mappings;
+using Griffin.Data.Queries;
 
 namespace Griffin.Data.Dialects;
 
@@ -33,6 +35,10 @@ public interface ISqlDialect
     ///     </para>
     /// </remarks>
     Task Insert(ClassMapping mapping, object entity, IDbCommand command);
+
+    void ApplyPaging(IDbCommand command, string keyColumnName, int pageNumber, int? pageSize);
+
+    void ApplySorting(IDbCommand command, IList<SortEntry> entries);
 
     Task Update(ClassMapping mapping, object entity, DbCommand command);
 }

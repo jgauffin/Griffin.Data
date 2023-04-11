@@ -6,7 +6,6 @@ using System.Reflection;
 using Griffin.Data.Helpers;
 using Griffin.Data.Mappings;
 using Griffin.Data.Mappings.Properties;
-using Griffin.Data.Scaffolding.Helpers;
 
 namespace Griffin.Data.Configuration;
 

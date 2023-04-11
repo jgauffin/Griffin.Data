@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Griffin.Data.Helpers;
 using Griffin.Data.Scaffolding.Helpers;
 using Griffin.Data.Scaffolding.Queries.Meta;
 

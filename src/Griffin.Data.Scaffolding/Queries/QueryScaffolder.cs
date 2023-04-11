@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
@@ -23,11 +24,8 @@ public class QueryScaffolder
     /// <param name="connectionString"></param>
     /// <param name="directory">Directory recursively scan for query files.</param>
     /// <returns></returns>
-    public async Task Generate(string connectionString, string directory)
+    public async Task Generate(IDbConnection connection, string directory)
     {
-        await using var connection = new SqlConnection(connectionString);
-        connection.Open();
-
         var files = new List<QueryFile>();
         await ParseQueryFiles(directory, files);
         var metas = GenerateQueryMetadata(files, connection);
@@ -47,7 +45,7 @@ public class QueryScaffolder
         }
     }
 
-    private static List<QueryMeta> GenerateQueryMetadata(List<QueryFile> queryFiles, SqlConnection connection)
+    private static List<QueryMeta> GenerateQueryMetadata(List<QueryFile> queryFiles, IDbConnection connection)
     {
         var metas = new List<QueryMeta>();
         foreach (var queryFile in queryFiles)

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Griffin.Data.Helpers;
 using Griffin.Data.Mappings;
 using Griffin.Data.Mappings.Relations;
 
@@ -98,6 +99,11 @@ internal static class FetchChildrenOperations
         if (parents == null)
         {
             throw new ArgumentNullException(nameof(parents));
+        }
+
+        if (parents.Count == 0)
+        {
+            return;
         }
 
         var options = new QueryOptions();

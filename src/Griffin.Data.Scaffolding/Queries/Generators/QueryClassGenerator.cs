@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Griffin.Data.Helpers;
 using Griffin.Data.Scaffolding.Helpers;
 using Griffin.Data.Scaffolding.Meta;
 using Griffin.Data.Scaffolding.Queries.Meta;
@@ -53,17 +54,17 @@ public class QueryClassGenerator : IQueryGenerator
         }
 
         sb.Append($@"public class {meta.QueryName}");
-        if (meta.UseSorting && meta.UserPaging)
+        if (meta.UseSorting && meta.UsePaging)
         {
-            sb.AppendLine($" : PagedAndSortedQuery, IQuery<{meta.QueryName}Result>");
+            sb.AppendLine($" : IQuery<{meta.QueryName}Result>, IPagedQuery, ISortedQuery");
         }
         else if (meta.UseSorting)
         {
-            sb.AppendLine($" : SortedQuery, IQuery<{meta.QueryName}Result>");
+            sb.AppendLine($" : IQuery<{meta.QueryName}Result>, ISortedQuery");
         }
-        else if (meta.UserPaging)
+        else if (meta.UsePaging)
         {
-            sb.AppendLine($" : PagedQuery, IQuery<{meta.QueryName}Result>");
+            sb.AppendLine($" : IQuery<{meta.QueryName}Result>, IPagedQuery");
         }
         else
         {
@@ -76,7 +77,28 @@ public class QueryClassGenerator : IQueryGenerator
             var typeName = Aliases.TryGetValue(parameter.PropertyType, out var a) ? a : parameter.PropertyType.Name;
             sb.AppendLine($"public {typeName} {char.ToUpper(parameter.Name[0])}{parameter.Name[1..]} {{ get; set; }}");
         }
-        
+
+        if (meta.UsePaging)
+        {
+            sb.AppendLine("/// <summary>");
+            sb.AppendLine("/// One-based page number.");
+            sb.AppendLine("/// </summary>");
+            sb.AppendLine("public int? PageNumber { get; set; }");
+
+            sb.AppendLine("/// <summary>");
+            sb.AppendLine("/// Number of items per page.");
+            sb.AppendLine("/// </summary>");
+            sb.AppendLine("public int? PageSize { get; set; }");
+        }
+
+        if (meta.UseSorting)
+        {
+            sb.AppendLine("/// <summary>");
+            sb.AppendLine("/// Sort result using property names");
+            sb.AppendLine("/// </summary>");
+            sb.AppendLine("public IList<SortEntry> SortEntries { get; set; } = new List<SortEntry>();");
+        }
+
         sb.DedentAppendLine("}");
 
         if (meta.Namespace.Length > 0)

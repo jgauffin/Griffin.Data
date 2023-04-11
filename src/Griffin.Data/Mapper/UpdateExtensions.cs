@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading.Tasks;
+using Griffin.Data.Helpers;
 using Griffin.Data.Mappings;
 
 namespace Griffin.Data.Mapper;
@@ -71,7 +72,7 @@ public static class UpdateExtensions
             }
 
             where += $"{key.ColumnName} = @{key.PropertyName}, ";
-            command.AddParameter(key.PropertyName, value);
+            CommandExtensions.AddParameter(command, key.PropertyName, value);
         }
 
         foreach (var property in mapping.Properties)
@@ -83,7 +84,7 @@ public static class UpdateExtensions
             }
 
             columns += $"{property.ColumnName} = @{property.PropertyName}, ";
-            command.AddParameter(property.PropertyName, value);
+            CommandExtensions.AddParameter(command, property.PropertyName, value);
         }
 
         if (extraUpdateColumns != null)
@@ -91,7 +92,7 @@ public static class UpdateExtensions
             foreach (var extraColumn in extraUpdateColumns)
             {
                 columns += $"{extraColumn.Key} = @{extraColumn.Key}, ";
-                command.AddParameter(extraColumn.Key, extraColumn.Value);
+                CommandExtensions.AddParameter(command, extraColumn.Key, extraColumn.Value);
             }
         }
 
@@ -100,7 +101,7 @@ public static class UpdateExtensions
             foreach (var extraColumn in extraDbConstraints)
             {
                 where += $"{extraColumn.Key} = @{extraColumn.Key}, ";
-                command.AddParameter(extraColumn.Key, extraColumn.Value);
+                CommandExtensions.AddParameter(command, extraColumn.Key, extraColumn.Value);
             }
         }
 

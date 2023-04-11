@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace Griffin.Data.Scaffolding.Helpers;
+namespace Griffin.Data.Helpers;
 
 public static class Inflector
 {

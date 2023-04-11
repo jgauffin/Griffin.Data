@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace Griffin.Data.Scaffolding.Helpers;
+namespace Griffin.Data.Helpers;
 
 public class TabbedStringBuilder
 {
@@ -18,6 +18,7 @@ public class TabbedStringBuilder
 
     public void AppendLine(string? str = null)
     {
+
         if (str == null)
         {
             _sb.AppendLine();

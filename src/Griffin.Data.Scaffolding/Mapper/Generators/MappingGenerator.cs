@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Griffin.Data.Helpers;
 using Griffin.Data.Scaffolding.Helpers;
 using Griffin.Data.Scaffolding.Meta;
 
