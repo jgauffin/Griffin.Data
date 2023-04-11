@@ -7,7 +7,7 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(ProjectName).xml</DocumentationFile>
 
-        <Version>1.0.0-rc41</Version>
+        <Version>2.0.0-rc01</Version>
         <PackageReleaseNotes>Added custom change tracker which can be used with externally built entities.</PackageReleaseNotes>
     </PropertyGroup>
 
@@ -25,7 +25,7 @@
         <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
     </ItemGroup>
 
-                  <Target Name="CopyPackage" AfterTargets="Pack">
+    <Target Name="CopyPackage" AfterTargets="Pack" Condition="$(Configuration)!='Release'">
         <Copy SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="\src\nuget\" />
     </Target>
 
