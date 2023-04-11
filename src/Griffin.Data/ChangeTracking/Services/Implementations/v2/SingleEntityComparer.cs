@@ -45,7 +45,7 @@ public class SingleEntityComparer
                 continue;
             }
 
-            if (existingCurrents.TryGetValue(snapshotItem.Key!, out var currentItem))
+            if (existingCurrents.TryGetValue(snapshotItem.Key, out var currentItem))
             {
                 toCompare.Add((snapshotItem, currentItem));
             }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Griffin.Data.Mappings;
@@ -122,17 +123,25 @@ internal static class FetchChildrenOperations
 
             var childMapping = session.GetMapping(hasManyMapping.ChildEntityType);
             await using var cmd = session.CreateQueryCommand(hasManyMapping.ChildEntityType, options);
-            await using var reader = await cmd.ExecuteReaderAsync();
-            await reader.MapAll(childMapping, x =>
+            try
             {
-                var fk = hasManyMapping.GetForeignKeyValue(x);
-                if (fk == null)
+                await using var reader = await cmd.ExecuteReaderAsync();
+                await reader.MapAll(childMapping, x =>
                 {
-                    throw new MappingException(x, "Failed to lookup parent using foreign key, cannot attach child.");
-                }
+                    var fk = hasManyMapping.GetForeignKeyValue(x);
+                    if (fk == null)
+                    {
+                        throw new MappingException(x,
+                            "Failed to lookup parent using foreign key, cannot attach child.");
+                    }
 
-                childCollections[fk].Add(x);
-            });
+                    childCollections[fk].Add(x);
+                });
+            }
+            catch (DbException ex)
+            {
+                throw cmd.CreateDetailedException(ex);
+            }
         }
 
         foreach (var hasOneMapping in parentMapping.Children)
@@ -161,17 +170,24 @@ internal static class FetchChildrenOperations
             var childMapping = session.GetMapping(hasOneMapping.ChildEntityType);
 
             await using var cmd = session.CreateQueryCommand(hasOneMapping.ChildEntityType, options);
-            await using var reader = await cmd.ExecuteReaderAsync();
-            await reader.MapAll(childMapping, x =>
+            try
             {
-                var fkValue = hasOneMapping.GetForeignKeyValue(x);
-                if (fkValue == null)
+                await using var reader = await cmd.ExecuteReaderAsync();
+                await reader.MapAll(childMapping, x =>
                 {
-                    throw new MappingException(x, "Failed to lookup parent using foreign key, cannot attach child.");
-                }
+                    var fkValue = hasOneMapping.GetForeignKeyValue(x);
+                    if (fkValue == null)
+                    {
+                        throw new MappingException(x, "Failed to lookup parent using foreign key, cannot attach child.");
+                    }
 
-                hasOneMapping.SetPropertyValue(parentIndex[fkValue], x);
-            });
+                    hasOneMapping.SetPropertyValue(parentIndex[fkValue], x);
+                });
+            }
+            catch (DbException ex)
+            {
+                throw cmd.CreateDetailedException(ex);
+            }
         }
     }
 
@@ -228,17 +244,25 @@ internal static class FetchChildrenOperations
             var childMapping = session.GetMapping(kvp.Key);
 
             await using var cmd = session.CreateQueryCommand(kvp.Key, options);
-            await using var reader = await cmd.ExecuteReaderAsync();
-            await reader.MapAll(childMapping, x =>
+            try
             {
-                var fkValue = hasOneMapping.GetForeignKeyValue(x);
-                if (fkValue == null)
+                await using var reader = await cmd.ExecuteReaderAsync();
+                await reader.MapAll(childMapping, x =>
                 {
-                    throw new MappingException(x, "Failed to lookup parent using foreign key, cannot attach child.");
-                }
+                    var fkValue = hasOneMapping.GetForeignKeyValue(x);
+                    if (fkValue == null)
+                    {
+                        throw new MappingException(x,
+                            "Failed to lookup parent using foreign key, cannot attach child.");
+                    }
 
-                hasOneMapping.SetPropertyValue(parentIndex[fkValue], x);
-            });
+                    hasOneMapping.SetPropertyValue(parentIndex[fkValue], x);
+                });
+            }
+            catch (DbException ex)
+            {
+                throw cmd.CreateDetailedException(ex);
+            }
         }
     }
 }
