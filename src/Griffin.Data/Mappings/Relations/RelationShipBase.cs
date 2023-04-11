@@ -100,7 +100,7 @@ public abstract class RelationShipBase<TParent, TChild> : IRelationShip
                 continue;
             }
 
-            keys.Add(parent);
+            keys.Add(id);
         }
 
         var parameters = new Dictionary<string, object>();

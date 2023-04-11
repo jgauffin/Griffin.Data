@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Griffin.Data.Mappings;
 
@@ -21,13 +22,26 @@ internal static class MappingExtensions
 
     public static string? GenerateKey(this ClassMapping mapping, object entity)
     {
-        var values = mapping.Keys.Select(x => x.GetColumnValue(entity)).Where(x => x != null).ToList();
-        if (!values.Any())
+        List<object> keys = new List<object>();
+        foreach (var keyMapping in mapping.Keys)
+        {
+            var value = keyMapping.GetColumnValue(entity);
+
+            // any of the keys being null = new item.
+            if (value == null)
+            {
+                return null;
+            }
+
+            keys.Add(value);
+        }
+
+        if (!keys.Any())
         {
             return null;
         }
 
         var key = entity.GetType().Name;
-        return $"{key}{string.Join(", ", values)}";
+        return $"{key}{string.Join(", ", keys)}";
     }
 }

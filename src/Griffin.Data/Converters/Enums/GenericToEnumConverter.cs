@@ -26,12 +26,13 @@ internal class GenericToEnumConverter<TColumn, TEnum>
     /// <exception cref="ArgumentException"></exception>
     public GenericToEnumConverter()
     {
-        if (!typeof(TEnum).IsEnum)
+        var enumType = Nullable.GetUnderlyingType(typeof(TEnum)) ?? typeof(TEnum);
+        if (!enumType.IsEnum)
         {
             throw new ArgumentException("Type must be an enum", nameof(TEnum));
         }
 
-        var values = Enum.GetValues(typeof(TEnum));
+        var values = Enum.GetValues(enumType);
         _isFlags = typeof(TEnum).GetCustomAttribute<FlagsAttribute>() != null;
 
         if (!_isFlags)

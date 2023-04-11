@@ -111,6 +111,22 @@ internal static class CommandExtensions
         return e;
     }
 
+    public static InvalidDataException CreateDetailedException(this IDbCommand command, Exception ex, Type entityType)
+    {
+        var ps = command.Parameters.Cast<IDataParameter>().Select(x => $"{x.ParameterName}={x.Value}");
+        var e = new InvalidDataException(
+            $"{ex.Message}\r\n  EntityType: {entityType.FullName}\r\n  SQL: '{command.CommandText}'\r\n  Parameters: {string.Join(", ", ps)}", ex);
+        return e;
+    }
+
+    public static InvalidDataException CreateDetailedException(this IDbCommand command, Exception ex, Type parentType, Type entityType)
+    {
+        var ps = command.Parameters.Cast<IDataParameter>().Select(x => $"{x.ParameterName}={x.Value}");
+        var e = new InvalidDataException(
+            $"{ex.Message}\r\n  ParentType: {parentType.FullName}\r\n  EntityType: {entityType.FullName}\r\n  SQL: '{command.CommandText}'\r\n  Parameters: {string.Join(", ", ps)}", ex);
+        return e;
+    }
+
     /// <summary>
     ///     Convert an anonymous object to a dictionary.
     /// </summary>

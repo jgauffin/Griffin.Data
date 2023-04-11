@@ -8,3 +8,4 @@ src/_ReSharper*
 src/packages/*
 /.vs
 /src/.vs
+**/nupkg/*

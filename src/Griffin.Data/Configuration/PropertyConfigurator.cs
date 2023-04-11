@@ -21,10 +21,6 @@ public class PropertyConfigurator<TEntity, TProperty> where TProperty : notnull
     public PropertyConfigurator(PropertyMapping<TEntity, TProperty> mapping)
     {
         _mapping = mapping ?? throw new ArgumentNullException(nameof(mapping));
-        if (typeof(TProperty).IsEnum)
-        {
-            Converter(new IntToEnum<TProperty>());
-        }
     }
 
     /// <summary>

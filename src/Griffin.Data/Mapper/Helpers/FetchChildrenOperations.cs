@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Griffin.Data.Helpers;
@@ -144,9 +143,9 @@ internal static class FetchChildrenOperations
                     childCollections[fk].Add(x);
                 });
             }
-            catch (DbException ex)
+            catch (Exception ex)
             {
-                throw cmd.CreateDetailedException(ex);
+                throw cmd.CreateDetailedException(ex, parentType, hasManyMapping.ChildEntityType);
             }
         }
 
@@ -190,9 +189,9 @@ internal static class FetchChildrenOperations
                     hasOneMapping.SetPropertyValue(parentIndex[fkValue], x);
                 });
             }
-            catch (DbException ex)
+            catch (Exception ex)
             {
-                throw cmd.CreateDetailedException(ex);
+                throw cmd.CreateDetailedException(ex, parentType, hasOneMapping.ChildEntityType);
             }
         }
     }
@@ -215,6 +214,8 @@ internal static class FetchChildrenOperations
     {
         var discriminatorIndex = new Dictionary<Type, IList>();
         var parentIndex = new Dictionary<object, object>();
+        Type parentType =typeof(object);
+
         foreach (var parent in parents)
         {
             var fk = hasOneMapping.GetReferencedId(parent);
@@ -223,6 +224,8 @@ internal static class FetchChildrenOperations
                 throw new MappingException(parent,
                     $"Failed to get referenced column for child {hasOneMapping.ChildEntityType.Name} using FK {hasOneMapping.ForeignKeyColumnName}. Cannot load child entities.");
             }
+
+            parentType = parent.GetType();
 
             parentIndex[fk] = parent;
 
@@ -265,9 +268,9 @@ internal static class FetchChildrenOperations
                     hasOneMapping.SetPropertyValue(parentIndex[fkValue], x);
                 });
             }
-            catch (DbException ex)
+            catch (Exception ex)
             {
-                throw cmd.CreateDetailedException(ex);
+                throw cmd.CreateDetailedException(ex, parentType, kvp.Key);
             }
         }
     }
