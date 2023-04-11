@@ -10,7 +10,7 @@ public class User
 }
 ```
 
-If you are designing business entites, the above code is flawed, since the ´User` looses control of it's children. It cannot check if the child is valid for it, since children can be added directly to the collection.
+If you are designing business entites, the above code is flawed, since the ´User` looses control of its children. It cannot check if the child is valid for it, since children can be added directly to the collection.
 
 A better design is to use `IReadOnlyList<Address>` interface since it prevents direct adds to the collection:
 
@@ -65,7 +65,7 @@ internal class SomeParentMapping : IEntityConfigurator<SomeParent>
     {
         config.Key(x => x.Id).AutoIncrement();
 
-        config.HasMany(x => x.Children)   // Child property in the arent class.
+        config.HasMany(x => x.Children)   // Child property in the parent class.
             .ForeignKey(x => x.ParentId)  // FK property in the child class (SomeChild).
             .References(x => x.Id);       // property in the main entity (SomeParent) that the FK references.
         
@@ -132,7 +132,7 @@ public class ChildConnector
     public string DataType { get; set; }
 
     // The correct child is loaded into this property.
-    public IData { get; set; }
+    public IData Data { get; set; }
 }
 
 // We need a base, can either be a class or an interface.
@@ -230,6 +230,55 @@ create table SomeChildren
     SomeParentId int not null constraint FK_SomeParentId_SomeParents foreign key references SomeParents(Id)
     SomeProperty varchar(40) not null
 )
+```
+
+## Limiting rows for child entities
+
+Sometimes you do not want to get all rows for child entites.
+
+Here is an example:
+
+```csharp
+public class MainClass
+{
+    public IReadOnlyList<SubClass> LeftOptions { get; set; }
+    public IReadOnlyList<SubClass> RightOptions { get; set; }
+}
+```
+
+To achive that, configure a SubsetColumn. 
+
+```sql
+create table SubClass
+(
+    Id int not null,
+    Option varchar(40) not null,
+    SomeOtherProperty int not null
+)
+```
+
+The contents of the column will be managed by the library (i.e. it's not added in the classes).
+
+```csharp
+internal class MainClassMapping : IEntityConfigurator<MainClass>
+{
+    public void Configure(IClassMappingConfigurator<MainClass> config)
+    {
+        config.Key(x => x.Id).AutoIncrement();
+
+        config.HasMany(x => x.LeftOptions)   // Child property in the arent class.
+            .SubsetColumn("SubClass", "Left")
+            .ForeignKey(x => x.ParentId)  // FK property in the child class (SomeChild).
+            .References(x => x.Id);       // property in the main entity (SomeParent) that the FK references.
+            
+        config.HasMany(x => x.RightOptions)   // Child property in the arent class.
+            .SubsetColumn("SubClass", "Right")
+            .ForeignKey(x => x.ParentId)  // FK property in the child class (SomeChild).
+            .References(x => x.Id);       // property in the main entity (SomeParent) that the FK references.
+            
+        config.MapRemaningProperties();
+    }
+}
 ```
 
 ## Restrictions

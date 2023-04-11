@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mappings;
@@ -8,18 +7,13 @@ namespace Griffin.Data.ChangeTracking.Services;
 
 internal class EntityCache : IEntityCache
 {
+    private readonly IMappingRegistry _mappingRegistry;
     private List<TrackedEntity> _addedEntities = new();
     private Dictionary<string, TrackedEntity> _existingEntities = new();
-    private readonly IMappingRegistry _mappingRegistry;
 
     public EntityCache(IMappingRegistry mappingRegistry)
     {
         _mappingRegistry = mappingRegistry;
-    }
-
-    public void Add(TrackedEntity trackedEntity)
-    {
-        _addedEntities.Add(trackedEntity);
     }
 
     public bool TryFind(object entity, out TrackedEntity? trackedEntity)
@@ -84,6 +78,11 @@ internal class EntityCache : IEntityCache
         }
 
         return _existingEntities.Values.Where(x => x.State == state).OrderByDescending(x => x.Depth).ToList();
+    }
+
+    public void Add(TrackedEntity trackedEntity)
+    {
+        _addedEntities.Add(trackedEntity);
     }
 
     private TrackedEntity GetByKey(object entity)

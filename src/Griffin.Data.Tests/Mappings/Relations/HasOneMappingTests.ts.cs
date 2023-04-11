@@ -18,10 +18,10 @@ public class HasOneMappingTests
     [Fact]
     public void Should_not_has_a_discriminator_as_default()
     {
-        var fkAccessor = new PropertyMapping(typeof(Subjects.Data), typeof(int), x => ((Subjects.Data)x).UserId,
-            (x, y) => ((Subjects.Data)x).UserId = (int)y);
+        var fkAccessor = new PropertyMapping<Subjects.Data, int>("UserId", x => x.UserId,
+            (x, y) => x.UserId = y);
         var referenceAccessor =
-            new PropertyMapping(typeof(User), typeof(int), x => ((User)x).Id, (x, y) => ((User)x).Id = (int)y);
+            new PropertyMapping<User, int>("User", x => x.Id, (x, y) => x.Id = y);
         var fk = new ForeignKeyMapping<User, Subjects.Data>("data", fkAccessor, referenceAccessor);
 
         var sut = new HasOneMapping<User, Subjects.Data>(fk, GetData, SetData);

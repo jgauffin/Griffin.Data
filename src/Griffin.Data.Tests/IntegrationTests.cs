@@ -12,7 +12,6 @@ public abstract class IntegrationTests : IDisposable
     private readonly SqlConnection _connection;
     private readonly MappingRegistry _mappingRegistry = new();
     private readonly IDbTransaction _transaction;
-    public SnapshotChangeTracking ChangeTracking { get; }
 
     protected IntegrationTests()
     {
@@ -23,6 +22,8 @@ public abstract class IntegrationTests : IDisposable
         ChangeTracking = new SnapshotChangeTracking(_mappingRegistry);
         Session = new Session(_transaction, _mappingRegistry, ChangeTracking);
     }
+
+    public SnapshotChangeTracking ChangeTracking { get; }
 
     public IMappingRegistry Registry => _mappingRegistry;
 

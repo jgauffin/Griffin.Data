@@ -44,29 +44,12 @@ internal static class DataReaderOperations
 
         foreach (var property in mapping.Keys)
         {
-            var value = record[property.ColumnName];
-            property.SetColumnValue(entity, value);
+            property.MapRecord(record, entity);
         }
 
         foreach (var property in mapping.Properties)
         {
-            if (!property.CanReadFromDatabase)
-            {
-                continue;
-            }
-
-            var value = record[property.ColumnName];
-            if (value is DBNull)
-            {
-                continue;
-            }
-
-            //if (property.ToPropertyConverter != null)
-            //{
-            //    value = property.ToPropertyConverter(new ToPropertyValueConverterContext(value, record));
-            //}
-
-            property.SetColumnValue(entity, value);
+            property.MapRecord(record, entity);
         }
     }
 
@@ -100,29 +83,12 @@ internal static class DataReaderOperations
 
             foreach (var property in mapping.Keys)
             {
-                var value = reader[property.ColumnName];
-                property.SetColumnValue(entity, value);
+                property.MapRecord(reader, entity);
             }
 
             foreach (var property in mapping.Properties)
             {
-                if (!property.CanReadFromDatabase)
-                {
-                    continue;
-                }
-
-                var value = reader[property.ColumnName];
-                if (value is DBNull)
-                {
-                    continue;
-                }
-
-                //if (property.ToPropertyConverter != null)
-                //{
-                //    value = property.ToPropertyConverter(new ToPropertyValueConverterContext(value, record));
-                //}
-
-                property.SetColumnValue(entity, value);
+                property.MapRecord(reader, entity);
             }
         }
     }
@@ -162,29 +128,12 @@ internal static class DataReaderOperations
 
             foreach (var property in mapping.Keys)
             {
-                var value = reader[property.ColumnName];
-                property.SetColumnValue(entity, value);
+                property.MapRecord(reader, entity);
             }
 
             foreach (var property in mapping.Properties)
             {
-                if (!property.CanReadFromDatabase)
-                {
-                    continue;
-                }
-
-                var value = reader[property.ColumnName];
-                if (value is DBNull)
-                {
-                    continue;
-                }
-
-                //if (property.ToPropertyConverter != null)
-                //{
-                //    value = property.ToPropertyConverter(new ToPropertyValueConverterContext(value, record));
-                //}
-
-                property.SetColumnValue(entity, value);
+                property.MapRecord(reader, entity);
             }
 
             addMethod(entity);

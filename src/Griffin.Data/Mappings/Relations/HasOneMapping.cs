@@ -52,7 +52,7 @@ public class HasOneMapping<TParent, TChild> : RelationShipBase<TParent, TChild>,
     }
 
     /// <inheritdoc />
-    public void SetColumnValue([NotNull] object parentEntity, object value)
+    public void SetPropertyValue([NotNull] object parentEntity, object value)
     {
         _setter((TParent)parentEntity, (TChild)value);
     }

@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Griffin.Data.Mappings.Properties;
+﻿namespace Griffin.Data.Mappings.Properties;
 
 /// <summary>
 ///     Access value in a field (property or key).
@@ -17,17 +15,12 @@ public interface IFieldAccessor
     ///         The method should internally read the property, convert the value and then return the converted value.
     ///     </para>
     /// </remarks>
-    object? GetColumnValue([NotNull] object entity);
+    object? GetColumnValue(object entity);
 
     /// <summary>
-    ///     Set column value (i.e. write to the property).
+    ///     Set property value (i.e. write to the property).
     /// </summary>
     /// <param name="instance">Entity to write to.</param>
-    /// <param name="value">Value read from the database.</param>
-    /// <remarks>
-    ///     <para>
-    ///         This method should invoke the converter internally before assigning the property.
-    ///     </para>
-    /// </remarks>
-    void SetColumnValue([NotNull] object instance, object value);
+    /// <param name="value">Value (should be of same type as the property).</param>
+    void SetPropertyValue(object instance, object value);
 }

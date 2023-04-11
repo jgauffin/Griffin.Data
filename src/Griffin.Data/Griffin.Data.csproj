@@ -1,33 +1,32 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>netstandard2.1</TargetFramework>
-		<Nullable>enable</Nullable>
-		<LangVersion>default</LangVersion>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(ProjectName).xml</DocumentationFile>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <Nullable>enable</Nullable>
+        <LangVersion>default</LangVersion>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(ProjectName).xml</DocumentationFile>
 
-		<Version>1.0.0-rc20</Version>
-		<PackageReleaseNotes>Fixed so the user is attached to the error contexts.</PackageReleaseNotes>
-	</PropertyGroup>
+        <Version>2.0.0-rc01</Version>
+        <PackageReleaseNotes>Added custom change tracker which can be used with externally built entities.</PackageReleaseNotes>
+    </PropertyGroup>
 
-	<PropertyGroup>
-		<PackageId>Griffin.Data</PackageId>
-		<Authors>Jonas Gauffin</Authors>
-		<Description>Lightweight ORM and Query mapper with change tracking, relationships (one to many + one to one).</Description>
-		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<Copyright>Copyright 2023 © Jonas Gauffin. All rights reserved.</Copyright>
-		<PackageTags>data-mapper, orm, sqlserver, queries</PackageTags>
-		<PackageIconUrl>https://coderr.io/images/nuget_icon.png</PackageIconUrl>
-		<PackageProjectUrl>https://coderr.io</PackageProjectUrl>
-	</PropertyGroup>
+    <PropertyGroup>
+        <PackageId>Griffin.Data</PackageId>
+        <Authors>Jonas Gauffin</Authors>
+        <Description>Lightweight ORM and Query mapper with change tracking, relationships (one to many + one to one).</Description>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <Copyright>Copyright 2023 © Jonas Gauffin. All rights reserved.</Copyright>
+        <PackageTags>data-mapper, orm, sqlserver, queries</PackageTags>
+        <PackageProjectUrl>https://github.com/jgauffin/griffin.data</PackageProjectUrl>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+    </ItemGroup>
 
-	<Target Name="CopyPackage" AfterTargets="Pack">
-		<Copy SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="\src\nuget\" />
-	</Target>
+                  <Target Name="CopyPackage" AfterTargets="Pack">
+        <Copy SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="\src\nuget\" />
+    </Target>
 
 </Project>

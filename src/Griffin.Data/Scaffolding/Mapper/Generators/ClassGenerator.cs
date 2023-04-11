@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Griffin.Data.Scaffolding.Helpers;
 using Griffin.Data.Scaffolding.Meta;
 
-namespace Griffin.Data.Scaffolding.Generators;
+namespace Griffin.Data.Scaffolding.Mapper.Generators;
 
 /// <summary>
 ///     Generate a entity class.

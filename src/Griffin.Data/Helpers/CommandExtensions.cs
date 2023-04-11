@@ -58,12 +58,7 @@ internal static class CommandExtensions
             else
             {
                 sql += $" {columnName}=@{propertyName} AND";
-                var value = pair.Value;
-                if (property?.PropertyToColumnConverter != null)
-                {
-                    value = property.PropertyToColumnConverter(pair.Value);
-                }
-
+                var value = property?.ConvertToColumnValue(pair.Value) ?? pair.Value;
                 AddParameter(command, propertyName, value);
             }
         }

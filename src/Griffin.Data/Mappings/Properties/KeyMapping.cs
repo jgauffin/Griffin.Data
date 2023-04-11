@@ -1,33 +1,26 @@
 ﻿using System;
+using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using Griffin.Data.Mapper;
 
 namespace Griffin.Data.Mappings.Properties;
 
-public interface IKeyMapping : IFieldMapping
-{
-    /// <summary>
-    ///     This column is auto incremented (i.e. should not be specified in insert statements).
-    /// </summary>
-    bool IsAutoIncrement { get; }
-}
-
 /// <summary>
 ///     Mapping for a key column.
 /// </summary>
-public class KeyMapping<TEntity, TPropertyType> : IKeyMapping
+public class KeyMapping<TEntity, TProperty> : IKeyMapping
 {
+    private readonly TProperty? _defaultValue = default;
     private readonly Type _entityType;
-    private readonly Func<TEntity, TPropertyType?>? _getter;
-    private readonly Action<TEntity, TPropertyType>? _setter;
-    private readonly TPropertyType? _defaultValue = default;
+    private readonly Func<TEntity, TProperty?>? _getter;
+    private readonly Action<TEntity, TProperty>? _setter;
 
     /// <summary>
     /// </summary>
     /// <param name="entityType">Entity that this mapping belongs to.</param>
     /// <param name="getter">Method used to read from value from the entity property.</param>
     /// <param name="setter">Method used to write a value to the entity property.</param>
-    public KeyMapping(Type entityType, Func<TEntity, TPropertyType?>? getter, Action<TEntity, TPropertyType>? setter)
+    public KeyMapping(Type entityType, Func<TEntity, TProperty?>? getter, Action<TEntity, TProperty>? setter)
     {
         _entityType = entityType ?? throw new ArgumentNullException(nameof(entityType));
         _getter = getter;
@@ -39,21 +32,22 @@ public class KeyMapping<TEntity, TPropertyType> : IKeyMapping
     /// </summary>
     public bool IsAutoIncrement { get; internal set; }
 
-    /// <summary>
-    ///     Used to read from value from the entity property
-    /// </summary>
-    /// <param name="instance">entity.</param>
-    /// <param name="value">Value to set.</param>
-    /// <exception cref="InvalidOperationException"></exception>
-    public void SetColumnValue([NotNull] object instance, object value)
+    /// <inheritdoc />
+    public void MapRecord(IDataRecord record, object entity)
     {
         if (_setter == null)
         {
-            throw new MappingException(instance,
-                $"No setter has been defined for property ${PropertyName}.");
+            return;
         }
 
-        _setter((TEntity)instance, (TPropertyType)value);
+        var value = record[ColumnName];
+        _setter((TEntity)entity, (TProperty)value);
+    }
+
+    /// <inheritdoc />
+    public void SetPropertyValue(object entity, object value)
+    {
+        _setter?.Invoke((TEntity)entity, (TProperty)value);
     }
 
     /// <summary>
@@ -97,8 +91,25 @@ public class KeyMapping<TEntity, TPropertyType> : IKeyMapping
     /// </summary>
     /// <param name="value">Value to convert.</param>
     /// <returns>Same value as given.</returns>
-    public object ToColumnValue([NotNull] object value)
+    public object ConvertToColumnValue([NotNull] object value)
     {
         return value ?? throw new ArgumentNullException(nameof(value));
+    }
+
+    /// <summary>
+    ///     Used to read from value from the entity property
+    /// </summary>
+    /// <param name="instance">entity.</param>
+    /// <param name="value">Value to set.</param>
+    /// <exception cref="InvalidOperationException"></exception>
+    public void SetColumnValue([NotNull] object instance, object value)
+    {
+        if (_setter == null)
+        {
+            throw new MappingException(instance,
+                $"No setter has been defined for property ${PropertyName}.");
+        }
+
+        _setter((TEntity)instance, (TProperty)value);
     }
 }

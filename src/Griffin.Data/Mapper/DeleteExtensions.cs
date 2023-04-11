@@ -179,7 +179,7 @@ public static class DeleteExtensions
         }
 
         var mapping = session.GetMapping(hasMany.ChildEntityType);
-        var collection = hasMany.GetColumnValue(parentEntity);
+        var collection = hasMany.GetCollection(parentEntity);
 
         if ((mapping.Collections.Any() || mapping.Children.Any()) && collection != null)
         {
@@ -199,7 +199,7 @@ public static class DeleteExtensions
 
                 foreach (var childHasMany in mapping.Collections)
                 {
-                    var value = childHasMany.GetColumnValue(element);
+                    var value = childHasMany.GetCollection(element);
                     if (value == null)
                     {
                         continue;

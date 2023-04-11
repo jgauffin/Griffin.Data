@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
@@ -151,7 +150,7 @@ internal static class SessionExtensions
             if (kvp.Value.GetType().IsCollection())
             {
                 //TODO: support non digit types.
-                var values = string.Join(", ", ((IEnumerable<object>)kvp.Value));
+                var values = string.Join(", ", (IEnumerable<object>)kvp.Value);
                 sql += $"{kvp.Key} IN ({values}) AND ";
             }
             else

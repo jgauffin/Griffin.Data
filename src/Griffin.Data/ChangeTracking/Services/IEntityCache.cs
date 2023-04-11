@@ -13,11 +13,11 @@ namespace Griffin.Data.ChangeTracking.Services;
 /// </remarks>
 internal interface IEntityCache
 {
-    void Insert(TrackedEntity trackedEntity);
     void Append(string key, TrackedEntity entity);
 
     IEntityCache Clone();
     IReadOnlyList<TrackedEntity> GetDepth(int depth);
+    void Insert(TrackedEntity trackedEntity);
     IReadOnlyList<TrackedEntity> ListForState(ChangeState state);
     void MarkAsModified(object entity);
     void MarkAsRemoved(object entity);

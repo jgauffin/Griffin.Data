@@ -7,7 +7,7 @@ namespace Griffin.Data.Tests.Mappings.Properties;
 
 public class KeyMappingTests
 {
-    private User _entity;
+    private User? _entity;
     private int _value;
 
     [Fact]
@@ -15,7 +15,7 @@ public class KeyMappingTests
     {
         var sut = new KeyMapping<User, int>(typeof(User), GetValue, null);
 
-        var actual = sut.ToColumnValue(3);
+        var actual = sut.ConvertToColumnValue(3);
 
         actual.Should().Be(3);
     }
@@ -26,7 +26,7 @@ public class KeyMappingTests
         var sut = new KeyMapping<User, int>(typeof(User), GetValue, SetValue);
         _value = 3;
 
-        var actual = sut.GetColumnValue("");
+        var actual = sut.GetColumnValue(new User());
 
         actual.Should().Be(3);
     }
@@ -35,10 +35,11 @@ public class KeyMappingTests
     public void Should_be_able_to_set_value()
     {
         var sut = new KeyMapping<User, int>(typeof(User), GetValue, SetValue);
+        var user = new User();
 
-        sut.SetColumnValue("", 1);
+        sut.SetColumnValue(user, 1);
 
-        _entity.Should().Be("");
+        _entity.Should().Be(user);
         _value.Should().Be(1);
     }
 

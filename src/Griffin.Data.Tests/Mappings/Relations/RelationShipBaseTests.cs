@@ -12,8 +12,8 @@ public class RelationShipBaseTests
 
     public RelationShipBaseTests()
     {
-        var referencedProperty = new PropertyMapping(typeof(User), typeof(int), GetId, SetId);
-        var fkProperty = new PropertyMapping(typeof(Address), typeof(int), GetUserId, SetUserId);
+        var referencedProperty = new PropertyMapping<User, int>("Id", GetId, SetId);
+        var fkProperty = new PropertyMapping<Address, int>("UserId", GetUserId, SetUserId);
         var fk = new ForeignKeyMapping<User, Address>("user_id", fkProperty, referencedProperty);
         _mapping = new MyTests(fk, typeof(Address));
     }
@@ -71,7 +71,7 @@ public class RelationShipBaseTests
     public void Should_use_column_when_FK_property_is_not_specified()
     {
         var referencedProperty =
-            new PropertyMapping(typeof(User), typeof(IReadOnlyList<Address>), GetAddress, SetAddress);
+            new PropertyMapping<User, Address>("Addresses", GetAddress, SetAddress);
         var fk = new ForeignKeyMapping<User, Address>("user_id", null, referencedProperty);
         var mapping = new MyTests(fk, typeof(Address));
 
@@ -85,20 +85,20 @@ public class RelationShipBaseTests
         actual2.Should().Throw<MappingException>();
     }
 
-    private object GetAddress(object arg)
+    private Address GetAddress(User arg)
     {
-        var user = (User)arg;
-        return user.GetType().GetProperty("Addresses")!.GetValue(arg)!;
+        var user = arg;
+        return (Address)user.GetType().GetProperty("Addresses")!.GetValue(arg)!;
     }
 
-    private object GetId(object arg)
+    private int GetId(User arg)
     {
-        return ((User)arg).Id;
+        return arg.Id;
     }
 
-    private object GetUserId(object arg)
+    private int GetUserId(Address arg)
     {
-        return ((Address)arg).UserId;
+        return arg.UserId;
     }
 
     private void SetAddress(object arg1, object arg2)
@@ -107,14 +107,14 @@ public class RelationShipBaseTests
         user.GetType().GetProperty("Addresses")!.SetValue(arg1, arg2);
     }
 
-    private void SetId(object arg1, object arg2)
+    private void SetId(User arg1, int arg2)
     {
-        ((User)arg1).Id = (int)arg2;
+        arg1.Id = arg2;
     }
 
-    private void SetUserId(object arg1, object arg2)
+    private void SetUserId(Address arg1, int arg2)
     {
-        ((Address)arg1).UserId = (int)arg2;
+        arg1.UserId = arg2;
     }
 }
 

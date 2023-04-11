@@ -38,9 +38,16 @@ public class SqlServerDialect : ISqlDialect
             return;
         }
 
-        command.CommandText += ";SELECT cast(SCOPE_IDENTITY() as int);";
-        var result = await ((DbCommand)command).ExecuteScalarAsync();
-        auto.SetColumnValue(entity, result);
+        try
+        {
+            command.CommandText += ";SELECT cast(SCOPE_IDENTITY() as int);";
+            var result = await ((DbCommand)command).ExecuteScalarAsync();
+            auto.SetPropertyValue(entity, result);
+        }
+        catch (DbException ex)
+        {
+            throw command.CreateDetailedException(ex);
+        }
     }
 
     /// <inheritdoc />

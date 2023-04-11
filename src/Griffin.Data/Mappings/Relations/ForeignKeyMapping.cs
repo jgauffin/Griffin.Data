@@ -9,7 +9,7 @@ namespace Griffin.Data.Mappings.Relations;
 /// <summary>
 ///     Mapping for a has one/many FK.
 /// </summary>
-public class ForeignKeyMapping<TParentEntity, TChildEntity> : IFieldAccessor, IForeignKey
+public class ForeignKeyMapping<TParentEntity, TChildEntity> : IForeignKey
 {
     private readonly IFieldAccessor? _foreignKey;
     private readonly IFieldAccessor? _referencedProperty;
@@ -46,28 +46,6 @@ public class ForeignKeyMapping<TParentEntity, TChildEntity> : IFieldAccessor, IF
     ///     Has a foreign key property configured.
     /// </summary>
     public bool HasProperty => _foreignKey != null;
-
-    /// <inheritdoc />
-    public void SetColumnValue([NotNull] object childEntity, object value)
-    {
-        if (childEntity == null)
-        {
-            throw new ArgumentNullException(nameof(childEntity));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
-
-        if (_foreignKey == null)
-        {
-            throw new MappingException(childEntity,
-                "FK property has not been configured. Configure it or use the FK column name instead.");
-        }
-
-        _foreignKey.SetColumnValue(childEntity, value);
-    }
 
     /// <inheritdoc />
     public object? GetColumnValue([NotNull] object childEntity)
@@ -107,5 +85,27 @@ public class ForeignKeyMapping<TParentEntity, TChildEntity> : IFieldAccessor, IF
         }
 
         return _referencedProperty.GetColumnValue(parentEntity);
+    }
+
+    /// <inheritdoc />
+    public void SetColumnValue([NotNull] object childEntity, object value)
+    {
+        if (childEntity == null)
+        {
+            throw new ArgumentNullException(nameof(childEntity));
+        }
+
+        if (value == null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
+        if (_foreignKey == null)
+        {
+            throw new MappingException(childEntity,
+                "FK property has not been configured. Configure it or use the FK column name instead.");
+        }
+
+        _foreignKey.SetPropertyValue(childEntity, value);
     }
 }

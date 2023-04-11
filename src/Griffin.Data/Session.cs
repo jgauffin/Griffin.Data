@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
@@ -20,18 +18,18 @@ public class Session : IDisposable
 {
     private readonly IChangeTracker? _changeTracker;
     private readonly IMappingRegistry _registry;
+    private bool _commitOnDispose;
     private bool _done;
-    private bool _commitOnDispose = false;
 
-    ///  <summary>
-    ///  </summary>
-    ///  <param name="configuration">Configuration to use.</param>
-    ///  <param name="changeTrackers">A list of zero or one change trackers.</param>
-    ///  <remarks>
-    /// <para>
-    /// Some IoC containers requires a IEnumerable instead of nullable for optional parameters.
-    ///  </para>
-    ///  </remarks>
+    /// <summary>
+    /// </summary>
+    /// <param name="configuration">Configuration to use.</param>
+    /// <param name="changeTrackers">A list of zero or one change trackers.</param>
+    /// <remarks>
+    ///     <para>
+    ///         Some IoC containers requires a IEnumerable instead of nullable for optional parameters.
+    ///     </para>
+    /// </remarks>
     public Session(DbConfiguration configuration, IEnumerable<IChangeTracker> changeTrackers)
     {
         Transaction = configuration.BeginTransaction();
@@ -100,7 +98,6 @@ public class Session : IDisposable
         {
             await _changeTracker.ApplyChanges(this);
         }
-
     }
 
     /// <summary>
@@ -128,7 +125,7 @@ public class Session : IDisposable
         {
             _commitOnDispose = true;
         }
-        
+
         _done = true;
     }
 
@@ -144,7 +141,7 @@ public class Session : IDisposable
         _changeTracker?.Track(item);
     }
 
-    internal DbCommand CreateCommand()
+    public DbCommand CreateCommand()
     {
         return Transaction.CreateCommand();
     }

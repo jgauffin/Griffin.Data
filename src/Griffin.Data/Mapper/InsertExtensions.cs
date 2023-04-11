@@ -143,7 +143,7 @@ public static class InsertExtensions
     {
         foreach (var childMapping in parentMapping.Collections)
         {
-            var childCollection = childMapping.GetColumnValue(parentEntity);
+            var childCollection = childMapping.GetCollection(parentEntity);
             if (childCollection == null)
             {
                 continue;

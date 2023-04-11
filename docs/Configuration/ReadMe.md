@@ -2,7 +2,7 @@ Configuration
 =============
 
 This library uses a class called `DbSession` to perform all operations. The session contains information such as configured mappings, database transaction, change tracking and a SQL dialect implementation.
-Because of that, you need to start by configuration which features to use.
+Because of that, you need to start by configuring which features to use.
 
 That is done with the help of the `DbConfiguration` class.
 
@@ -54,7 +54,7 @@ using (var session = new DbSession(config))
 
 ## Configuring entities
 
-Let's say that you have the following class:
+Let's say that you have the following class and table:
 
 ```csharp
 class User
@@ -64,14 +64,28 @@ class User
 }
 ```
 
-To use that, you need to create a mapping:
+```sql
+create table Users
+(
+    Id int not null identity primary key,
+    FirstName varchar(40) not null
+)
+```
+
+To be able to connect them, you need to specify a binding.
 
 ```csharp
 internal class UserMapping : IEntityConfigurator<User>
 {
     public void Configure(IClassMappingConfigurator<User> config)
     {
+        // Required since the table name differs from the class name
+        config.TableName("Users");
+
+        // required since we use a auto incremented column as PK.
         config.Key(x => x.Id).AutoIncrement();
+
+        // Optional, but added to show how. Read more later.
         config.Property(x => x.FirstName);
     }
 }
@@ -115,29 +129,57 @@ For that to work, some rules must be followed:
 * The column is not auto-generated or requires a sequence/generator
 * The property is not for a child entity.
 
-### One to many
-
-One to many relationships requires that the child table has a foreign key that points at a column in the parent entity.
 
 ```csharp
-internal class UserMapping : IEntityConfigurator<User>
+class User
 {
-    public void Configure(IClassMappingConfigurator<User> config)
-    {
-        config.TableName("MainTable");
-        config.Key(x => x.Id).AutoIncrement();
+    private List<Address> _addresses = new List<Address>();
 
-        config.HasMany(x => x.Addresses) // Child property
-            .ForeignKey(x => x.UserId) // FK property in the child (address)
-            .References(x => x.Id); // property in the main entity (User) that the FK references
-        
-        config.MapRemaningProperties();
+    public User(string firstName){
+        FirstName = firstName;
     }
+
+    // Required by this library when non default constructors exist.
+    // Can be private though to protect the state of the business entity.
+    protected User() {
+
+    }
+
+    // Can be get-only.
+    public int Id { get; }
+
+    public string FirstName { get; set; }
+
+    // Get only properties with a backing field are allowed
+    // as long as the backing field is named the same.
+    public IReadOnlyList<Address> Addresses => _addresses;
+
+    public void Add(Address address)
+    {
+        // Checks etc to make sure that the address is valid for this user.
+        // [...]
+
+        _addresses.Add(address);
+    }
+}
+
+class Address
+{
+    // It can be get-only since this library will assign the FK
+    // value before inserting.
+    public int UserId { get; }
+
+    public int PostalCode { get; set; }
+
+    public string Country { get; set; }
+
+    // Remaining fields.
 }
 ```
 
-Has-many properties must use `IList<>`, `ICollection<>` or `IReadOnlyList<>`.
+## Conversions
 
-### One to one (1 .. 0-1)
+some times the type of the DB column and the class property does not match. As such, a conversion is required between the property and the column.
 
-One to zero/one relationships work 
+This library supprorts conversions for regular properties and some conversions are built in.
+

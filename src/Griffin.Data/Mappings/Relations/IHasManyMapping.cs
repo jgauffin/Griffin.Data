@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using Griffin.Data.Mappings.Properties;
 
 namespace Griffin.Data.Mappings.Relations;
 
 /// <summary>
 ///     Defines a one to zero or more relationship.
 /// </summary>
-public interface IHasManyMapping : IFieldAccessor, IRelationShip
+public interface IHasManyMapping : IRelationShip
 {
     /// <summary>
     ///     Used to limit returned rows.
@@ -21,6 +21,15 @@ public interface IHasManyMapping : IFieldAccessor, IRelationShip
     /// </summary>
     /// <returns>Created collection.</returns>
     IList CreateCollection();
+
+    IList? GetCollection([NotNull] object entity);
+
+    /// <summary>
+    ///     Assign a collection to the property that this has-many mapping is for.
+    /// </summary>
+    /// <param name="parentEntity"></param>
+    /// <param name="collection"></param>
+    void SetCollection(object parentEntity, IList collection);
 
     /// <summary>
     ///     Visit all items in the collection.

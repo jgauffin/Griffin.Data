@@ -17,7 +17,7 @@ public class ClassMapping
     private readonly List<IHasOneMapping> _children = new();
     private readonly List<IHasManyMapping> _collections = new();
     private readonly List<IKeyMapping> _keys;
-    private readonly List<PropertyMapping> _properties;
+    private readonly List<IPropertyMapping> _properties;
 
     /// <summary>
     /// </summary>
@@ -29,7 +29,7 @@ public class ClassMapping
         Type entityType,
         string tableName,
         List<IKeyMapping> keys,
-        List<PropertyMapping> properties)
+        List<IPropertyMapping> properties)
     {
         EntityType = entityType ?? throw new ArgumentNullException(nameof(entityType));
         TableName = tableName ?? throw new ArgumentNullException(nameof(tableName));
@@ -60,7 +60,7 @@ public class ClassMapping
     /// <summary>
     ///     Properties to fill with data.
     /// </summary>
-    public IReadOnlyList<PropertyMapping> Properties => _properties;
+    public IReadOnlyList<IPropertyMapping> Properties => _properties;
 
     /// <summary>
     ///     Table that the entity is stored in.
@@ -128,22 +128,16 @@ public class ClassMapping
                    $"Failed to find property {propertyName}.");
     }
 
-    /// <inheritdoc />
-    public override string ToString()
-    {
-        return EntityType.Name;
-    }
-
     public IRelationShip? GetRelation(Type childType)
     {
         // We need this loop since mappings are registered using the base type
         // while child properties contains a concrete instances.
 
-        Type? type = childType;
+        var type = childType;
         while (type != null)
         {
-            var relation= (IRelationShip?)_children.FirstOrDefault(x => x.ChildEntityType == type)
-                   ?? _collections.FirstOrDefault(x => x.ChildEntityType == type);
+            var relation = (IRelationShip?)_children.FirstOrDefault(x => x.ChildEntityType == type)
+                           ?? _collections.FirstOrDefault(x => x.ChildEntityType == type);
             if (relation != null)
             {
                 return relation;
@@ -164,5 +158,11 @@ public class ClassMapping
         }
 
         return null;
+    }
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        return EntityType.Name;
     }
 }

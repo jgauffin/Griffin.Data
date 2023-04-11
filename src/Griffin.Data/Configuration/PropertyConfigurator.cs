@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data;
 using Griffin.Data.Converters;
 using Griffin.Data.Converters.Enums;
 using Griffin.Data.Mappings.Properties;
@@ -13,13 +12,13 @@ namespace Griffin.Data.Configuration;
 /// <typeparam name="TProperty">Type of property in the entity.</typeparam>
 public class PropertyConfigurator<TEntity, TProperty> where TProperty : notnull
 {
-    private readonly PropertyMapping _mapping;
+    private readonly PropertyMapping<TEntity, TProperty> _mapping;
 
     /// <summary>
     /// </summary>
     /// <param name="mapping">Mapping to fill with information.</param>
     /// <exception cref="ArgumentNullException">mapping is null.</exception>
-    public PropertyConfigurator(PropertyMapping mapping)
+    public PropertyConfigurator(PropertyMapping<TEntity, TProperty> mapping)
     {
         _mapping = mapping ?? throw new ArgumentNullException(nameof(mapping));
         if (typeof(TProperty).IsEnum)
@@ -61,6 +60,25 @@ public class PropertyConfigurator<TEntity, TProperty> where TProperty : notnull
     }
 
     /// <summary>
+    ///     Handle conversions between the column and property types using a record set.
+    /// </summary>
+    /// <param name="converter">Converter to use.</param>
+    /// <remarks>
+    ///     <para>
+    ///         The column type and the property type differs and there is no automatic conversion between them.
+    ///     </para>
+    /// </remarks>
+    public void Converter(IRecordToValueConverter<TProperty> converter)
+    {
+        if (converter == null)
+        {
+            throw new ArgumentNullException(nameof(converter));
+        }
+
+        _mapping.RecordToPropertyConverter = (IRecordToValueConverter<TProperty>?)converter;
+    }
+
+    /// <summary>
     ///     Specify column name (used when the name differs from the property name).
     /// </summary>
     /// <exception cref="ArgumentNullException">name is null.</exception>
@@ -82,13 +100,13 @@ public class PropertyConfigurator<TEntity, TProperty> where TProperty : notnull
     ///         which both in combination is used to create the property value.
     ///     </para>
     /// </remarks>
-    public void RecordToProperty(Func<IDataRecord, TProperty> recordToPropertyConverter)
+    public void RecordToProperty(IRecordToValueConverter<TProperty> recordToPropertyConverter)
     {
         if (recordToPropertyConverter == null)
         {
             throw new ArgumentNullException(nameof(recordToPropertyConverter));
         }
 
-        _mapping.RecordToPropertyConverter = record => recordToPropertyConverter(record)!;
+        _mapping.RecordToPropertyConverter = recordToPropertyConverter;
     }
 }

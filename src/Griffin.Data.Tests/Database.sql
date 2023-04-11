@@ -74,6 +74,8 @@ declare @childId2 int;
 select @childId2 = scope_identity();
 insert into SimpleAction (ChildId, Simple) VALUES(@childId1, 3);
 insert into ExtraAction (ChildId, Extra) VALUES(@childId2, 'dlkjdfkdl');
+insert into ChildTable (MainId, ActionType) VALUES(@id, 0);
+
 
 insert into SharedMain (SomeField) VALUES(113);
 select @id = scope_identity();

@@ -2,7 +2,7 @@
 using Griffin.Data.Scaffolding.Helpers;
 using Griffin.Data.Scaffolding.Meta;
 
-namespace Griffin.Data.Scaffolding.Generators;
+namespace Griffin.Data.Scaffolding.Mapper.Generators;
 
 public class MappingGenerator
 {

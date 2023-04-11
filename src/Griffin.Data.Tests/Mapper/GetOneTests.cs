@@ -36,7 +36,7 @@ public class GetOneTests : IntegrationTests
     {
         var actual = await Session.GetById<MainTable>(1);
 
-        actual.Children[1].Action.Should().BeNull();
+        actual.Children[2].Action.Should().BeNull();
     }
 
     [Fact]

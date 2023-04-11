@@ -30,7 +30,7 @@ internal static class FetchChildrenOperations
             options.DbParameters = hasManyMapping.CreateDbConstraints(new[] { parentEntity });
             var collection = hasManyMapping.CreateCollection();
             await session.Query(hasManyMapping.ChildEntityType, options, collection);
-            hasManyMapping.SetColumnValue(parentEntity, collection);
+            hasManyMapping.SetCollection(parentEntity, collection);
         }
 
         foreach (var hasOneMapping in parentMapping.Children)
@@ -46,7 +46,7 @@ internal static class FetchChildrenOperations
             var child = await session.FirstOrDefault(childType, options);
             if (child != null)
             {
-                hasOneMapping.SetColumnValue(parentEntity, child);
+                hasOneMapping.SetPropertyValue(parentEntity, child);
             }
         }
     }
@@ -71,7 +71,7 @@ internal static class FetchChildrenOperations
             options.DbParameters = hasManyMapping.CreateDbConstraints(new[] { parentEntity });
             var collection = hasManyMapping.CreateCollection();
             await session.Query(hasManyMapping.ChildEntityType, options, collection);
-            hasManyMapping.SetColumnValue(parentEntity, collection);
+            hasManyMapping.SetCollection(parentEntity, collection);
         }
 
         foreach (var hasOneMapping in parentMapping.Children)
@@ -87,7 +87,7 @@ internal static class FetchChildrenOperations
             var child = await session.FirstOrDefault(childType, options);
             if (child != null)
             {
-                hasOneMapping.SetColumnValue(parentEntity, child);
+                hasOneMapping.SetPropertyValue(parentEntity, child);
             }
         }
     }
@@ -114,7 +114,7 @@ internal static class FetchChildrenOperations
                 }
 
                 var col = hasManyMapping.CreateCollection();
-                hasManyMapping.SetColumnValue(parent, col);
+                hasManyMapping.SetCollection(parent, col);
                 childCollections[parentId] = col;
             }
 
@@ -170,7 +170,7 @@ internal static class FetchChildrenOperations
                     throw new MappingException(x, "Failed to lookup parent using foreign key, cannot attach child.");
                 }
 
-                hasOneMapping.SetColumnValue(parentIndex[fkValue], x);
+                hasOneMapping.SetPropertyValue(parentIndex[fkValue], x);
             });
         }
     }
@@ -237,7 +237,7 @@ internal static class FetchChildrenOperations
                     throw new MappingException(x, "Failed to lookup parent using foreign key, cannot attach child.");
                 }
 
-                hasOneMapping.SetColumnValue(parentIndex[fkValue], x);
+                hasOneMapping.SetPropertyValue(parentIndex[fkValue], x);
             });
         }
     }

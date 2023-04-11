@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data;
-using System.Diagnostics.CodeAnalysis;
 using Griffin.Data.Configuration;
+using Griffin.Data.Converters;
 using Griffin.Data.Mapper;
 
 namespace Griffin.Data.Mappings.Properties;
@@ -9,29 +9,28 @@ namespace Griffin.Data.Mappings.Properties;
 /// <summary>
 ///     Maps a property, which are not in a relationship ("boho") and not a key.
 /// </summary>
-public class PropertyMapping : IFieldMapping
+public class PropertyMapping<TEntity, TProperty> : IPropertyMapping
 {
     private readonly Type _entityType;
-    private readonly Func<object, object>? _getter;
-    private readonly Action<object, object>? _setter;
+    private readonly Func<TEntity, TProperty>? _getter;
+    private readonly Action<TEntity, TProperty>? _setter;
     private bool _canReadFromDatabase;
     private bool _canWriteToDatabase;
-    private bool _checkConverters = true;
 
     /// <summary>
     /// </summary>
-    /// <param name="entityType"></param>
-    /// <param name="propertyType"></param>
+    /// <param name="propertyName"></param>
     /// <param name="getter"></param>
     /// <param name="setter"></param>
     public PropertyMapping(
-        Type entityType,
-        Type propertyType,
-        Func<object, object>? getter,
-        Action<object, object>? setter)
+        string propertyName,
+        Func<TEntity, TProperty>? getter,
+        Action<TEntity, TProperty>? setter)
     {
-        PropertyType = propertyType ?? throw new ArgumentNullException(nameof(propertyType));
-        _entityType = entityType ?? throw new ArgumentNullException(nameof(entityType));
+        PropertyName = propertyName;
+        PropertyType = typeof(TProperty);
+        _entityType = typeof(TEntity);
+        ColumnName = propertyName;
         _getter = getter;
         _setter = setter;
         CanWriteToDatabase = _getter != null;
@@ -85,11 +84,6 @@ public class PropertyMapping : IFieldMapping
     public Func<object, object>? ColumnToPropertyConverter { get; set; }
 
     /// <summary>
-    ///     do not include in reads and writes. Remove once mapping is generated.
-    /// </summary>
-    public bool IsIgnored { get; set; }
-
-    /// <summary>
     ///     Converts from a property value to a column value.
     /// </summary>
     /// <remarks>
@@ -113,37 +107,53 @@ public class PropertyMapping : IFieldMapping
     ///         (and therefore stored in another column).
     ///     </para>
     /// </remarks>
-    public Func<IDataRecord, object>? RecordToPropertyConverter { get; set; }
+    public IRecordToValueConverter<TProperty>? RecordToPropertyConverter { get; set; }
+
+    /// <summary>
+    ///     do not include in reads and writes. Remove once mapping is generated.
+    /// </summary>
+    public bool IsIgnored { get; set; }
+
+    ///// <inheritdoc />
+    //public void SetColumnValue([NotNull] object instance, object value)
+    //{
+    //    if (instance == null)
+    //    {
+    //        throw new ArgumentNullException(nameof(instance));
+    //    }
+
+    //    if (_setter == null)
+    //    {
+    //        throw new MappingException(instance,
+    //            $"No setter has been defined for property ${PropertyName}.");
+    //    }
+
+    //    if (ColumnToPropertyConverter != null)
+    //    {
+    //        value = ColumnToPropertyConverter(value);
+    //    }
+    //    else if (_checkConverters)
+    //    {
+    //        _checkConverters = false;
+    //    }
+
+    //    //CreateConverters(value.GetType());
+    //    _setter((TEntity)instance, (TProperty)value);
+    //}
 
     /// <inheritdoc />
-    public void SetColumnValue([NotNull] object instance, object value)
+    public object? GetValue(object entity)
     {
-        if (instance == null)
+        if (_getter == null)
         {
-            throw new ArgumentNullException(nameof(instance));
+            return null;
         }
 
-        if (_setter == null)
-        {
-            throw new MappingException(instance,
-                $"No setter has been defined for property ${PropertyName}.");
-        }
-
-        if (ColumnToPropertyConverter != null)
-        {
-            value = ColumnToPropertyConverter(value);
-        }
-        else if (_checkConverters)
-        {
-            _checkConverters = false;
-        }
-
-        //CreateConverters(value.GetType());
-        _setter(instance, value);
+        return _getter.Invoke((TEntity)entity);
     }
 
     /// <inheritdoc />
-    public object? GetColumnValue([NotNull] object entity)
+    public object? GetColumnValue(object entity)
     {
         if (entity == null)
         {
@@ -156,18 +166,56 @@ public class PropertyMapping : IFieldMapping
                 $"No getter has been defined for property ${PropertyName}.");
         }
 
-        var propertyValue = _getter(entity);
-        return ToColumnValue(propertyValue);
+        var propertyValue = _getter((TEntity)entity);
+        return propertyValue == null ? null : ConvertToColumnValue(propertyValue);
+    }
+
+    void IFieldAccessor.SetPropertyValue(object instance, object value)
+    {
+        if (_setter == null)
+        {
+            throw new MappingException(typeof(TEntity), $"No setter for property '{PropertyName}'.");
+        }
+
+        _setter((TEntity)instance, (TProperty)value);
     }
 
     /// <inheritdoc />
-    public string ColumnName { get; set; } = "";
+    public void MapRecord(IDataRecord record, object entity)
+    {
+        if (_setter == null || !CanReadFromDatabase)
+        {
+            return;
+        }
+
+        if (RecordToPropertyConverter != null)
+        {
+            var generatedValue = RecordToPropertyConverter.Convert(record);
+            _setter((TEntity)entity, generatedValue);
+        }
+
+        var value = record[ColumnName];
+        if (value is DBNull)
+        {
+            return;
+        }
+
+        if (ColumnToPropertyConverter != null)
+        {
+            value = ColumnToPropertyConverter(value);
+        }
+
+        _setter((TEntity)entity, (TProperty)value);
+    }
 
     /// <inheritdoc />
-    public string PropertyName { get; set; } = "";
+    public string ColumnName { get; set; }
 
     /// <inheritdoc />
-    public object ToColumnValue([NotNull] object value)
+    public string PropertyName { get; set; }
+
+    /// <inheritdoc />
+    public object ConvertToColumnValue(object value)
     {
         return PropertyToColumnConverter != null ? PropertyToColumnConverter(value) : value;
     }

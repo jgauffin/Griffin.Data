@@ -2,7 +2,7 @@
 
 public class ChildTable
 {
-    public IAction Action { get; set; }
+    public IAction? Action { get; set; }
     public ActionType ActionType { get; set; }
     public int Id { get; set; }
     public int MainId { get; set; }

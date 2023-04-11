@@ -3,7 +3,7 @@
 public class User
 {
     public IReadOnlyList<Address> Addresses { get; } = new List<Address>();
-
+    public DateTime CreatedAt { get; set; }
     public Data? Data { get; set; }
     public string FirstName { get; set; } = "";
     public int Id { get; set; }

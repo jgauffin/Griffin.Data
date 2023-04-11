@@ -1,4 +1,4 @@
-namespace Griffin.Data.Tests.Entities;
+﻿namespace Griffin.Data.Tests.Entities;
 
 public class MainTable2
 {
@@ -7,7 +7,7 @@ public class MainTable2
 
     public ulong Money { get; set; }
 
-    public string Name { get; set; }
+    public string Name { get; set; } = "";
 
     public bool Rocks { get; set; }
 }

@@ -15,7 +15,7 @@ internal class UserConfigurator : IEntityConfigurator<User>
 
         config.HasOne(x => x.Data)
             .Discriminator(x => x.State, CreateChildEntity)
-            .ForeignKey(x => x.UserId)
+            .ForeignKey(x => x!.UserId)
             .References(x => x.Id);
     }
 

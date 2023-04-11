@@ -49,7 +49,7 @@ public class HasManyMapping<TParent, TChild> : RelationShipBase<TParent, TChild>
     }
 
     /// <inheritdoc />
-    public void SetColumnValue([NotNull] object instance, object collectionInstance)
+    public void SetCollection([NotNull] object instance, IList collectionInstance)
     {
         if (instance == null)
         {
@@ -60,14 +60,14 @@ public class HasManyMapping<TParent, TChild> : RelationShipBase<TParent, TChild>
     }
 
     /// <inheritdoc />
-    public object? GetColumnValue([NotNull] object entity)
+    public IList? GetCollection([NotNull] object entity)
     {
         if (entity == null)
         {
             throw new ArgumentNullException(nameof(entity));
         }
 
-        return _getter((TParent)entity);
+        return (IList)_getter((TParent)entity);
     }
 
     /// <inheritdoc />

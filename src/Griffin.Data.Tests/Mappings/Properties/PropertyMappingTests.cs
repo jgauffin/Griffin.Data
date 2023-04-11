@@ -7,15 +7,15 @@ namespace Griffin.Data.Tests.Mappings.Properties;
 
 public class PropertyMappingTests
 {
-    private object _entity;
-    private object? _value;
+    private User? _entity;
+    private string? _value;
 
     [Fact]
     public void Convert_should_be_NoOp()
     {
-        var sut = new PropertyMapping(typeof(User), typeof(string), GetValue, null);
+        var sut = new PropertyMapping<User, string>("FirstName", GetValue, null);
 
-        var actual = sut.ToColumnValue(3);
+        var actual = sut.ConvertToColumnValue(3);
 
         actual.Should().Be(3);
     }
@@ -23,29 +23,18 @@ public class PropertyMappingTests
     [Fact]
     public void Should_be_able_to_get_value()
     {
-        var sut = new PropertyMapping(typeof(User), typeof(string), GetValue, SetValue);
-        _value = 3;
+        var sut = new PropertyMapping<User, string>("FirstName", GetValue, SetValue);
+        _value = "J";
 
-        var actual = sut.GetColumnValue("");
+        var actual = sut.GetColumnValue(new User());
 
-        actual.Should().Be(3);
-    }
-
-    [Fact]
-    public void Should_be_able_to_set_value()
-    {
-        var sut = new PropertyMapping(typeof(User), typeof(string), GetValue, SetValue);
-
-        sut.SetColumnValue("", 1);
-
-        _entity.Should().Be("");
-        _value.Should().Be(1);
+        actual.Should().Be("J");
     }
 
     [Fact]
     public void Should_be_marked_as_non_readable_when_without_a_setter()
     {
-        var sut = new PropertyMapping(typeof(User), typeof(string), GetValue, null);
+        var sut = new PropertyMapping<User, string>("FirstName", GetValue, null);
 
         sut.CanReadFromDatabase.Should().BeFalse();
     }
@@ -53,7 +42,7 @@ public class PropertyMappingTests
     [Fact]
     public void Should_be_marked_as_non_writable_when_without_a_getter()
     {
-        var sut = new PropertyMapping(typeof(User), typeof(string), null, SetValue);
+        var sut = new PropertyMapping<User, string>("FirstName", null, SetValue);
 
         sut.CanWriteToDatabase.Should().BeFalse();
     }
@@ -61,7 +50,7 @@ public class PropertyMappingTests
     [Fact]
     public void Should_be_marked_as_readable_when_having_a_setter()
     {
-        var sut = new PropertyMapping(typeof(User), typeof(string), GetValue, SetValue);
+        var sut = new PropertyMapping<User, string>("FirstName", GetValue, SetValue);
 
         sut.CanReadFromDatabase.Should().BeTrue();
     }
@@ -69,7 +58,7 @@ public class PropertyMappingTests
     [Fact]
     public void Should_be_marked_as_writable_when_having_a_getter()
     {
-        var sut = new PropertyMapping(typeof(User), typeof(string), GetValue, SetValue);
+        var sut = new PropertyMapping<User, string>("FirstName", GetValue, SetValue);
 
         sut.CanWriteToDatabase.Should().BeTrue();
     }
@@ -77,7 +66,7 @@ public class PropertyMappingTests
     [Fact]
     public void Should_throw_when_no_getter_is_specified()
     {
-        var sut = new PropertyMapping(typeof(User), typeof(string), null, SetValue);
+        var sut = new PropertyMapping<User, string>("FirstName", null, SetValue);
 
         var actual = () => sut.GetColumnValue("");
 
@@ -85,48 +74,25 @@ public class PropertyMappingTests
     }
 
     [Fact]
-    public void Should_throw_when_no_setter_is_specified()
-    {
-        var sut = new PropertyMapping(typeof(User), typeof(string), GetValue, null);
-
-        var actual = () => sut.SetColumnValue("", 1);
-
-        actual.Should().Throw<MappingException>();
-    }
-
-    [Fact]
-    public void Should_use_read_converter_when_specified()
-    {
-        var sut = new PropertyMapping(typeof(User), typeof(string), GetValue, SetValue)
-        {
-            ColumnToPropertyConverter = x => int.Parse((string)x)
-        };
-
-        sut.SetColumnValue("", "5");
-
-        _value.Should().Be(5);
-    }
-
-    [Fact]
     public void Should_use_write_converter_when_specified()
     {
-        var sut = new PropertyMapping(typeof(User), typeof(string), GetValue, SetValue)
+        var sut = new PropertyMapping<User, string>("FirstName", GetValue, SetValue)
         {
             PropertyToColumnConverter = x => int.Parse((string)x)
         };
         _value = "5";
 
-        var actual = sut.GetColumnValue("");
+        var actual = sut.GetColumnValue(new User());
 
         actual.Should().Be(5);
     }
 
-    private object? GetValue(object arg)
+    private string GetValue(User arg)
     {
-        return _value;
+        return _value ?? "";
     }
 
-    private void SetValue(object arg1, object arg2)
+    private void SetValue(User arg1, string arg2)
     {
         _value = arg2;
         _entity = arg1;

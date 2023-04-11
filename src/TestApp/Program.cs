@@ -4,12 +4,21 @@ using Griffin.Data.ChangeTracking;
 using Griffin.Data.Dialects;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mappings;
+using Griffin.Data.Scaffolding.Queries;
 using TestApp.Entities;
 
 var mappingRegistry = new MappingRegistry();
 mappingRegistry.Scan(Assembly.GetExecutingAssembly());
 
-var config = new DbConfiguration("Data Source=.;Initial Catalog=GriffinData;Integrated Security=True")
+var connectionString = "Data Source=.;Initial Catalog=GriffinData;Integrated Security=True";
+
+var gen = new QueryScaffolder();
+var dir = Path.GetFullPath("..\\..\\..", Environment.CurrentDirectory);
+await gen.Generate(connectionString, dir);
+
+return;
+
+var config = new DbConfiguration(connectionString)
 {
     MappingRegistry = mappingRegistry, Dialect = new SqlServerDialect()
 };

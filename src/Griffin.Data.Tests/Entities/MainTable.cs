@@ -2,7 +2,7 @@
 
 public class MainTable
 {
-    private static int _idSequence=1;
+    private static int _idSequence = 1;
     private readonly List<Log> _logs = new();
     private List<ChildTable> _children = new();
     private int _id1;
@@ -23,6 +23,7 @@ public class MainTable
             {
                 _id1 = _idSequence++;
             }
+
             return _id1;
         }
         set => _id1 = value;

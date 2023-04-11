@@ -1,4 +1,4 @@
-namespace Griffin.Data.Tests.Entities;
+﻿namespace Griffin.Data.Tests.Entities;
 
 public class Log
 {
@@ -10,6 +10,7 @@ public class Log
 
     protected Log()
     {
+        Message = "";
     }
 
     public DateTime CreatedAtUtc { get; }

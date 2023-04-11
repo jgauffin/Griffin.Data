@@ -20,7 +20,7 @@ public class ClassMappingConfigurator<TEntity> : IMappingBuilder, IClassMappingC
     private readonly List<IHasManyConfigurator> _hasManyMappings = new();
     private readonly List<IHasOneConfigurator> _hasOneMappings = new();
     private readonly List<IKeyMapping> _keys = new();
-    private readonly List<PropertyMapping> _properties = new();
+    private readonly List<IPropertyMapping> _properties = new();
     private ClassMapping? _mapping;
     private string _tableName;
 
@@ -74,16 +74,10 @@ public class ClassMappingConfigurator<TEntity> : IMappingBuilder, IClassMappingC
         Expression<Func<TEntity, TProperty>> selector) where TProperty : notnull
     {
         var compiled = selector.Compile();
-
-        object Getter(object entity)
-        {
-            return compiled((TEntity)entity);
-        }
-
-        var setter = selector.GetPropertyInfo().GenerateSetterDelegate(typeof(TEntity));
+        var setter = selector.GetPropertyInfo().GenerateSetterDelegate<TEntity, TProperty>();
         var prop = selector.GetPropertyInfo();
 
-        var mapping = new PropertyMapping(typeof(TEntity), typeof(TProperty), Getter, setter)
+        var mapping = new PropertyMapping<TEntity, TProperty>(prop.Name, compiled, setter)
         {
             PropertyName = prop.Name, ColumnName = prop.Name
         };
@@ -130,6 +124,9 @@ public class ClassMappingConfigurator<TEntity> : IMappingBuilder, IClassMappingC
     /// <inheritdoc />
     public void MapRemainingProperties()
     {
+        var methodName = nameof(GenerateProperty);
+        var method = GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance)!;
+
         var props = typeof(TEntity).GetProperties();
         foreach (var prop in props)
         {
@@ -148,13 +145,9 @@ public class ClassMappingConfigurator<TEntity> : IMappingBuilder, IClassMappingC
                 continue;
             }
 
-            var getter = prop.GenerateGetterDelegate();
-            var setter = prop.GenerateSetterDelegate(typeof(TEntity));
-            var mapping = new PropertyMapping(typeof(TEntity), prop.PropertyType, getter, setter)
-            {
-                PropertyName = prop.Name, ColumnName = prop.Name
-            };
-            _properties.Add(mapping);
+            var propMapping =
+                (IPropertyMapping)method.MakeGenericMethod(prop.PropertyType).Invoke(this, new object[] { prop });
+            _properties.Add(propMapping);
         }
     }
 
@@ -189,5 +182,17 @@ public class ClassMappingConfigurator<TEntity> : IMappingBuilder, IClassMappingC
         var config = new HasManyConfigurator<TEntity, TProperty>(prop, elementType);
         _hasManyMappings.Add(config);
         return config;
+    }
+
+    private IPropertyMapping GenerateProperty<TProperty>(PropertyInfo prop) where TProperty : notnull
+    {
+        if (prop == null)
+        {
+            throw new ArgumentNullException(nameof(prop));
+        }
+
+        var getter = prop.GenerateGetterDelegate<TEntity, TProperty>();
+        var setter = prop.GenerateSetterDelegate<TEntity, TProperty>();
+        return new PropertyMapping<TEntity, TProperty>(prop.Name, getter, setter);
     }
 }

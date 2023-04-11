@@ -2,4 +2,5 @@
 
 public interface IForeignKey
 {
+    //void SetColumnValue(object entity, object propertyValue);
 }

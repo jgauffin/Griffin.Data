@@ -22,6 +22,19 @@ public interface IChangeTracker
     Task ApplyChanges(Session session);
 
     /// <summary>
+    ///     Calculate delta and apply changes without registering changes in the internal cache.
+    /// </summary>
+    /// <param name="session">Session to update the database with.</param>
+    /// <param name="current">Custom loaded entity (with changes).</param>
+    /// <returns>Task</returns>
+    /// <remarks>
+    ///     <para>
+    ///         The tracker must contain a snapshot for this to work.
+    ///     </para>
+    /// </remarks>
+    Task ApplyIsolated(Session session, object current);
+
+    /// <summary>
     ///     Get state of an object.
     /// </summary>
     /// <param name="entity">Entity to get state for.</param>

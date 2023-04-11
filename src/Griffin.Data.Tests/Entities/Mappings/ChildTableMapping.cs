@@ -10,7 +10,7 @@ internal class ChildTableMapping : IEntityConfigurator<ChildTable>
         config.Key(x => x.Id).AutoIncrement();
         config.HasOne(x => x.Action)
             .Discriminator(x => x.ActionType, ChildSelector)
-            .ForeignKey(x => x.ChildId)
+            .ForeignKey(x => x!.ChildId)
             .References(x => x.Id);
         config.MapRemainingProperties();
     }

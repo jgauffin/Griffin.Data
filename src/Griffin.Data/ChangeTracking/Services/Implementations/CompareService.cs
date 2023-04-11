@@ -91,19 +91,13 @@ public class CompareService
             _diff.Added(parent, current, depth);
             _diff.Removed(parent, snapshot, depth);
             return;
-
         }
 
         var isEqual = true;
         foreach (var prop in mapping.Properties)
         {
-            if (!prop.CanWriteToDatabase)
-            {
-                continue;
-            }
-
-            var snapShotValue = prop.GetColumnValue(snapshot);
-            var currentValue = prop.GetColumnValue(current);
+            var snapShotValue = prop.GetValue(snapshot);
+            var currentValue = prop.GetValue(current);
             if (snapShotValue == null && currentValue == null)
             {
                 continue;
@@ -165,21 +159,22 @@ public class CompareService
         int depth)
     {
         var parent = current ?? snapshot;
-        foreach (var collection in parentMapping.Collections)
+        foreach (var hasManyMapping in parentMapping.Collections)
         {
-            var snapshotValue = (IEnumerable?)collection.GetColumnValue(snapshot) ??
+            var snapshotValue = (IEnumerable?)hasManyMapping.GetCollection(snapshot) ??
                                 (IEnumerable)Activator.CreateInstance(
-                                    typeof(List<>).MakeGenericType(collection.ChildEntityType))!;
-            var currentValue = (IEnumerable?)collection.GetColumnValue(current) ??
+                                    typeof(List<>).MakeGenericType(hasManyMapping.ChildEntityType))!;
+
+            var currentValue = (IEnumerable?)hasManyMapping.GetCollection(current) ??
                                (IEnumerable)Activator.CreateInstance(
-                                   typeof(List<>).MakeGenericType(collection.ChildEntityType))!;
+                                   typeof(List<>).MakeGenericType(hasManyMapping.ChildEntityType))!;
 
             var snapshotIndex = new Dictionary<object, object>();
             var currentIndex = new Dictionary<object, object>();
-            var mapping = _registry.Get(collection.ChildEntityType);
+            var mapping = _registry.Get(hasManyMapping.ChildEntityType);
             if (mapping.Keys.Count == 0)
             {
-                throw new MappingConfigurationException(collection.ChildEntityType, "Entity does not have a key.");
+                throw new MappingConfigurationException(hasManyMapping.ChildEntityType, "Entity does not have a key.");
             }
 
             foreach (var item in snapshotValue)
@@ -226,7 +221,7 @@ public class CompareService
                 }
             }
 
-            var childMapping = _registry.Get(collection.ChildEntityType);
+            var childMapping = _registry.Get(hasManyMapping.ChildEntityType);
             foreach (var equal in snapshotEquals)
             {
                 var currentChild = currentIndex[equal.Key];

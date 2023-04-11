@@ -1,18 +1,14 @@
-﻿using Griffin.Data.Mappings;
-
-namespace Griffin.Data.ChangeTracking.Services.Implementations;
+﻿namespace Griffin.Data.ChangeTracking.Services.Implementations;
 
 /// <summary>
 ///     Diff that updates the snapshot change with the changes.
 /// </summary>
-internal class SnapshotDiff : IDiff
+internal class DiffToCache : IDiff
 {
     private readonly IEntityCache _cache;
-    private readonly IMappingRegistry _mappingRegistry;
 
-    public SnapshotDiff(IMappingRegistry mappingRegistry, IEntityCache cache)
+    public DiffToCache(IEntityCache cache)
     {
-        _mappingRegistry = mappingRegistry;
         _cache = cache;
     }
 

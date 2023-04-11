@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Griffin.Data.Mappings.Properties;
+﻿namespace Griffin.Data.Mappings.Properties;
 
 /// <summary>
 ///     Mapping of a field.
@@ -27,5 +25,5 @@ public interface IFieldMapping : IFieldAccessor
     /// </summary>
     /// <param name="value">Value to convert.</param>
     /// <returns>Converted value.</returns>
-    object ToColumnValue([NotNull] object value);
+    object ConvertToColumnValue(object value);
 }

@@ -27,6 +27,15 @@ public class CopyService : ICopyService
         return Copy(null, source, 1, new Dictionary<object, object>());
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="parent">Should be set from "source"</param>
+    /// <param name="source"></param>
+    /// <param name="depth"></param>
+    /// <param name="createdInstances"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
     private object Copy(object? parent, object source, int depth, Dictionary<object, object> createdInstances)
     {
         if (source == null)

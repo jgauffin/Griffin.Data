@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 
 namespace Griffin.Data.Scaffolding.Helpers;
 
@@ -21,6 +22,7 @@ public class TabbedStringBuilder
         {
             _sb.AppendLine();
             _indented = false;
+            return;
         }
 
         EnsureSpacing();
@@ -64,5 +66,10 @@ public class TabbedStringBuilder
             _indented = true;
             _sb.Append(_spacing);
         }
+    }
+
+    public void RemoveLineEnding()
+    {
+        _sb.Remove(_sb.Length - Environment.NewLine.Length, Environment.NewLine.Length);
     }
 }
