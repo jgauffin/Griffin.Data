@@ -91,14 +91,23 @@ public abstract class RelationShipBase<TParent, TChild> : IRelationShip
     /// <inheritdoc />
     public virtual IDictionary<string, object> CreateDbConstraints(IEnumerable parentEntities)
     {
-        var parents = (IReadOnlyList<TParent>)parentEntities;
+        List<object> keys = new List<object>();
+        foreach (var parent in parentEntities)
+        {
+            var id = GetReferencedId(parent);
+            if (id == null)
+            {
+                continue;
+            }
+
+            keys.Add(parent);
+        }
 
         var parameters = new Dictionary<string, object>();
 
         ApplyConstraints(parameters);
 
-        var ids = parents.Select(x => GetReferencedId(x!)).Where(x => x != null).ToList();
-        parameters.Add(_fk.ForeignKeyColumnName, ids.Count == 1 ? ids[0]! : ids);
+        parameters.Add(_fk.ForeignKeyColumnName, keys.Count == 1 ? keys[0]! : keys);
         return parameters;
     }
 
