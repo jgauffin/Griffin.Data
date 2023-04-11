@@ -13,7 +13,7 @@ steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: 'build'
-    projects: '*.sln'
+    projects: 'src\Griffin.Data.sln'
 
 - task: NuGetCommand@2
   inputs:
