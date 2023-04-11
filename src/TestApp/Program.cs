@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Griffin.Data;
 using Griffin.Data.ChangeTracking;
+using Griffin.Data.Configuration;
 using Griffin.Data.Dialects;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mappings;

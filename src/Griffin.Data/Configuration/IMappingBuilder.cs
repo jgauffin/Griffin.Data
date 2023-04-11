@@ -4,6 +4,6 @@ namespace Griffin.Data.Configuration;
 
 public interface IMappingBuilder
 {
-    ClassMapping BuildMapping();
+    ClassMapping BuildMapping(bool pluralizeTableNames);
     void BuildRelations(IMappingRegistry registry);
 }

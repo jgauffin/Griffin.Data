@@ -56,7 +56,7 @@ internal class RegistryBuilder
     {
         foreach (var item in items)
         {
-            yield return ((IMappingBuilder)item).BuildMapping();
+            yield return ((IMappingBuilder)item).BuildMapping(true);
         }
     }
 

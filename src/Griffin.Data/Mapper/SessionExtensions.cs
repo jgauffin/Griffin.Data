@@ -40,16 +40,16 @@ public static class SessionExtensions
 
     public static QueryOptions<T> Query<T>(this Session session)
     {
-        return new QueryOptions<T> { Session = session };
+        return new QueryOptions<T>(session);
     }
 
     public static QueryOptions<T> Query<T>(this Session session, object propertyConstraints)
     {
-        return new QueryOptions<T> { Session = session };
+        return new QueryOptions<T>(session);
     }
 
     public static QueryOptions<T> Query<T>(this Session session, string sql, object parameters)
     {
-        return new QueryOptions<T> { Session = session };
+        return new QueryOptions<T>(session);
     }
 }

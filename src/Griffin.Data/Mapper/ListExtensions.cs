@@ -39,7 +39,7 @@ public static class ListExtensions
     /// <returns>Found entities.</returns>
     public static Task<List<TEntity>> List<TEntity>(this Session session, object constraints) where TEntity : notnull
     {
-        return session.List(new QueryOptions<TEntity>(constraints));
+        return session.List(new QueryOptions<TEntity>(session, constraints));
     }
 
     /// <summary>
@@ -58,7 +58,7 @@ public static class ListExtensions
         string query,
         object constraints) where TEntity : notnull
     {
-        return await session.List(new QueryOptions<TEntity>(query, constraints));
+        return await session.List(new QueryOptions<TEntity>(session, query, constraints));
     }
 
     /// <summary>

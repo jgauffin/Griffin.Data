@@ -12,16 +12,16 @@ namespace Griffin.Data.Mapper;
 /// <typeparam name="T"></typeparam>
 public class QueryOptions<T>
 {
-    internal Session? Session;
-
     /// <summary>
     /// </summary>
     /// <param name="sql">SQL query (complete or partial, refer to the wiki for more information).</param>
     /// <param name="constraints">
     ///     Keys must match the names in the SQL statement.
     /// </param>
-    public QueryOptions(string sql, object constraints)
+    public QueryOptions(Session session, string sql, object constraints)
     {
+        Session = session;
+
         Options.Sql = sql;
         Options.Parameters = constraints.ToDictionary();
     }
@@ -31,16 +31,20 @@ public class QueryOptions<T>
     /// <param name="constraints">
     ///     Keys must match the names in the SQL statement.
     /// </param>
-    public QueryOptions(object constraints)
+    public QueryOptions(Session session, object constraints)
     {
+        Session = session;
         Options.Parameters = constraints.ToDictionary();
     }
 
-    public QueryOptions()
+    public QueryOptions(Session session)
     {
+        Session = session;
     }
 
     internal QueryOptions Options { get; } = new();
+
+    internal Session Session { get; }
 
     /// <summary>
     ///     Do not load any children.
@@ -216,15 +220,5 @@ public class QueryOptions
     public static QueryOptions Where(object propertyConstraints)
     {
         return new QueryOptions("", propertyConstraints);
-    }
-
-    public static QueryOptions<T> Where<T>(string sql, object parameters)
-    {
-        return new QueryOptions<T>(sql, parameters);
-    }
-
-    public static QueryOptions<T> Where<T>(object parameters)
-    {
-        return new QueryOptions<T>(parameters);
     }
 }

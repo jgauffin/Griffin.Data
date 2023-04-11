@@ -24,21 +24,10 @@ namespace Griffin.Data.Tests.ChangeTracker
             var sut = new SingleEntityComparer(Registry);
             var result = sut.Compare(main2, main);
 
-            result[0].State.Should().Be(ChangeState.Modified);
+            var actualMain = result.First(x => x.Depth == 1);
+            actualMain.State.Should().Be(ChangeState.Modified);
         }
-
-        [Fact]
-        public async Task Should_be_able_to_generate_report()
-        {
-            var main2 = await Session.GetById<MainTable>(1);
-            var main = CreateManualMain();
-            var sut = new SingleEntityChangeService(Registry);
-            await sut.PersistChanges(Session, main2, main);
-
-            var report = sut.CreateReport();
-            var str = report.ToText();
-
-        }
+        
 
         private static MainTable CreateManualMain()
         {

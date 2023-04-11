@@ -10,19 +10,24 @@ using Griffin.Data.Mappings;
 namespace Griffin.Data.ChangeTracking.Services.Implementations.v2;
 
 /// <summary>
-///     Implementation of <see cref="ICopyService" />.
+///     Generates a list of entities with meta data.
 /// </summary>
 internal class EntityTraverser2
 {
     private readonly IMappingRegistry _mappingRegistry;
-    private readonly List<TrackedEntity2> _trackedEntities = new();
+    private List<TrackedEntity2> _trackedEntities = new();
 
     public EntityTraverser2(IMappingRegistry mappingRegistry)
     {
-        _mappingRegistry = mappingRegistry;
+        _mappingRegistry = mappingRegistry ?? throw new ArgumentNullException(nameof(mappingRegistry));
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="source"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
     public IReadOnlyList<TrackedEntity2> Traverse(object source)
     {
         if (source == null)
@@ -30,7 +35,7 @@ internal class EntityTraverser2
             throw new ArgumentNullException(nameof(source));
         }
 
-        _trackedEntities.Clear();
+        _trackedEntities = new List<TrackedEntity2>();
 
         var key = _mappingRegistry.GenerateKey(source);
         var root = new TrackedEntity2(key, source, 0);
@@ -79,11 +84,11 @@ internal class EntityTraverser2
 
             if (field.FieldType.IsCollection())
             {
-                TraverseCollection(parent, value, traversedEntities);
+                TraverseCollection(entity, value, traversedEntities);
             }
             else
             {
-                Traverse(parent, value, traversedEntities);
+                Traverse(entity, value, traversedEntities);
             }
         }
     }

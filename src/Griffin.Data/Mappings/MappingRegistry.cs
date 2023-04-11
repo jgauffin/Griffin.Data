@@ -21,6 +21,17 @@ public class MappingRegistry : IMappingRegistry
     private readonly Dictionary<Type, ClassMapping> _mappings = new();
     private readonly List<Assembly> _scannedAssemblies = new();
 
+    /// <summary>
+    ///     Pluralize table names per default.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Will take class names and pluralize them when loading class mappings which have not specified a table name.
+    ///     </para>
+    /// </remarks>
+    /// <value>Default is <c>true</c>.</value>
+    public bool PluralizeTableNames { get; set; } = true;
+
     /// <inheritdoc />
     public ClassMapping Get<T>()
     {
@@ -141,7 +152,8 @@ public class MappingRegistry : IMappingRegistry
 
             method.Invoke(mapping, new object[] { configurator });
 
-            _mappings[entityType] = configurator.BuildMapping();
+            var classMapping = configurator.BuildMapping(PluralizeTableNames);
+            _mappings[entityType] = classMapping;
         }
 
         foreach (var mapping in builders)

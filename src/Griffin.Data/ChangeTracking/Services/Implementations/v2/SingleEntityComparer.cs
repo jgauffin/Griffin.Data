@@ -1,18 +1,28 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Griffin.Data.Mappings;
 
 namespace Griffin.Data.ChangeTracking.Services.Implementations.v2;
 
+/// <summary>
+/// Used to compare two entities and generate a report of added/modified/removed items.
+/// </summary>
 public class SingleEntityComparer
 {
-    private IMappingRegistry _mappingRegistry;
+    private readonly IMappingRegistry _mappingRegistry;
 
     public SingleEntityComparer(IMappingRegistry mappingRegistry)
     {
-        _mappingRegistry = mappingRegistry;
+        _mappingRegistry = mappingRegistry ?? throw new ArgumentNullException(nameof(mappingRegistry));
     }
 
+    /// <summary>
+    /// Compare entities.
+    /// </summary>
+    /// <param name="snapshot"></param>
+    /// <param name="current"></param>
+    /// <returns></returns>
     public List<CompareResultItem> Compare(object snapshot, object current)
     {
         // Start by generating a structure (flat list with hierarchical entities).
@@ -55,10 +65,27 @@ public class SingleEntityComparer
 
         foreach (var tuple in toCompare)
         {
-            if (!EntityEquals(tuple.snapshot.Entity, tuple.current.Entity))
+            var equals = EntityEquals(tuple.snapshot.Entity, tuple.current.Entity);
+            result.Add(new CompareResultItem(tuple.current, equals ? ChangeState.Unmodified : ChangeState.Modified));
+        }
+
+        var orderedResult = result.OrderBy(x => x.Depth).ToList();
+        foreach (var item in orderedResult)
+        {
+            if (item.Depth == 1)
             {
-                result.Add(new CompareResultItem(tuple.current, ChangeState.Modified));
+                continue;
             }
+
+            if (item.TrackedItem.Key == null)
+            {
+                var parent2 = result.FirstOrDefault(x => x.TrackedItem.Entity == item.TrackedItem.Parent.Entity);
+                parent2?.AppendChild(item);
+                continue;
+            }
+
+            var parent = result.FirstOrDefault(x => x.TrackedItem.Key == item.TrackedItem.Parent.Key);
+            parent?.AppendChild(item);
         }
 
         return result;

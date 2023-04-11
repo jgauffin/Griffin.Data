@@ -4,7 +4,7 @@ using System.Data.SqlClient;
 using Griffin.Data.Dialects;
 using Griffin.Data.Mappings;
 
-namespace Griffin.Data;
+namespace Griffin.Data.Configuration;
 
 /// <summary>
 ///     Configuration for this ORM library.
@@ -33,6 +33,34 @@ public class DbConfiguration
     ///     Registry used to load mappings.
     /// </summary>
     public IMappingRegistry MappingRegistry { get; set; } = new MappingRegistry();
+
+    /// <summary>
+    ///     Pluralize table names per default.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Will take class names and pluralize them when loading class mappings which have not specified a table name.
+    ///     </para>
+    /// </remarks>
+    public bool PluralizeTableNames
+    {
+        get
+        {
+            if (MappingRegistry is MappingRegistry p)
+            {
+                return p.PluralizeTableNames;
+            }
+
+            return true;
+        }
+        set
+        {
+            if (MappingRegistry is MappingRegistry p)
+            {
+                p.PluralizeTableNames = value;
+            }
+        }
+    }
 
     /// <summary>
     ///     Create a new active transaction.

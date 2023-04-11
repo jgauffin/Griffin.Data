@@ -34,8 +34,14 @@ public class ClassMappingConfigurator<TEntity> : IMappingBuilder, IClassMappingC
     /// <inheritdoc />
     public void TableName(string tableName)
     {
+        IsTableNameSpecified = true;
         _tableName = tableName ?? throw new ArgumentNullException(nameof(tableName));
     }
+
+    /// <summary>
+    /// Table name has been specified explicitly.
+    /// </summary>
+    public bool IsTableNameSpecified { get; set; }
 
     /// <inheritdoc />
     public KeyConfigurator<TEntity, TProperty> Key<TProperty>(Expression<Func<TEntity, TProperty>> selector)
@@ -155,8 +161,13 @@ public class ClassMappingConfigurator<TEntity> : IMappingBuilder, IClassMappingC
     ///     Create a mapping using this configuration.
     /// </summary>
     /// <returns>Generated mapping.</returns>
-    ClassMapping IMappingBuilder.BuildMapping()
+    ClassMapping IMappingBuilder.BuildMapping(bool pluralizeTableNames)
     {
+        if (!IsTableNameSpecified && !pluralizeTableNames)
+        {
+            _tableName = typeof(TEntity).Name;
+        }
+
         _mapping = new ClassMapping(typeof(TEntity), _tableName, _keys, _properties.Where(x => !x.IsIgnored).ToList());
         return _mapping;
     }

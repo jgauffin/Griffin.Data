@@ -44,7 +44,8 @@ public class TrackedEntity2
     ///         Required so that we can assign the FK value once the parent entity has been INSERTed into the database.
     ///     </para>
     /// </remarks>
-    public object Parent { get; private set; }
+    /// <value><c>null</c> for root entities.</value>
+    public TrackedEntity2? Parent { get; private set; }
 
     public void AddChild(TrackedEntity2 child)
     {
@@ -53,7 +54,7 @@ public class TrackedEntity2
             throw new ArgumentNullException(nameof(child));
         }
 
-        child.Parent = Entity;
+        child.Parent = this;
         _children.Add(child);
     }
 

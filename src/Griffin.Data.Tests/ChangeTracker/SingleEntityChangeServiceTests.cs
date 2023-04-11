@@ -29,11 +29,10 @@ public class SingleEntityChangeServiceTests : IntegrationTests
         var main2 = await Session.GetById<MainTable>(1);
         var main = CreateManualMain();
         var sut = new SingleEntityChangeService(Registry);
-        await sut.PersistChanges(Session, main2, main);
+        
+        var result = await sut.PersistChanges(Session, main2, main);
 
-        var report = sut.CreateReport();
-        var str=  report.ToText();
-
+        var report = result.GenerateReport();
     }
 
     private static MainTable CreateManualMain()

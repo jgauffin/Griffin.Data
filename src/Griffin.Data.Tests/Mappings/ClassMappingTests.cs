@@ -19,7 +19,7 @@ public class ClassMappingTests
             .References(x => x.Id);
         userConfig.Property(x => x.FirstName).ColumnName("first_name");
         userConfig.MapRemainingProperties();
-        _mapping = ((IMappingBuilder)userConfig).BuildMapping();
+        _mapping = ((IMappingBuilder)userConfig).BuildMapping(true);
     }
 
     [Fact]

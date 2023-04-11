@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using Griffin.Data.ChangeTracking;
+using Griffin.Data.Configuration;
 using Griffin.Data.Dialects;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mappings;
