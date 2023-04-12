@@ -36,7 +36,7 @@ The `.query.sql` part is important as it tells the scaffolder that it should gen
 Open a command prompt or powershell and run the scaffolder.
 
 ```
-dotnet griffin-data queries
+dotnet gd queries
 ```
 
 It will now generate all files.

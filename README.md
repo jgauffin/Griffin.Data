@@ -17,15 +17,16 @@ Collection properties can even be `IReadOnlyList<YourChildEntity>` to protect th
 
 Highlights:
 
+* Change tracking (no need to manually call create/update/delete)
 * Relationships (one to many, one to one)
 * Inheritance support
 * Built in enum support (can be represented by byte, short, int and strings in the database).
 * Setters are not required
 * Child entity collections can be  `IList<T>`, `IReadOnlyList<T>` or arrays.
 
-## The read side.
+## The read side
 
-Presenting information to users usally requires a join if information from different tables or aggregated queries. Since each view is unique there is not a simple way to produce classes and mappings as in the write side.
+Presenting information to users usally requires a join of information from different tables or aggregated queries. Since each view is unique there is not a simple way to produce classes and mappings as in the write side.
 
 This library lets you define SQL queries and generates classes based on them. These classes can easily be regenerated when you change the query.
 
@@ -40,19 +41,19 @@ declare @nameToFind varchar(40) = 'TestName';
 SELECT u.Id, UserName
 FROM Users u
 JOIN Accounts a ON (u.AccountId = a.Id)
-WHERE u.UserName LIKE @name
+WHERE u.UserName LIKE @nameToFind
 ```
 
 Use scaffolding to generate classes:
 
 ```
-dotnet gf generate queries
+dotnet gd generate queries
 ```
 
 A query can be executed like this:
 
 ```csharp
-var result = await Session.Query(new ListUsers { FirstName = 'A%'});
+var result = await Session.Query(new ListUsers { NameToFind = 'A%'});
 Console.WriteLine("Found " + result.Items.Count  + " users.");
 ```
 

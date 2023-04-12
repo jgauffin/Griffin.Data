@@ -1,12 +1,12 @@
 Configuration
 =============
 
-This library uses a class called `DbSession` to perform all operations. The session contains information such as configured mappings, database transaction, change tracking and a SQL dialect implementation.
+This library uses a class called `Session` to perform all operations. The session contains information such as configured mappings, database transaction, change tracking and a SQL dialect implementation.
 Because of that, you need to start by configuring which features to use.
 
 That is done with the help of the `DbConfiguration` class.
 
-At minimum configure the connection string and where to find mappings:
+At minimum configure the connection string and where to find mappings.
 
 ```csharp
 var config =  new DbConfiguration();
@@ -18,17 +18,17 @@ config.RegisterMappings(typeof(OneMapping).Assembly);
 config.ConnectionString = configuration.GetConnectionString("Db");
 ```
 
-Once done, the configuration should be past to the `DbSession` class. If you use microsofts DI container you can configure it as follows:
+Once done, the configuration should be past to the `Session` class. If you use microsofts DI container you can configure it as follows:
 
 ```csharp
 services.AddSingleton<DbConfiguration>();
-services.AddScoped<DbSession>();
+services.AddScoped<Session>();
 ```
 
 Or if don't use a container, you can just create it directly:
 
 ```csharp
-using (var session = new DbSession(config))
+using (var session = new Session(config))
 {
     var entity = session.GetById<User>(1);
     entity.FirstName = "Jonas";
@@ -41,10 +41,9 @@ using (var session = new DbSession(config))
 If you have enabled change tracking, you can skip the persistance step (i.e. calling Update).
 
 ```csharp
-
 config.EnableSnapshotTracking();
 
-using (var session = new DbSession(config))
+using (var session = new Session(config))
 {
     var entity = session.GetById<User>(1);
     entity.FirstName = "Jonas";
@@ -182,4 +181,12 @@ class Address
 some times the type of the DB column and the class property does not match. As such, a conversion is required between the property and the column.
 
 This library supprorts conversions for regular properties and some conversions are built in.
+
+## More information
+
+* [Conversions](Conversions.md)
+* [Mappings](Mappings.md)
+* [Has many relationships](HasMany.md)
+* [Has one relationships](HasOne.md)
+
 

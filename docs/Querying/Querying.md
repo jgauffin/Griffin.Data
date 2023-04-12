@@ -1,20 +1,40 @@
 Querying
 ========
 
+This information is regarding querying business entities, and not for using read-side queries.
+
 Querying lets you either fetch a single or multiple entities of the same type. 
+
+Queries can either use only parameters (where the parameter names must be property names):
+
+```csharp
+var users = session.First<User>(new { UserId });
+```
+
+Short form SQL query:
+
+```csharp
+var users = session.First<User>("user_id = @userId", new { userId });
+```
+
+Or complete SQL statements:
+
+```csharp
+var users = session.First<User>("SELECT * FROM Users WHERE user_id = @userId", new { userId });
+```
 
 ## Query rules
 
 There are some rules that must be obeyed in queries:
 
 * Constrains (`QueryOptions.Where(new { userId })`) must always use property names.
-* When both a SQL query (complte or short) are used, the constraint keys must match those used in the query.
+* When both a SQL query (complete or short) are used, the constraint keys must match those used in the query.
 * SQL Queries must always use column names.
 
 Example:
 
 ```csharp
-// SQL = use column name
+// SQL = use the same name as in the query.
 var users = session.First<User>("user_id = @userId", new { userId });
 
 // No query = use property name.
