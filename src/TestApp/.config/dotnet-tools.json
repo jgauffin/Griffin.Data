@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "griffin.data.scaffolding": {
+      "version": "1.0.0-rc37",
+      "commands": [
+        "gd"
+      ]
+    }
+  }
+}

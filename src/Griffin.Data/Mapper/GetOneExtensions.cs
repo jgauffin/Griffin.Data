@@ -10,6 +10,20 @@ namespace Griffin.Data.Mapper;
 public static class GetOneExtensions
 {
     /// <summary>
+    ///     Check if an entity exists in the database.
+    /// </summary>
+    /// <typeparam name="TEntity">Type of entity.</typeparam>
+    /// <param name="session">Session to make the query in.</param>
+    /// <param name="constraints">Parameters used to limit the search result.</param>
+    /// <returns></returns>
+    public static async Task<bool> Exists<TEntity>(this Session session, object constraints)
+    {
+        await using var cmd = session.CreateQueryCommand(typeof(TEntity), QueryOptions.Where(constraints));
+        await using var reader = await cmd.ExecuteReaderAsync();
+        return await reader.ReadAsync();
+    }
+
+    /// <summary>
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
     /// <param name="session"></param>
@@ -36,7 +50,7 @@ public static class GetOneExtensions
     }
 
     /// <summary>
-    /// Find first entity.
+    ///     Find first entity.
     /// </summary>
     /// <typeparam name="TEntity">Type of entity.</typeparam>
     /// <param name="session">Session to use for the SQL query.</param>

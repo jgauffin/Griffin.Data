@@ -2,7 +2,7 @@
 using Griffin.Data.Scaffolding.Mapper;
 using Griffin.Data.Scaffolding.Queries;
 
-namespace Griffin.Data.Scaffolding.Console
+namespace Griffin.Data.Scaffolding.Helpers
 {
     internal class GeneratorHelper
     {

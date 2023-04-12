@@ -10,7 +10,7 @@
         <PackageOutputPath>./nupkg</PackageOutputPath>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-        <Version>1.0.0-rc36</Version>
+        <Version>1.0.0-rc37</Version>
         <PackageReleaseNotes>Tests.</PackageReleaseNotes>
     </PropertyGroup>
 
@@ -30,6 +30,12 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Griffin.Data\Griffin.Data.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="appsettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

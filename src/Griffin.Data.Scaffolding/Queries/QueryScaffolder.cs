@@ -34,7 +34,10 @@ public class QueryScaffolder
             {
                 var file = await generator.Generate(meta);
                 var fullPath = Path.Combine(meta.Directory, file.ClassName + ".cs");
-                await File.WriteAllTextAsync(fullPath, file.Contents);
+                if (!File.Exists(fullPath))
+                {
+                    await File.WriteAllTextAsync(fullPath, file.Contents);
+                }
             }
         }
     }
@@ -44,9 +47,16 @@ public class QueryScaffolder
         var metas = new List<QueryMeta>();
         foreach (var queryFile in queryFiles)
         {
-            var parser = new MetaProvider();
-            var meta = parser.GenerateMeta(queryFile, connection);
-            metas.Add(meta);
+            try
+            {
+                var parser = new MetaProvider();
+                var meta = parser.GenerateMeta(queryFile, connection);
+                metas.Add(meta);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to analyze query '{queryFile.Filename}', reason: {ex.Message}");
+            }
         }
 
         return metas;

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Griffin.Data.Scaffolding": {
+      "commandName": "Project",
+      "commandLineArgs": "generate"
+    }
+  }
+}

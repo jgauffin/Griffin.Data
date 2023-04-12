@@ -29,17 +29,21 @@ Copy/paste the query into a new script in your database project.
 
 It can be named `ListActiveUsers.query.sql`:
 
+![](solution-explorer.png)
+
 The `.query.sql` part is important as it tells the scaffolder that it should generate a new script.
 
 ## Run the scaffolder
 
-Open a command prompt or powershell and run the scaffolder.
+Open a command prompt or powershell and run the scaffolder (must have been installed first using `dotnet tool install -g griffin.data.scaffolding`).
 
 ```
 dotnet gd queries
 ```
 
 It will now generate all files.
+
+![](solution-explorer.png)
 
 ## View the result
 
@@ -66,39 +70,23 @@ public class ListActiveUsersResultItem
 }
 
 // The query runner (which executes the query and generates the result).
-public class ListActiveUsersRunner : IQueryHandler<ListActiveUsers, ListActiveUsersResult>
+public class ListUsersRunner : ListRunner<ListUsersResultItem>, IQueryRunner<ListUsers, ListUsersResult>
 {
-    private readonly Session _session;
-
-    public ListActiveUsersRunner(Session session)
+    public ListUsersRunner(Session session) : base(session)
     {
-        _session = session;
     }
 
-    public async Task<ListActiveUsersResult> Execute(ListActiveUsers query)
+    public async Task<ListUsersResult> Execute(ListUsers query)
     {
-        using (var cmd = _session.CreateCommand())
-        {
-            cmd.CommandText = @"SELECT u.Id, UserName
-                                FROM Users u
-                                JOIN Accounts a ON (u.AccountId = a.Id)
-                                WHERE a.State = 1";
-            using (var reader = await command.ExecuteReaderAsync())
-            {
-                var items = new List<ListActiveUsersResultItem>();
-                while (await reader.ReadAsync())
-                {
-                    var item = new ListActiveUsersResultItem();
-                    MapRecord(reader, item);
-                    items.Add(item);
-                }
+        await using var command = Session.CreateCommand();
+        command.CommandText = @"select *
+                                 from Users";
 
-                return new ListActiveUsersResult { Items = items };
-            }
-        }
+        command.AddParameter("name", query.NameToFind);
+        return new ListUsersResult { Items = await MapRecords(command) };
     }
 
-    private void MapRecord(IDataRecord record, ListActiveUsersResultItem item)
+    protected override void MapRecord(IDataRecord record, ListUsersResultItem item)
     {
         item.Id = record.GetInt32(0);
         item.UserName = record.GetString(1);

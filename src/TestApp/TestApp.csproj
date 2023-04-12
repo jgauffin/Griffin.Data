@@ -8,12 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Griffin.Data.Scaffolding" Version="1.0.0-rc36" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Griffin.Data.Scaffolding\Griffin.Data.Scaffolding.csproj" />
     <ProjectReference Include="..\Griffin.Data\Griffin.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Users\Domain\" />
   </ItemGroup>
 
 </Project>

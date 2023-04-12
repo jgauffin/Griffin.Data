@@ -1,4 +1,4 @@
-﻿namespace TestApp.Queries;
+﻿namespace TestApp.Users.Queries;
 
 public class ListUsersResultItem
 {

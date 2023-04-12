@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Griffin.Data.Scaffolding.Console
+namespace Griffin.Data.Scaffolding.Helpers
 {
     internal class HelpInfo
     {
