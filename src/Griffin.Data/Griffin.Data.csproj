@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(ProjectName).xml</DocumentationFile>
 
-        <Version>2.0.0-rc02</Version>
-        <PackageReleaseNotes>Added exists method..</PackageReleaseNotes>
+        <Version>2.0.0-rc03</Version>
+        <PackageReleaseNotes>Fixed a clean up bug in Session.Dispose()..</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>

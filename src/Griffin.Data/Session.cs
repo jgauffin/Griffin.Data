@@ -80,6 +80,12 @@ public class Session : IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (Transaction == null)
+        {
+            return;
+        }
+
         var con = Transaction.Connection;
         if (_commitOnDispose)
         {
@@ -91,7 +97,7 @@ public class Session : IDisposable
         }
 
         Transaction.Dispose();
-        con.Dispose();
+        con?.Dispose();
     }
 
     /// <summary>
