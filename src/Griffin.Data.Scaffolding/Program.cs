@@ -1,24 +1,48 @@
-﻿using System.Reflection;
+﻿using System.Data.SqlClient;
+using Griffin.Data.Scaffolding.Console;
+using Microsoft.Extensions.Configuration;
 
 if (args.Length == 0)
 {
-    var versionString = Assembly.GetExecutingAssembly()?
-        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-        .InformationalVersion
-        .ToString();
-
-    Console.WriteLine($"Griffin.Data Scaffolding v{versionString}");
-    Console.WriteLine("-------------");
-    Console.WriteLine();
-    Console.WriteLine("Usage:");
-    Console.WriteLine("  gf config          Generate a config file.");
-    Console.WriteLine("  gf generate        Generate queries and entities.");
-    Console.WriteLine("  gf generate repos  Generate repositories (requires that entities have been generated).");
+    HelpInfo.Display();
     return;
 }
 
-if (args[0] == "config")
+var config = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false)
+    .Build();
+
+var connection = new SqlConnection(config.GetConnectionString("Db"));
+connection.Open();
+
+switch (args[0])
 {
+    case "generate":
+    {
+        if (args.Length == 1)
+        {
+            await GeneratorHelper.GenerateOrm(connection, Environment.CurrentDirectory);
+            await GeneratorHelper.GenerateQueries(connection, Environment.CurrentDirectory);
+        }
+        else switch (args[1])
+        {
+            case "queries":
+                await GeneratorHelper.GenerateQueries(connection, Environment.CurrentDirectory);
+                break;
+            case "mappings":
+                await GeneratorHelper.GenerateOrm(connection, Environment.CurrentDirectory);
+                break;
+            default:
+                Console.WriteLine("Unknown command");
+                break;
+        }
 
+        return;
+    }
+    case "config":
+        return;
+    default:
+        HelpInfo.Display();
+        break;
 }
-

@@ -6,12 +6,12 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <PackAsTool>true</PackAsTool>
-        <ToolCommandName>gf</ToolCommandName>
+        <ToolCommandName>gd</ToolCommandName>
         <PackageOutputPath>./nupkg</PackageOutputPath>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <Version>1.0.0-rc36</Version>
-        <PackageReleaseNotes>Added custom change tracker which can be used with externally built entities.</PackageReleaseNotes>
+        <PackageReleaseNotes>Tests.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -23,6 +23,10 @@
         <PackageTags>data-mapper, orm, sqlserver, queries</PackageTags>
         <PackageProjectUrl>https://github.com/jgauffin/griffin.data</PackageProjectUrl>
     </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
+    </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Griffin.Data\Griffin.Data.csproj" />

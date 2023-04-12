@@ -1,6 +1,8 @@
 Griffin.Data
 ============
 
+<img src="https://ci.appveyor.com/api/projects/status/github/jgauffin/griffin.data?branch=master&svg=true" />
+
 Version 2.0 is work in progress, most features are in place but not fully completed.
 
 Lightweight object/relation mapper (ORM) and data mapper.

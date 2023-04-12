@@ -8,6 +8,6 @@ public class UnitTest1
     public async Task Test1()
     {
         var s = new MapperScaffolder();
-        await s.GenerateMappings("Data Source=.;Initial Catalog=GriffinData;Integrated Security=True", @"C:\temp");
+        await s.Generate("Data Source=.;Initial Catalog=GriffinData;Integrated Security=True", @"C:\temp");
     }
 }

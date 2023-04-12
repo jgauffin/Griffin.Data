@@ -1,6 +1,4 @@
-﻿using System.Data.SqlClient;
-using System.IO;
-using System.Threading.Tasks;
+﻿using System.Data;
 using Griffin.Data.Scaffolding.Mapper.Generators;
 using Griffin.Data.Scaffolding.Meta;
 
@@ -13,14 +11,11 @@ public class MapperScaffolder
 {
     /// <summary>
     /// </summary>
-    /// <param name="connectionString"></param>
+    /// <param name="connection"></param>
     /// <param name="directory"></param>
     /// <returns></returns>
-    public async Task GenerateMappings(string connectionString, string directory)
+    public async Task Generate(IDbConnection connection, string directory)
     {
-        await using var connection = new SqlConnection(connectionString);
-        connection.Open();
-
         var reader = new TableSchemaReader();
         var tables = await reader.Generate(connection);
 
