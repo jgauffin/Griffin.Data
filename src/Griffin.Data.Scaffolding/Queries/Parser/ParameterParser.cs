@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace Griffin.Data.Scaffolding.Queries.Parser;
 
-namespace Griffin.Data.Scaffolding.Queries.Parser;
-
+/// <summary>
+///     Parses parameters in a SQL query script.
+/// </summary>
 internal class ParameterParser
 {
-    private string _dataType;
-    private string _name;
+    private readonly Dictionary<ParameterState, ParserMethod> _methods = new();
+    private string _dataType = "";
+    private string _name = "";
     private ParameterState _state = ParameterState.Declare;
-    private string _testValue;
-    private Dictionary<ParameterState, ParserMethod> _methods = new Dictionary<ParameterState, ParserMethod>();
+    private string _testValue = "";
 
     public ParameterParser()
     {
@@ -33,14 +33,6 @@ internal class ParameterParser
         }
 
         return new QueryParameter(_name, _dataType, _testValue);
-    }
-
-    private void SkipWhiteSpace(string line, ref int pos)
-    {
-        while (char.IsWhiteSpace(line[pos]) && pos < line.Length)
-        {
-            pos++;
-        }
     }
 
     private static void EnsureNotTheEnd(string line, int pos)
@@ -112,11 +104,11 @@ internal class ParameterParser
         var end = pos;
 
         SkipWhiteSpace(line, ref pos);
-        if (line[pos] == '=') {
+        if (line[pos] == '=')
+        {
             _dataType = line.Substring(start, end - start);
             _state = ParameterState.Equal;
             return;
-
         }
 
         _state = ParameterState.Complete;
@@ -132,6 +124,14 @@ internal class ParameterParser
 
         _testValue = line[start..].TrimEnd().TrimEnd(';');
         _state = ParameterState.Complete;
+    }
+
+    private void SkipWhiteSpace(string line, ref int pos)
+    {
+        while (char.IsWhiteSpace(line[pos]) && pos < line.Length)
+        {
+            pos++;
+        }
     }
 
     private delegate void ParserMethod(string line, ref int pos);

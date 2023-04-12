@@ -65,11 +65,9 @@ public class QueryRunnerGenerator : IQueryGenerator
             sb.DedentAppendLine("}");
         }
 
-        return Task.FromResult(new GeneratedFile()
+        return Task.FromResult(new GeneratedFile(meta.QueryName + "Runner", sb.ToString())
         {
-            Contents = sb.ToString(),
             RelativeDirectory = "QueryRunners\\",
-            ClassName = meta.QueryName + "Runner"
         });
     }
 

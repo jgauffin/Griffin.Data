@@ -11,7 +11,6 @@ public class SortEntry
     /// </summary>
     /// <param name="name">Property name to sort by.</param>
     /// <param name="isAscending">Use ascending sort</param>
-    /// <param name="isPropertyName"></param>
     public SortEntry(string name, bool isAscending)
     {
         Name = name ?? throw new ArgumentNullException(nameof(name));

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Data;
 using Griffin.Data.Scaffolding.Queries.Generators;
 using Griffin.Data.Scaffolding.Queries.Meta;
 using Griffin.Data.Scaffolding.Queries.Parser;
@@ -67,9 +61,7 @@ public class QueryScaffolder
         {
             var sql = await File.ReadAllTextAsync(queryFileName);
             var parser = new QueryParser();
-            var queryFile = parser.ParseFile(sql);
-            queryFile.Filename = Path.GetFileName(queryFileName);
-            queryFile.Directory = Path.GetDirectoryName(queryFileName);
+            var queryFile = parser.ParseFile(queryFileName, sql);
             foundFiles.Add(queryFile);
         }
 

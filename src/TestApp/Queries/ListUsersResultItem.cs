@@ -1,3 +1,5 @@
+﻿namespace TestApp.Queries;
+
 public class ListUsersResultItem
 {
     public int Id { get; set; }

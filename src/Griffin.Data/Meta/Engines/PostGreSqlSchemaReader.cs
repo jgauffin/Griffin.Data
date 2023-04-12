@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
@@ -7,33 +7,26 @@ namespace Griffin.Data.Meta.Engines;
 
 internal class PostGreSqlSchemaReader : SchemaReader
 {
-    private const string TABLE_SQL = @"
+    private const string TableSql = @"
 			SELECT table_name, table_schema, table_type
 			FROM information_schema.TableCollection 
 			WHERE (table_type='BASE TABLE' OR table_type='VIEW')
 				AND table_schema NOT IN ('pg_catalog', 'information_schema');
 			";
 
-    private const string COLUMN_SQL = @"
+    private const string ColumnSql = @"
 			SELECT column_name, is_nullable, udt_name, column_default
 			FROM information_schema.columns 
 			WHERE table_name=@tableName;
 			";
-
-    private DbConnection _connection;
-    private DbProviderFactory _factory;
 
     // SchemaReader.ReadSchema
     public override TableCollection ReadSchema(DbConnection connection, DbProviderFactory factory)
     {
         var result = new TableCollection();
 
-        _connection = connection;
-        _factory = factory;
-
-        var cmd = _factory.CreateCommand();
-        cmd.Connection = connection;
-        cmd.CommandText = TABLE_SQL;
+        var cmd = connection.CreateCommand();
+        cmd.CommandText = TableSql;
 
         //pull the TableCollection in a reader
         using (cmd)
@@ -41,24 +34,25 @@ internal class PostGreSqlSchemaReader : SchemaReader
             using var rdr = cmd.ExecuteReader();
             while (rdr.Read())
             {
+                var name = rdr["table_name"].ToString();
                 var tbl = new Table
                 {
-                    Name = rdr["table_name"].ToString(),
+                    Name = name,
                     Schema = rdr["table_schema"].ToString(),
-                    IsView = string.Compare(rdr["table_type"].ToString(), "View", true) == 0
+                    IsView = string.Compare(rdr["table_type"].ToString(), "View", true) == 0,
+                    CleanName = CleanUp(name),
+                    ClassName = Inflector.Instance.MakeSingular(name)
                 };
-                tbl.CleanName = CleanUp(tbl.Name);
-                tbl.ClassName = Inflector.Instance.MakeSingular(tbl.CleanName);
                 result.Add(tbl);
             }
         }
 
         foreach (var tbl in result)
         {
-            tbl.Columns = LoadColumns(tbl);
+            tbl.Columns = LoadColumns(connection, tbl);
 
             // Mark the primary key
-            var primaryKey = GetPK(tbl.Name);
+            var primaryKey = GetPK(connection, tbl.Name);
             var pkColumn = tbl.Columns.SingleOrDefault(x => x.Name.ToLower().Trim() == primaryKey.ToLower().Trim());
             if (pkColumn != null)
             {
@@ -69,7 +63,7 @@ internal class PostGreSqlSchemaReader : SchemaReader
         return result;
     }
 
-    private string GetPK(string table)
+    private string GetPK(DbConnection connection, string table)
     {
         var sql = @"SELECT kcu.column_name 
 			FROM information_schema.key_column_usage kcu
@@ -78,8 +72,7 @@ internal class PostGreSqlSchemaReader : SchemaReader
 			WHERE lower(tc.constraint_type)='primary key'
 			AND kcu.table_name=@tablename";
 
-        using var cmd = _factory.CreateCommand();
-        cmd.Connection = _connection;
+        using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
         var p = cmd.CreateParameter();
@@ -137,11 +130,10 @@ internal class PostGreSqlSchemaReader : SchemaReader
         }
     }
 
-    private List<Column> LoadColumns(Table tbl)
+    private List<Column> LoadColumns(DbConnection connection, Table tbl)
     {
-        using var cmd = _factory.CreateCommand();
-        cmd.Connection = _connection;
-        cmd.CommandText = COLUMN_SQL;
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = ColumnSql;
 
         var p = cmd.CreateParameter();
         p.ParameterName = "@tableName";
@@ -152,12 +144,15 @@ internal class PostGreSqlSchemaReader : SchemaReader
         using IDataReader rdr = cmd.ExecuteReader();
         while (rdr.Read())
         {
-            var col = new Column();
-            col.Name = rdr["column_name"].ToString();
-            col.PropertyName = CleanUp(col.Name);
-            col.PropertyType = GetPropertyType(rdr["udt_name"].ToString());
-            col.IsNullable = rdr["is_nullable"].ToString() == "YES";
-            col.IsAutoIncrement = rdr["column_default"].ToString().StartsWith("nextval(");
+            var name= rdr["column_name"].ToString();
+            var col = new Column
+            {
+                Name = name,
+                PropertyName = CleanUp(name),
+                PropertyType = GetPropertyType(rdr["udt_name"].ToString()),
+                IsNullable = rdr["is_nullable"].ToString() == "YES",
+                IsAutoIncrement = rdr["column_default"].ToString().StartsWith("nextval(")
+            };
             result.Add(col);
         }
 

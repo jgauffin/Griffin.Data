@@ -3,6 +3,8 @@ using Griffin.Data;
 using Griffin.Data.Helpers;
 using Griffin.Data.Queries;
 
+namespace TestApp.Queries;
+
 public class ListUsersRunner :  ListRunner<ListUsersResultItem>, IQueryRunner<ListUsers, ListUsersResult>
 {
     public ListUsersRunner(Session session) : base(session)

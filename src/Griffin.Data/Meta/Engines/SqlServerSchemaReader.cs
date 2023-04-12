@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -10,11 +10,11 @@ internal class SqlServerSchemaReader : SchemaReader
 {
     // SchemaReader.ReadSchema
 
-    private const string TABLE_SQL = @"SELECT *
+    private const string TableSql = @"SELECT *
 		FROM  INFORMATION_SCHEMA.TableCollection
 		WHERE TABLE_TYPE='BASE TABLE' OR TABLE_TYPE='VIEW'";
 
-    private const string COLUMN_SQL = @"SELECT 
+    private const string ColumnSql = @"SELECT 
 			TABLE_CATALOG AS [Database],
 			TABLE_SCHEMA AS Owner, 
 			TABLE_NAME AS TableName, 
@@ -30,19 +30,23 @@ internal class SqlServerSchemaReader : SchemaReader
 		WHERE TABLE_NAME=@tableName AND TABLE_SCHEMA=@schemaName
 		ORDER BY OrdinalPosition ASC";
 
-    private DbConnection _connection;
-    private DbProviderFactory _factory;
-
     public override TableCollection ReadSchema(DbConnection connection, DbProviderFactory factory)
     {
+        if (connection == null)
+        {
+            throw new ArgumentNullException(nameof(connection));
+        }
+
+        if (factory == null)
+        {
+            throw new ArgumentNullException(nameof(factory));
+        }
+
         var result = new TableCollection();
 
-        _connection = connection;
-        _factory = factory;
-
-        var cmd = _factory.CreateCommand();
+        using var cmd = factory.CreateCommand()!;
         cmd.Connection = connection;
-        cmd.CommandText = TABLE_SQL;
+        cmd.CommandText = TableSql;
 
         //pull the TableCollection in a reader
         using (cmd)
@@ -67,10 +71,10 @@ internal class SqlServerSchemaReader : SchemaReader
 
         foreach (var tbl in result)
         {
-            tbl.Columns = LoadColumns(tbl);
+            tbl.Columns = LoadColumns(connection, tbl);
 
             // Mark the primary key
-            var primaryKey = GetPrimaryKey(tbl.Name);
+            var primaryKey = GetPrimaryKey(connection, tbl.Name);
             var pkColumn = tbl.Columns.SingleOrDefault(x => x.Name.ToLower().Trim() == primaryKey.ToLower().Trim());
             if (pkColumn != null)
             {
@@ -81,7 +85,7 @@ internal class SqlServerSchemaReader : SchemaReader
         return result;
     }
 
-    private string GetPrimaryKey(string table)
+    private string GetPrimaryKey(DbConnection connection, string table)
     {
         var sql = @"SELECT c.name AS ColumnName
                 FROM sys.indexes AS i 
@@ -90,9 +94,8 @@ internal class SqlServerSchemaReader : SchemaReader
                 LEFT OUTER JOIN sys.columns AS c ON ic.object_id = c.object_id AND c.column_id = ic.column_id
                 WHERE (i.type = 1) AND (o.name = @tableName)";
 
-        using (var cmd = _factory.CreateCommand())
+        using (var cmd = connection.CreateCommand())
         {
-            cmd.Connection = _connection;
             cmd.CommandText = sql;
 
             var p = cmd.CreateParameter();
@@ -169,12 +172,11 @@ internal class SqlServerSchemaReader : SchemaReader
         return sysType;
     }
 
-    private List<Column> LoadColumns(Table tbl)
+    private List<Column> LoadColumns(DbConnection connection, Table tbl)
     {
-        using (var cmd = _factory.CreateCommand())
+        using (var cmd = connection.CreateCommand())
         {
-            cmd.Connection = _connection;
-            cmd.CommandText = COLUMN_SQL;
+            cmd.CommandText = ColumnSql;
 
             var p = cmd.CreateParameter();
             p.ParameterName = "@tableName";

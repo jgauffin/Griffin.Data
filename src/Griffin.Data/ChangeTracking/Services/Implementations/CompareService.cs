@@ -137,7 +137,7 @@ public class CompareService
         foreach (var child in parentMapping.Children)
         {
             var snapshotValue = child.GetColumnValue(snapshot);
-            var currentValue = child.GetColumnValue(current!);
+            var currentValue = child.GetColumnValue(current);
 
             var entityType = child.HaveDiscriminator
                 ? child.GetTypeUsingDiscriminator(snapshot)

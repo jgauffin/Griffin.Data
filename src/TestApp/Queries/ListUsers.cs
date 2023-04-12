@@ -1,7 +1,12 @@
-using Griffin.Data.Queries;
+﻿using Griffin.Data.Queries;
+
+namespace TestApp.Queries;
 
 public class ListUsers : IQuery<ListUsersResult>, IPagedQuery, ISortedQuery
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public string Name { get; set; }
     /// <summary>
     /// One-based page number.

@@ -26,11 +26,9 @@ public class QueryResultGenerator:IQueryGenerator
             sb.DedentAppendLine("}");
         }
 
-        return Task.FromResult(new GeneratedFile()
+        return Task.FromResult(new GeneratedFile(meta.QueryName + "Result", sb.ToString())
         {
-            Contents = sb.ToString(),
             RelativeDirectory = "Queries\\",
-            ClassName = meta.QueryName + "Result"
         });
     }
 }

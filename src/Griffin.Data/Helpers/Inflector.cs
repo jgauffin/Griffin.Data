@@ -156,7 +156,7 @@ public static class Inflector
     private static string Titleize(this string word)
     {
         return Regex.Replace(Humanize(Underscore(word)), @"\b([a-z])",
-            delegate(Match match) { return match.Captures[0].Value.ToUpper(); });
+            match => match.Captures[0].Value.ToUpper());
     }
 
     private static string Uncapitalize(this string word)

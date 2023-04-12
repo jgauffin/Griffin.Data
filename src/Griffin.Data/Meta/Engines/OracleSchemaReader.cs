@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -22,48 +22,43 @@ internal class OracleSchemaReader : SchemaReader
  where table_name = upper(:tableName)
  order by column_id";
 
-    private DbConnection _connection;
-
-    private DbProviderFactory _factory;
-
-    // SchemaReader.ReadSchema
     public override TableCollection ReadSchema(DbConnection connection, DbProviderFactory factory)
     {
         var result = new TableCollection();
 
-        _connection = connection;
-        _factory = factory;
-
-        var cmd = _factory.CreateCommand();
+        var cmd = connection.CreateCommand();
         cmd.Connection = connection;
         cmd.CommandText = TableSql;
-        cmd.GetType().GetProperty("BindByName").SetValue(cmd, true, null);
+        cmd.GetType().GetProperty("BindByName")!.SetValue(cmd, true, null);
 
         //pull the TableCollection in a reader
         using (cmd)
         {
-            using (var rdr = cmd.ExecuteReader())
+            using var rdr = cmd.ExecuteReader();
+            while (rdr.Read())
             {
-                while (rdr.Read())
+                var name = rdr["TABLE_NAME"].ToString();
+                var tbl = new Table
                 {
-                    var tbl = new Table();
-                    tbl.Name = rdr["TABLE_NAME"].ToString();
-                    tbl.Schema = rdr["TABLE_SCHEMA"].ToString();
-                    tbl.IsView = string.Compare(rdr["TABLE_TYPE"].ToString(), "View", true) == 0;
-                    tbl.CleanName = CleanUp(tbl.Name);
-                    tbl.ClassName = Inflector.Instance.MakeSingular(tbl.CleanName);
-                    result.Add(tbl);
-                }
+                    Name = name,
+                    Schema = rdr["TABLE_SCHEMA"].ToString(),
+                    IsView = string.Compare(rdr["TABLE_TYPE"].ToString(), "View",
+                                 StringComparison.OrdinalIgnoreCase) ==
+                             0,
+                    CleanName = CleanUp(name),
+                    ClassName = Inflector.Instance.MakeSingular(name)
+                };
+                result.Add(tbl);
             }
         }
 
         foreach (var tbl in result)
         {
-            tbl.Columns = LoadColumns(tbl);
+            tbl.Columns = LoadColumns(connection, tbl);
 
             // Mark the primary key
-            var PrimaryKey = GetPK(tbl.Name);
-            var pkColumn = tbl.Columns.SingleOrDefault(x => x.Name.ToLower().Trim() == PrimaryKey.ToLower().Trim());
+            var primaryKey = GetPrimaryKey(connection, tbl.Name);
+            var pkColumn = tbl.Columns.SingleOrDefault(x => x.Name.ToLower().Trim() == primaryKey.ToLower().Trim());
             if (pkColumn != null)
             {
                 pkColumn.IsPrimaryKey = true;
@@ -73,7 +68,7 @@ internal class OracleSchemaReader : SchemaReader
         return result;
     }
 
-    private string GetPK(string table)
+    private string GetPrimaryKey(DbConnection connection, string table)
     {
         var sql = @"select column_name from USER_CONSTRAINTS uc
   inner join USER_CONS_COLUMNS ucc on uc.constraint_name = ucc.constraint_name
@@ -81,23 +76,20 @@ where uc.constraint_type = 'P'
 and uc.table_name = upper(:tableName)
 and ucc.position = 1";
 
-        using (var cmd = _factory.CreateCommand())
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = sql;
+        cmd.GetType().GetProperty("BindByName")!.SetValue(cmd, true, null);
+
+        var p = cmd.CreateParameter();
+        p.ParameterName = ":tableName";
+        p.Value = table;
+        cmd.Parameters.Add(p);
+
+        var result = cmd.ExecuteScalar();
+
+        if (result != null)
         {
-            cmd.Connection = _connection;
-            cmd.CommandText = sql;
-            cmd.GetType().GetProperty("BindByName").SetValue(cmd, true, null);
-
-            var p = cmd.CreateParameter();
-            p.ParameterName = ":tableName";
-            p.Value = table;
-            cmd.Parameters.Add(p);
-
-            var result = cmd.ExecuteScalar();
-
-            if (result != null)
-            {
-                return result.ToString();
-            }
+            return result.ToString();
         }
 
         return "";
@@ -158,36 +150,35 @@ and ucc.position = 1";
         return sysType;
     }
 
-    private List<Column> LoadColumns(Table tbl)
+    private List<Column> LoadColumns(DbConnection connection, Table tbl)
     {
-        using (var cmd = _factory.CreateCommand())
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = ColumnSql;
+        cmd.GetType().GetProperty("BindByName").SetValue(cmd, true, null);
+
+        var p = cmd.CreateParameter();
+        p.ParameterName = ":tableName";
+        p.Value = tbl.Name;
+        cmd.Parameters.Add(p);
+
+        var result = new List<Column>();
+        using IDataReader rdr = cmd.ExecuteReader();
+        while (rdr.Read())
         {
-            cmd.Connection = _connection;
-            cmd.CommandText = ColumnSql;
-            cmd.GetType().GetProperty("BindByName").SetValue(cmd, true, null);
+            var name= rdr["ColumnName"].ToString();
 
-            var p = cmd.CreateParameter();
-            p.ParameterName = ":tableName";
-            p.Value = tbl.Name;
-            cmd.Parameters.Add(p);
-
-            var result = new List<Column>();
-            using (IDataReader rdr = cmd.ExecuteReader())
+            var col = new Column
             {
-                while (rdr.Read())
-                {
-                    var col = new Column();
-                    col.Name = rdr["ColumnName"].ToString();
-                    col.PropertyName = CleanUp(col.Name);
-                    col.PropertyType = GetPropertyType(rdr["DataType"].ToString(),
-                        rdr["DataType"] == DBNull.Value ? null : rdr["DataType"].ToString());
-                    col.IsNullable = rdr["IsNullable"].ToString() == "YES";
-                    col.IsAutoIncrement = true;
-                    result.Add(col);
-                }
-            }
-
-            return result;
+                Name = name,
+                PropertyName = CleanUp(name),
+                PropertyType = GetPropertyType(rdr["DataType"].ToString(),
+                    rdr["DataType"] == DBNull.Value ? null : rdr["DataType"].ToString()),
+                IsNullable = rdr["IsNullable"].ToString() == "YES",
+                IsAutoIncrement = true
+            };
+            result.Add(col);
         }
+
+        return result;
     }
 }

@@ -1,4 +1,4 @@
-using System.Data.Common;
+﻿using System.Data.Common;
 using System.Text.RegularExpressions;
 
 namespace Griffin.Data.Meta;
@@ -8,10 +8,6 @@ internal abstract class SchemaReader
     private static readonly Regex rxCleanUp = new(@"[^\w\d_]", RegexOptions.Compiled);
 
     public abstract TableCollection ReadSchema(DbConnection connection, DbProviderFactory factory);
-
-    public void WriteLine(string o)
-    {
-    }
 
     protected virtual string CleanUp(string name)
     {

@@ -36,11 +36,13 @@ public static class GetOneExtensions
     }
 
     /// <summary>
+    /// Find first entity.
     /// </summary>
-    /// <typeparam name="TEntity"></typeparam>
-    /// <param name="session"></param>
-    /// <param name="options"></param>
+    /// <typeparam name="TEntity">Type of entity.</typeparam>
+    /// <param name="session">Session to use for the SQL query.</param>
+    /// <param name="constraints">Parameters to build a WHERE clause from.</param>
     /// <returns></returns>
+    /// <exception cref="EntityNotFoundException">Entity was not found.</exception>
     public static Task<TEntity> First<TEntity>(this Session session, object constraints) where TEntity : notnull
     {
         var options = new QueryOptions(null, constraints);

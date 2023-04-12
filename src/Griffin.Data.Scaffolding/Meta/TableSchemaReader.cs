@@ -85,10 +85,10 @@ ORDER BY c.TABLE_SCHEMA,c.TABLE_NAME, c.ORDINAL_POSITION
 ";
         var tables = new Dictionary<string, Table>();
 
-        using (var cmd = (DbCommand)connection.CreateCommand())
+        await using (var cmd = (DbCommand)connection.CreateCommand())
         {
             cmd.CommandText = sql;
-            using (var reader = await cmd.ExecuteReaderAsync())
+            await using (var reader = await cmd.ExecuteReaderAsync())
             {
                 //TableName, ColumnName, Datatype, DefaultValue, MaxStringLength, NumericPrecision, Nullable, KeyType
                 while (await reader.ReadAsync())
@@ -100,18 +100,16 @@ ORDER BY c.TABLE_SCHEMA,c.TABLE_NAME, c.ORDINAL_POSITION
                         tables[tableName] = table;
                     }
 
-                    var column = new Column
+                    var sqlType = reader.GetString(2);
+
+                    var column = new Column(reader.GetString(1), sqlType, SqlType.ToDotNetType(sqlType))
                     {
-                        ColumnName = reader.GetString(1),
                         DefaultValue = reader.GetNullableString(3),
-                        SqlDataType = reader.GetString(2),
                         MaxStringLength = reader.GetNullableInt(4),
                         IsNullable = reader.GetString(6) == "YES",
                         IsPrimaryKey = reader.GetString(7) == "PRIMARY KEY"
                     };
-
                     column.PropertyName = column.ColumnName.ToPascalCase();
-                    column.PropertyType = SqlType.ToDotNetType(column.SqlDataType);
                     table.Columns.Add(column);
                 }
             }

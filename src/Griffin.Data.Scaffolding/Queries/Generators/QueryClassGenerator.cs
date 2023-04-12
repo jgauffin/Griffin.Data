@@ -106,10 +106,8 @@ public class QueryClassGenerator : IQueryGenerator
             sb.DedentAppendLine("}");
         }
 
-        return Task.FromResult(new GeneratedFile()
+        return Task.FromResult(new GeneratedFile(meta.QueryName, sb.ToString())
         {
-            Contents = sb.ToString(),
-            ClassName = meta.QueryName,
             RelativeDirectory = "Queries\\"
         });
     }

@@ -24,10 +24,7 @@ namespace Griffin.Data.Scaffolding.Queries.Meta
             List<QueryMetaColumn> columns = new List<QueryMetaColumn>();
             for (int i = 0; i < reader.FieldCount; i++)
             {
-                var column = new QueryMetaColumn
-                {
-                    Name = reader.GetName(i),
-                };
+                var column = new QueryMetaColumn(reader.GetName(i), reader.GetFieldType(i));
                 
                 var dataType = reader.GetDataTypeName(i);
                 pos = dataType.IndexOf('(');
@@ -38,7 +35,6 @@ namespace Griffin.Data.Scaffolding.Queries.Meta
                     dataType = dataType[..pos];
                 }
 
-                column.PropertyType = reader.GetFieldType(i);
                 column.SqlDataType = dataType;
                 columns.Add(column);
             }
@@ -47,30 +43,28 @@ namespace Griffin.Data.Scaffolding.Queries.Meta
             List<QueryMetaParameter> parameters = new List<QueryMetaParameter>();
             foreach (var parameter in queryFile.Parameters)
             {
-                var p = new QueryMetaParameter { Name = parameter.Name, 
-                    DefaultValue = parameter.TestValue,
-                     
-                };
+                Type propertyType;
                 pos = parameter.SqlType.IndexOf('(');
                 if (pos != -1)
                 {
                     var len = parameter.SqlType[(pos + 1)..].TrimEnd(')');
-                    p.PropertyType = SqlType.ToDotNetType(parameter.SqlType[..pos]);
+                    propertyType = SqlType.ToDotNetType(parameter.SqlType[..pos]);
                 }
                 else
                 {
-                    p.PropertyType = SqlType.ToDotNetType(parameter.SqlType[..pos]);
+                    propertyType = SqlType.ToDotNetType(parameter.SqlType[..pos]);
                 }
+
+                var p = new QueryMetaParameter(parameter.Name, propertyType) { DefaultValue = parameter.TestValue, };
+
                 parameters.Add(p);
             }
 
-            return new QueryMeta
+            return new QueryMeta(queryName, queryFile.Query)
             {
                 Directory = queryFile.Directory,
                 Columns = columns,
                 Parameters = parameters,
-                QueryName = queryName,
-                SqlQuery = queryFile.Query,
                 UseSorting = queryFile.UseSorting,
                 UsePaging = queryFile.UsePaging
             };

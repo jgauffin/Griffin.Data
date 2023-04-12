@@ -11,7 +11,7 @@ internal class QueryParser
     private bool _usePaging;
     private bool _useSorting;
 
-    public QueryFile ParseFile(string sql)
+    public QueryFile ParseFile(string fullPath, string sql)
     {
         var reader = new StringReader(sql);
         while (true)
@@ -50,10 +50,9 @@ internal class QueryParser
             _query.AppendLine(line);
         }
 
-        return new QueryFile
+        return new QueryFile(Path.GetDirectoryName(fullPath)!, Path.GetFileNameWithoutExtension(fullPath), _query.ToString())
         {
             Parameters = _parameters,
-            Query = _query.ToString(),
             UsePaging = _usePaging,
             UseSorting = _useSorting
         };
