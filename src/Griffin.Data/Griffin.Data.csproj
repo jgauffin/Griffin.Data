@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(ProjectName).xml</DocumentationFile>
 
-        <Version>2.0.0-rc01</Version>
-        <PackageReleaseNotes>Added custom change tracker which can be used with externally built entities.</PackageReleaseNotes>
+        <Version>2.0.0-rc02</Version>
+        <PackageReleaseNotes>Added exists method..</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>
