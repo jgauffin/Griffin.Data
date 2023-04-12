@@ -12,6 +12,11 @@ public class SingleEntityComparer
 {
     private readonly IMappingRegistry _mappingRegistry;
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="mappingRegistry">Used to fetch keys for entities.</param>
+    /// <exception cref="ArgumentNullException">Arguments are not specified.</exception>
     public SingleEntityComparer(IMappingRegistry mappingRegistry)
     {
         _mappingRegistry = mappingRegistry ?? throw new ArgumentNullException(nameof(mappingRegistry));
@@ -72,7 +77,7 @@ public class SingleEntityComparer
         var orderedResult = result.OrderBy(x => x.Depth).ToList();
         foreach (var item in orderedResult)
         {
-            if (item.Depth == 1)
+            if (item.Depth == 1 || item.TrackedItem.Parent == null)
             {
                 continue;
             }

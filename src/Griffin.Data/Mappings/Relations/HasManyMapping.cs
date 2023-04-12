@@ -30,6 +30,9 @@ public class HasManyMapping<TParent, TChild> : RelationShipBase<TParent, TChild>
         _setter = setter ?? throw new ArgumentNullException(nameof(setter));
     }
 
+    /// <summary>
+    /// Column used to limit returned rows for the child table.
+    /// </summary>
     public KeyValuePair<string, string>? SubsetColumn { get; set; }
 
     /// <inheritdoc />

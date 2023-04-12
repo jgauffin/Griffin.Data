@@ -83,7 +83,6 @@ public class ClassMapping
     /// <param name="record">Record set.</param>
     /// <returns>Created entity.</returns>
     /// <exception cref="ArgumentNullException"></exception>
-    [return: NotNull]
     public object CreateInstance(IDataRecord record)
     {
         if (record == null)
@@ -128,8 +127,17 @@ public class ClassMapping
                    $"Failed to find property {propertyName}.");
     }
 
+    /// <summary>
+    /// Get the relationship configuration for a specific child entity.
+    /// </summary>
+    /// <param name="childType">Type of child entity.</param>
+    /// <returns>Mapping if found; otherwise <c>null</c>.</returns>
     public IRelationShip? GetRelation(Type childType)
     {
+        if (childType == null)
+        {
+            throw new ArgumentNullException(nameof(childType));
+        }
         // We need this loop since mappings are registered using the base type
         // while child properties contains a concrete instances.
 

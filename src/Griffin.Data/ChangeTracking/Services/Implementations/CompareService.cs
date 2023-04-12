@@ -40,7 +40,7 @@ public class CompareService
         var mapping = _registry.Get(current?.GetType() ??
                                     snapshot?.GetType() ??
                                     throw new InvalidOperationException("Failed to get entity type."));
-        Compare(null, snapshot, current, mapping, 1);
+        Compare(null!, snapshot, current, mapping, 1);
     }
 
     /// <summary>
@@ -133,11 +133,11 @@ public class CompareService
         ClassMapping parentMapping,
         int depth)
     {
-        var parent = current ?? snapshot;
+        var parent = current;
         foreach (var child in parentMapping.Children)
         {
             var snapshotValue = child.GetColumnValue(snapshot);
-            var currentValue = child.GetColumnValue(current);
+            var currentValue = child.GetColumnValue(current!);
 
             var entityType = child.HaveDiscriminator
                 ? child.GetTypeUsingDiscriminator(snapshot)
@@ -158,7 +158,7 @@ public class CompareService
         ClassMapping parentMapping,
         int depth)
     {
-        var parent = current ?? snapshot;
+        var parent = current;
         foreach (var hasManyMapping in parentMapping.Collections)
         {
             var snapshotValue = (IEnumerable?)hasManyMapping.GetCollection(snapshot) ??

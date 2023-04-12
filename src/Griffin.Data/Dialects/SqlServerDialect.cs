@@ -53,6 +53,7 @@ public class SqlServerDialect : ISqlDialect
         }
     }
 
+    /// <inheritdoc />
     public void ApplyPaging(IDbCommand command, string keyColumn, int pageNumber, int? pageSize)
     {
         var ps = pageSize ?? 100;
@@ -74,6 +75,7 @@ public class SqlServerDialect : ISqlDialect
         }
     }
 
+    /// <inheritdoc />
     public void ApplySorting(IDbCommand command, IList<SortEntry> entries)
     {
         command.CommandText += " ORDER BY ";

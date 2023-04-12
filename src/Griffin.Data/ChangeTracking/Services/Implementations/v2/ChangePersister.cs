@@ -15,6 +15,11 @@ public class ChangePersister
 {
     private readonly IMappingRegistry _mappingRegistry;
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="mappingRegistry">Used to find mappings to assign foreign keys.</param>
+    /// <exception cref="ArgumentNullException">Arguments are not specified.</exception>
     public ChangePersister(IMappingRegistry mappingRegistry)
     {
         _mappingRegistry = mappingRegistry ?? throw new ArgumentNullException(nameof(mappingRegistry));

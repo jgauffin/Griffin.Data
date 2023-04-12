@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Griffin.Data.Mapper;
 
 namespace Griffin.Data.Mappings.Relations;
@@ -91,7 +90,7 @@ public abstract class RelationShipBase<TParent, TChild> : IRelationShip
     /// <inheritdoc />
     public virtual IDictionary<string, object> CreateDbConstraints(IEnumerable parentEntities)
     {
-        List<object> keys = new List<object>();
+        var keys = new List<object>();
         foreach (var parent in parentEntities)
         {
             var id = GetReferencedId(parent);
@@ -111,6 +110,10 @@ public abstract class RelationShipBase<TParent, TChild> : IRelationShip
         return parameters;
     }
 
+    /// <summary>
+    ///     Used in sub classes to add more db parameters.
+    /// </summary>
+    /// <param name="dbParameters">Collection to add items to. Keys should be column names.</param>
     protected virtual void ApplyConstraints(IDictionary<string, object> dbParameters)
     {
     }

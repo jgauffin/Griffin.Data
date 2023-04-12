@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Griffin.Data.Queries;
 
-namespace Griffin.Data.Queries
+/// <summary>
+///     Query interface.
+/// </summary>
+/// <typeparam name="TResult">Type of result</typeparam>
+/// <remarks>
+///     <para>
+///         Used to define a query (the API and not the actual execution).
+///     </para>
+/// </remarks>
+public interface IQuery<TResult>
 {
-    public interface IQuery<TResult>
-    {
-    }
-
-    public interface IQueryRunner<in TQuery, TQueryResult> where TQuery : IQuery<TQueryResult>
-    {
-        Task<TQueryResult> Execute(TQuery query);
-    }
 }

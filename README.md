@@ -1,133 +1,64 @@
 Griffin.Data
 ============
 
-Version 2.0 is work in progress and not ready for use.
+Version 2.0 is work in progress, most features are in place but not fully completed.
 
-Lightweight ORM and data mapper.
+Lightweight object/relation mapper (ORM) and data mapper.
 
-The ORM part is inteded to manage business entites which means that joins or fetching specific columns is not supported.
-However, there is also a data mapper included which can generate custom queries (and mappings) from your custom SQL queries.
+This library is based on the assumption that the write part of an application (changing state) is fundamentally different from the read part (presenting information from the user).
 
-Licence: Apache License v2.0
+## The write side
 
-# ORM
+The write site usually fetches one or more buinsess entities (domain entities), modify them and then persist their changes.
+A ORM is perfect for this as all entities are well defined and each entity is usally represented by a single table in the database.
 
-## Features
+This ORM does not require any changes to your entities (no setters are required). There is a scaffolder that can generate everything required (entities, mappings etc).
+Collection properties can even be `IReadOnlyList<YourChildEntity>` to protect the state in your entities.
 
-* Change tracking (currently through snapshots, change proxies are being developed).
-* DB independing handling of paging, sorting and to limit the number of rows.
-* One to many and many to one.
-* Inheritance support.
-* Minimal mapping configuration.
-* 
+Highlights:
 
-## Features that never will be implemented
+* Relationships (one to many, one to one)
+* Inheritance support
+* Built in enum support (can be represented by byte, short, int and strings in the database).
+* Setters are not required
+* Child entity collections can be  `IList<T>`, `IReadOnlyList<T>` or arrays.
 
-Our goal is to create a ORM which is easy to use and to debug. Therefore, we have not, and will not, implement the following features:
+## The read side.
 
-* LINQ - You need to write SQL (partial or complete statements) or use constraints like `var user = await session.First<User>(new { firstName = 'Jonas' })`.
-* Lazy loading - The internal loading strategies promote bulk fetches for children. If that's not enough, you are probably doing something wrong.
+Presenting information to users usally requires a join if information from different tables or aggregated queries. Since each view is unique there is not a simple way to produce classes and mappings as in the write side.
+
+This library lets you define SQL queries and generates classes based on them. These classes can easily be regenerated when you change the query.
+
+The following query, `ListUsers.query.sql` will generate a query, a result class and a query runner.
 
 
+```sql
+--sorting
+--paging
+declare @nameToFind varchar(40) = 'TestName';
 
-Start by creating a mapping:
-
-```csharp
-internal class UserConfigurator : IEntityConfigurator<User>
-{
-    public void Configure(IClassMappingConfigurator<User> config)
-    {
-        config.Key(x => x.Id).AutoIncrement();
-        config.Property(x => x.FirstName);
-        
-        config.HasMany(x=>x.Addresses)
-            .ForeignKey(x=>x.UserId)
-            .References(x=>x.Id);
-        
-        config.HasOne(x=>x.Data)
-            .Denominator(x=>x.State, CreateChildEntity)
-            .ForeignKey(x=>x.UserId)
-            .References(x=>x.Id);
-        
-    }
-
-    private Data? CreateChildEntity(AccountState arg)
-    {
-        switch (arg)
-        {
-            case AccountState.Active:
-                return new UserData();
-            case AccountState.Admin:
-                return new AdminData();
-            default:
-                return null;
-        }
-    }
-}
+SELECT u.Id, UserName
+FROM Users u
+JOIN Accounts a ON (u.AccountId = a.Id)
+WHERE u.UserName LIKE @name
 ```
 
-There is scaffolding included which can generate both entities (parent and child entities using foreign keys) and mappings for those.
+Use scaffolding to generate classes:
 
-All entities are change tracked and only those changed are persisted back to the database.
-
-Next, use the DbScope to apply changes:
-
-```csharp
-var user = session.GetById<User>(1);
-user.LockAccount();
-session.SaveChanges();
+```
+dotnet gf generate queries
 ```
 
-# Queries
+A query can be executed like this:
 
-There is also a small query framework which allows you to query like:
+```csharp
+var result = await Session.Query(new ListUsers { FirstName = 'A%'});
+Console.WriteLine("Found " + result.Items.Count  + " users.");
+```
 
-	var constraints = new QueryConstraints<User>()
-		.SortBy(x => x.FirstName)
-		.Page(2, 50);
-	var result = queries.FindAll(constraints);
+Highlights:
 
-	foreach (var user in result.Items)
-	{
-		// Note that each user is not mapped until it's requested
-		// as opposed to the entire collection being mapped first.
-		Console.WriteLine(user.FirstName);
-	}
-
-Where the actual implementation looks like (all used classes exist in Griffin.Data):
-
-	public IQueryResult<User> FindAll(IQueryConstraints<User> constraints)
-	{
-		using (var cmd = _connection.CreateCommand())
-		{
-			cmd.CommandText = "SELECT * FROM Users";
-
-			// count
-			var count = (int)cmd.ExecuteScalar();
-
-			// page
-			cmd.CommandText = ApplyConstraints(constraints, cmd.CommandText);
-			var result = cmd.ExecuteLazyQuery<User>();
-			return new QueryResult<User>(result, count);
-		}
-	}
-
-	private static string ApplyConstraints(IQueryConstraints<User> constraints, string sql)
-	{
-		if (!string.IsNullOrEmpty(constraints.SortPropertyName))
-		{
-			sql += " ORDER BY " + constraints.SortPropertyName;
-			if (constraints.SortOrder == SortOrder.Descending)
-				sql += " DESC";
-		}
-
-		if (constraints.PageNumber != -1)
-		{
-			var context = new SqlServerPagerContext(sql, constraints.PageNumber, constraints.PageSize, "Id");
-			var pager = new SqlServerPager();
-			sql = pager.ApplyTo(context);
-		}
-
-		return sql;
-	}
-}
+* `--sorting` will add sort options to the query
+* `--paging` will add page options to the query
+* The SQL parameter will be added as a property in the query.
+* The query class is simple and can be used as a DTO in an API (i.e. JSON friendly).

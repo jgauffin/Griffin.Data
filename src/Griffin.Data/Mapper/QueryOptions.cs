@@ -14,29 +14,35 @@ public class QueryOptions<T>
 {
     /// <summary>
     /// </summary>
+    /// <param name="session">Session (required for extension methods).</param>
     /// <param name="sql">SQL query (complete or partial, refer to the wiki for more information).</param>
     /// <param name="constraints">
     ///     Keys must match the names in the SQL statement.
     /// </param>
     public QueryOptions(Session session, string sql, object constraints)
     {
-        Session = session;
+        Session = session ?? throw new ArgumentNullException(nameof(session));
 
         Options.Sql = sql;
         Options.DbParameters = constraints.ToDictionary();
     }
-    
+
     /// <summary>
     /// </summary>
+    /// <param name="session">Session (required for extension methods).</param>
     /// <param name="constraints">
     ///     Keys must match the names in the SQL statement.
     /// </param>
     public QueryOptions(Session session, object constraints)
     {
-        Session = session;
+        Session = session ?? throw new ArgumentNullException(nameof(session));
         Options.Parameters = constraints.ToDictionary();
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="session">Session (required for extension methods).</param>
     public QueryOptions(Session session)
     {
         Session = session;
@@ -156,6 +162,9 @@ public class QueryOptions
         Parameters = constraints?.ToDictionary();
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public QueryOptions()
     {
     }
@@ -207,18 +216,43 @@ public class QueryOptions
 
     internal List<SortInstruction> Sorts { get; set; } = new();
 
+    /// <summary>
+    ///     Ascending sort.
+    /// </summary>
+    /// <param name="name">Column or property to sort by.</param>
+    /// <param name="isPropertyName">Given name is a property name.</param>
     public void OrderBy(string name, bool isPropertyName = true)
     {
+        if (name == null)
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
+
         Sorts.Add(new SortInstruction(name, true, isPropertyName));
     }
 
+    /// <summary>
+    ///     Descending sort.
+    /// </summary>
+    /// <param name="name">Column or property to sort by.</param>
+    /// <param name="isPropertyName">Given name is a property name.</param>
     public void OrderByDescending(string name, bool isPropertyName = true)
     {
         Sorts.Add(new SortInstruction(name, false, isPropertyName));
     }
 
+    /// <summary>
+    ///     WHERE statement with property names.
+    /// </summary>
+    /// <param name="propertyConstraints">Parameters for the WHERE clause.</param>
+    /// <returns></returns>
     public static QueryOptions Where(object propertyConstraints)
     {
+        if (propertyConstraints == null)
+        {
+            throw new ArgumentNullException(nameof(propertyConstraints));
+        }
+
         return new QueryOptions("", propertyConstraints);
     }
 }

@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Griffin.Data.ChangeTracking.Services.Implementations.v2;
-using Griffin.Data.Mapper;
 using Griffin.Data.Mappings;
 
 namespace Griffin.Data.ChangeTracking.Services.Implementations;
@@ -31,8 +28,30 @@ public class SingleEntityChangeService
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));
     }
 
+    /// <summary>
+    ///     Detect and persist changes.
+    /// </summary>
+    /// <param name="session">Session to operate in.</param>
+    /// <param name="snapshot">Version of the entity that has not been changed.</param>
+    /// <param name="current">Version that has changes in it.</param>
+    /// <returns></returns>
     public async Task<CompareResultItem> PersistChanges(Session session, object snapshot, object current)
     {
+        if (session == null)
+        {
+            throw new ArgumentNullException(nameof(session));
+        }
+
+        if (snapshot == null)
+        {
+            throw new ArgumentNullException(nameof(snapshot));
+        }
+
+        if (current == null)
+        {
+            throw new ArgumentNullException(nameof(current));
+        }
+
         var comparer = new SingleEntityComparer(_registry);
         var result = comparer.Compare(snapshot, current);
 

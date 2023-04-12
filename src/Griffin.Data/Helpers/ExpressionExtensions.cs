@@ -54,6 +54,15 @@ public static class ExpressionExtensions
         return propInfo.Name;
     }
 
+    /// <summary>
+    /// Get PropertyInfo from a lambda expression.
+    /// </summary>
+    /// <typeparam name="TEntity">Type of entity.</typeparam>
+    /// <typeparam name="TProperty">Type of property in the specified entity.</typeparam>
+    /// <param name="property">Property selector.</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException">Expression is invalid.</exception>
+    /// <exception cref="InvalidOperationException">Cannot find reflected type.</exception>
     public static PropertyInfo GetPropertyInfo<TEntity, TProperty>(this Expression<Func<TEntity, TProperty>> property)
     {
         var type = typeof(TEntity);

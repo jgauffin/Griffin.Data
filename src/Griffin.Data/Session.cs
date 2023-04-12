@@ -94,12 +94,25 @@ public class Session : IDisposable
         con.Dispose();
     }
 
+    /// <summary>
+    ///     Apply changes using a change tracker (if one is specified).
+    /// </summary>
+    /// <returns></returns>
     public async Task ApplyChangeTracking()
     {
         if (_changeTracker != null)
         {
             await _changeTracker.ApplyChanges(this);
         }
+    }
+
+    /// <summary>
+    ///     Create a new command.
+    /// </summary>
+    /// <returns>Created command.</returns>
+    public DbCommand CreateCommand()
+    {
+        return CommandExtensions.CreateCommand(Transaction);
     }
 
     /// <summary>
@@ -141,11 +154,6 @@ public class Session : IDisposable
     public void Track(object item)
     {
         _changeTracker?.Track(item);
-    }
-
-    public DbCommand CreateCommand()
-    {
-        return CommandExtensions.CreateCommand(Transaction);
     }
 
     internal ClassMapping GetMapping<T>()

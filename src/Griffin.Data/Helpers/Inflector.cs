@@ -4,11 +4,14 @@ using System.Text.RegularExpressions;
 
 namespace Griffin.Data.Helpers;
 
+/// <summary>
+/// Class used to pluralize/singularize.
+/// </summary>
 public static class Inflector
 {
-    private static readonly List<Rule> _plurals = new();
-    private static readonly List<Rule> _singulars = new();
-    private static readonly List<string> _uncountables = new();
+    private static readonly List<Rule> Plurals = new();
+    private static readonly List<Rule> Singulars = new();
+    private static readonly List<string> Uncountables = new();
 
     #region Default Rules
 
@@ -79,64 +82,89 @@ public static class Inflector
 
     #endregion
 
+    /// <summary>
+    /// Make camel case of name.
+    /// </summary>
+    /// <param name="lowercaseAndUnderscoredWord">Name to adjust</param>
+    /// <returns>Fixed string.</returns>
     public static string Camelize(this string lowercaseAndUnderscoredWord)
     {
         return Uncapitalize(Pascalize(lowercaseAndUnderscoredWord));
     }
 
+    /// <summary>
+    /// Make pascal case of name.
+    /// </summary>
+    /// <param name="word">Name to adjust</param>
+    /// <returns>Fixed string.</returns>
     public static string Capitalize(this string word)
     {
         return word.Substring(0, 1).ToUpper() + word.Substring(1).ToLower();
     }
 
+    /// <summary>
+    /// Change capital letters to underscore + letter.
+    /// </summary>
+    /// <param name="underscoredWord">Name to adjust</param>
+    /// <returns>Fixed string.</returns>
     public static string Dasherize(this string underscoredWord)
     {
         return underscoredWord.Replace('_', '-');
     }
 
+    /// <summary>
+    /// Replace underscore with spaces.
+    /// </summary>
+    /// <param name="lowercaseAndUnderscoredWord">Name to adjust</param>
+    /// <returns>Fixed string.</returns>
     public static string Humanize(this string lowercaseAndUnderscoredWord)
     {
         return Capitalize(Regex.Replace(lowercaseAndUnderscoredWord, @"_", " "));
     }
 
-    public static string Ordinalize(this string numberString)
-    {
-        return Ordanize(int.Parse(numberString), numberString);
-    }
-
-    public static string Ordinalize(this int number)
-    {
-        return Ordanize(number, number.ToString());
-    }
-
+    /// <summary>
+    /// Make pascal case of name.
+    /// </summary>
+    /// <param name="lowercaseAndUnderscoredWord">Name to adjust</param>
+    /// <returns>Fixed string.</returns>
     public static string Pascalize(this string lowercaseAndUnderscoredWord)
     {
         return Regex.Replace(lowercaseAndUnderscoredWord, "(?:^|_)(.)",
             delegate(Match match) { return match.Groups[1].Value.ToUpper(); });
     }
 
+    /// <summary>
+    /// Make word plural.
+    /// </summary>
+    /// <param name="word">Name to adjust</param>
+    /// <returns>Fixed string.</returns>
     public static string Pluralize(this string word)
     {
-        return ApplyRules(_plurals, word);
+        return ApplyRules(Plurals, word);
     }
 
+    /// <summary>
+    /// Make word singular.
+    /// </summary>
+    /// <param name="word">Name to adjust</param>
+    /// <returns>Fixed string.</returns>
     public static string Singularize(this string word)
     {
-        return ApplyRules(_singulars, word);
+        return ApplyRules(Singulars, word);
     }
 
-    public static string Titleize(this string word)
+    private static string Titleize(this string word)
     {
         return Regex.Replace(Humanize(Underscore(word)), @"\b([a-z])",
             delegate(Match match) { return match.Captures[0].Value.ToUpper(); });
     }
 
-    public static string Uncapitalize(this string word)
+    private static string Uncapitalize(this string word)
     {
         return word.Substring(0, 1).ToLower() + word.Substring(1);
     }
 
-    public static string Underscore(this string pascalCasedWord)
+    private static string Underscore(this string pascalCasedWord)
     {
         return Regex.Replace(
             Regex.Replace(
@@ -152,17 +180,17 @@ public static class Inflector
 
     private static void AddPlural(string rule, string replacement)
     {
-        _plurals.Add(new Rule(rule, replacement));
+        Plurals.Add(new Rule(rule, replacement));
     }
 
     private static void AddSingular(string rule, string replacement)
     {
-        _singulars.Add(new Rule(rule, replacement));
+        Singulars.Add(new Rule(rule, replacement));
     }
 
     private static void AddUncountable(string word)
     {
-        _uncountables.Add(word.ToLower());
+        Uncountables.Add(word.ToLower());
     }
 
     private static string ApplyRules(IReadOnlyList<Rule> rules, string word)
@@ -174,7 +202,7 @@ public static class Inflector
 
         var result = word;
 
-        if (_uncountables.Contains(word.ToLower()))
+        if (Uncountables.Contains(word.ToLower()))
         {
             return result;
         }

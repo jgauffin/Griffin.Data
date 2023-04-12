@@ -22,7 +22,12 @@ public interface IHasManyMapping : IRelationShip
     /// <returns>Created collection.</returns>
     IList CreateCollection();
 
-    IList? GetCollection([NotNull] object entity);
+    /// <summary>
+    /// Get collection from parent property.
+    /// </summary>
+    /// <param name="parentEntity">Parent entity</param>
+    /// <returns>Collection instance if there is one assigned to the property; otherwise <c>null</c>.</returns>
+    IList? GetCollection(object parentEntity);
 
     /// <summary>
     ///     Assign a collection to the property that this has-many mapping is for.
