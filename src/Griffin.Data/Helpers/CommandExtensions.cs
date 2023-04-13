@@ -14,14 +14,6 @@ namespace Griffin.Data.Helpers;
 /// </summary>
 internal static class CommandExtensions
 {
-    public static void AddParameter(this IDbCommand cmd, string name, object? value)
-    {
-        var p = cmd.CreateParameter();
-        p.ParameterName = name;
-        p.Value = value ?? DBNull.Value;
-        cmd.Parameters.Add(p);
-    }
-
     /// <summary>
     ///     Adds "WHERE [options]" to the CommandText
     /// </summary>
@@ -58,7 +50,7 @@ internal static class CommandExtensions
             {
                 sql += $" {columnName}=@{propertyName} AND";
                 var value = property?.ConvertToColumnValue(pair.Value) ?? pair.Value;
-                AddParameter(command, propertyName, value);
+                command.AddParameter(propertyName, value);
             }
         }
 
@@ -78,7 +70,7 @@ internal static class CommandExtensions
         foreach (var key in mapping.Keys)
         {
             sql += $" {key.ColumnName}=@{key.PropertyName} AND";
-            AddParameter(command, key.PropertyName, key.GetColumnValue(entity));
+            command.AddParameter(key.PropertyName, key.GetColumnValue(entity));
         }
 
         sql = sql.Remove(sql.Length - 4, 4);

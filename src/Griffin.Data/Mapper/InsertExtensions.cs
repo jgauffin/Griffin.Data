@@ -114,7 +114,7 @@ public static class InsertExtensions
             columns += $"{key.ColumnName}, ";
             values += $"@{key.PropertyName}, ";
 
-            CommandExtensions.AddParameter(command, key.PropertyName, value);
+            command.AddParameter(key.PropertyName, value);
         }
 
         foreach (var property in mapping.Properties)
@@ -128,7 +128,7 @@ public static class InsertExtensions
             columns += $"{property.ColumnName}, ";
             values += $"@{property.PropertyName}, ";
 
-            CommandExtensions.AddParameter(command, property.PropertyName, value);
+            command.AddParameter(property.PropertyName, value);
         }
 
         if (extraColumns != null)
@@ -138,7 +138,7 @@ public static class InsertExtensions
                 columns += $"{column.Key}, ";
                 values += $"@{column.Key}, ";
 
-                CommandExtensions.AddParameter(command, column.Key, column.Value);
+                command.AddParameter(column.Key, column.Value);
             }
         }
 

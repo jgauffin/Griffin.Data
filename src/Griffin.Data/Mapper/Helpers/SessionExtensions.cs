@@ -42,13 +42,24 @@ internal static class SessionExtensions
             // the SQL statement contained our names which mean that we cannot modify them (i.e. change property to column names).
             foreach (var parameter in options.Parameters)
             {
-                CommandExtensions.AddParameter(cmd, parameter.Key, parameter.Value);
+                cmd.AddParameter(parameter.Key, parameter.Value);
             }
         }
 
         if (options.DbParameters != null)
         {
-            cmd.AddConstraintDbParameters(options.DbParameters);
+            if (string.IsNullOrEmpty(options.Sql))
+            {
+                cmd.AddWhereColumnsAndParameters(options.DbParameters);
+            }
+            else
+            {
+                foreach (var parameter in options.DbParameters)
+                {
+                    cmd.AddParameter(parameter.Key, parameter.Value);
+                }
+            }
+            
         }
 
         session.Dialect.ApplyQueryOptions(mapping, cmd, options);
@@ -160,7 +171,7 @@ internal static class SessionExtensions
         return entity;
     }
 
-    private static void AddConstraintDbParameters(this DbCommand cmd, IDictionary<string, object> parameters)
+    private static void AddWhereColumnsAndParameters(this DbCommand cmd, IDictionary<string, object> parameters)
     {
         if (parameters.Count == 0)
         {
@@ -184,7 +195,7 @@ internal static class SessionExtensions
             else
             {
                 sql += $"{kvp.Key} = @{kvp.Key} AND ";
-                CommandExtensions.AddParameter(cmd, kvp.Key, kvp.Value);
+                cmd.AddParameter(kvp.Key, kvp.Value);
             }
         }
 

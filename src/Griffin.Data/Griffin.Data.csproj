@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(ProjectName).xml</DocumentationFile>
 
-        <Version>2.0.0-rc06</Version>
-        <PackageReleaseNotes>Bugfixes when constraints are not being used.</PackageReleaseNotes>
+        <Version>2.0.0-rc07</Version>
+        <PackageReleaseNotes>WHERE clause was not generated correctly sometimes..</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>

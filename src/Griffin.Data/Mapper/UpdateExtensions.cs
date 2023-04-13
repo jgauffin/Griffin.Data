@@ -72,7 +72,7 @@ public static class UpdateExtensions
             }
 
             where += $"{key.ColumnName} = @{key.PropertyName}, ";
-            CommandExtensions.AddParameter(command, key.PropertyName, value);
+            command.AddParameter(key.PropertyName, value);
         }
 
         foreach (var property in mapping.Properties)
@@ -84,7 +84,7 @@ public static class UpdateExtensions
             }
 
             columns += $"{property.ColumnName} = @{property.PropertyName}, ";
-            CommandExtensions.AddParameter(command, property.PropertyName, value);
+            command.AddParameter(property.PropertyName, value);
         }
 
         if (extraUpdateColumns != null)
@@ -92,7 +92,7 @@ public static class UpdateExtensions
             foreach (var extraColumn in extraUpdateColumns)
             {
                 columns += $"{extraColumn.Key} = @{extraColumn.Key}, ";
-                CommandExtensions.AddParameter(command, extraColumn.Key, extraColumn.Value);
+                command.AddParameter(extraColumn.Key, extraColumn.Value);
             }
         }
 
@@ -101,7 +101,7 @@ public static class UpdateExtensions
             foreach (var extraColumn in extraDbConstraints)
             {
                 where += $"{extraColumn.Key} = @{extraColumn.Key}, ";
-                CommandExtensions.AddParameter(command, extraColumn.Key, extraColumn.Value);
+                command.AddParameter(extraColumn.Key, extraColumn.Value);
             }
         }
 

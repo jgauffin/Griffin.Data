@@ -16,7 +16,7 @@ public static class DbCommandExtensions
     /// <param name="name">Name of the parameter (without argument prefix).</param>
     /// <param name="value">Value. This method will replace <c>null</c> with <c>DbNull</c>.</param>
     /// <returns></returns>
-    public static IDbDataParameter AddParameter(this IDbCommand command, string name, object value)
+    public static IDbDataParameter AddParameter(this IDbCommand command, string name, object? value)
     {
         if (command == null)
         {

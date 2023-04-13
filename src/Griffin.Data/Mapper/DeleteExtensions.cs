@@ -89,7 +89,7 @@ public static class DeleteExtensions
         await using var command = session.CreateCommand();
         command.CommandText =
             $"DELETE FROM {mapping.TableName} WHERE {keyProperty.ColumnName} = @{keyProperty.PropertyName}";
-        CommandExtensions.AddParameter(command, keyProperty.PropertyName, key);
+        command.AddParameter(keyProperty.PropertyName, key);
         await command.ExecuteNonQueryAsync();
     }
 
@@ -143,7 +143,7 @@ public static class DeleteExtensions
             $"DELETE FROM {mapping.TableName} WHERE {hasOne.ForeignKeyColumnName} = @{hasOne.ForeignKeyColumnName}";
 
         var fkValue = hasOne.GetReferencedId(parentEntity);
-        CommandExtensions.AddParameter(command, hasOne.ForeignKeyColumnName, fkValue);
+        command.AddParameter(hasOne.ForeignKeyColumnName, fkValue);
 
         await command.ExecuteNonQueryAsync();
     }
@@ -216,7 +216,7 @@ public static class DeleteExtensions
             $"DELETE FROM {mapping.TableName} WHERE {hasMany.ForeignKeyColumnName} = @{hasMany.ForeignKeyColumnName}";
 
         var fkValue = hasMany.GetReferencedId(parentEntity);
-        CommandExtensions.AddParameter(command, hasMany.ForeignKeyColumnName, fkValue);
+        command.AddParameter(hasMany.ForeignKeyColumnName, fkValue);
 
         await command.ExecuteNonQueryAsync();
     }
