@@ -56,7 +56,8 @@ public class SingleEntityComparer
             }
             else
             {
-                result.Add(new CompareResultItem(snapshotItem, ChangeState.Removed));
+                var parent = result.FirstOrDefault(x => x.TrackedItem.Key == snapshotItem.Key);
+                result.Add(new CompareResultItem(parent, snapshotItem, ChangeState.Removed));
             }
         }
 
@@ -64,14 +65,16 @@ public class SingleEntityComparer
         {
             if (currentItem.Key == null)
             {
-                result.Add(new CompareResultItem(currentItem, ChangeState.Added));
+                var parent = result.FirstOrDefault(x => x.TrackedItem.Key == currentItem.Key);
+                result.Add(new CompareResultItem(parent, currentItem, ChangeState.Added));
             }
         }
 
         foreach (var tuple in toCompare)
         {
             var equals = EntityEquals(tuple.snapshot.Entity, tuple.current.Entity);
-            result.Add(new CompareResultItem(tuple.current, equals ? ChangeState.Unmodified : ChangeState.Modified));
+            var parent = result.FirstOrDefault(x => x.TrackedItem.Key == tuple.current.Key);
+            result.Add(new CompareResultItem(parent, tuple.current, equals ? ChangeState.Unmodified : ChangeState.Modified));
         }
 
         var orderedResult = result.OrderBy(x => x.Depth).ToList();
