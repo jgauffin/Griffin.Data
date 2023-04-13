@@ -31,10 +31,31 @@ public static class GetOneExtensions
     /// <param name="constraints">Parameters to build a WHERE clause from.</param>
     /// <returns></returns>
     /// <exception cref="EntityNotFoundException">Entity was not found.</exception>
-    public static Task<TEntity> First<TEntity>(this Session session, object constraints) where TEntity : notnull
+    public static async Task<TEntity> First<TEntity>(this Session session, object constraints) where TEntity : notnull
     {
         var options = GetQueryOptionsFromConstraints<TEntity>(null, constraints);
-        return session.First<TEntity>(options);
+        var entity = await session.FirstOrDefault<TEntity>(options);
+        if (entity == null)
+            throw new EntityNotFoundException(typeof(TEntity), constraints);
+
+        return entity;
+    }
+
+    /// <summary>
+    ///     Find first entity.
+    /// </summary>
+    /// <typeparam name="TEntity">Type of entity.</typeparam>
+    /// <param name="session">Session to use for the SQL query.</param>
+    /// <param name="options">Query to use..</param>
+    /// <returns></returns>
+    /// <exception cref="EntityNotFoundException">Entity was not found.</exception>
+    public static async Task<TEntity> First<TEntity>(this Session session, QueryOptions<TEntity> options) where TEntity : notnull
+    {
+        var entity = await session.FirstOrDefault<TEntity>(options.Options);
+        if (entity == null)
+            throw new EntityNotFoundException(typeof(TEntity), options);
+
+        return entity;
     }
 
     /// <summary>
