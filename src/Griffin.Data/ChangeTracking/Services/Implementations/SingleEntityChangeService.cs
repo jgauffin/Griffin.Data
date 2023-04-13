@@ -14,6 +14,10 @@ namespace Griffin.Data.ChangeTracking.Services.Implementations;
 ///         Intended purpose is to be able to save entities which you have received from client side and want to persist
 ///         the changes to the database.
 ///     </para>
+///     <para>
+///         This service uses  <see cref="SingleEntityComparer" /> and <see cref="ChangePersister" /> internally. You can
+///         use them directly for more control.
+///     </para>
 /// </remarks>
 public class SingleEntityChangeService
 {

@@ -33,8 +33,8 @@ public class SingleEntityComparer
         // Start by generating a structure (flat list with hierarchical entities).
         // to allow us to traverse them and generate a change report.
         var traverser = new EntityTraverser2(_mappingRegistry);
-        var snapshots = traverser.Traverse(snapshot);
-        var currents = traverser.Traverse(current);
+        var snapshots = traverser.Traverse(snapshot).OrderBy(x => x.Depth);
+        var currents = traverser.Traverse(current).OrderBy(x => x.Depth).ToList();
 
         var existingCurrents = currents.Where(x => x.Key != null).ToDictionary(x => x.Key, x => x);
 
@@ -56,8 +56,7 @@ public class SingleEntityComparer
             }
             else
             {
-                var parent = result.FirstOrDefault(x => x.TrackedItem.Key == snapshotItem.Key);
-                result.Add(new CompareResultItem(parent, snapshotItem, ChangeState.Removed));
+                result.Add(new CompareResultItem(snapshotItem, ChangeState.Removed));
             }
         }
 
@@ -65,16 +64,22 @@ public class SingleEntityComparer
         {
             if (currentItem.Key == null)
             {
-                var parent = result.FirstOrDefault(x => x.TrackedItem.Key == currentItem.Key);
-                result.Add(new CompareResultItem(parent, currentItem, ChangeState.Added));
+                result.Add(new CompareResultItem(currentItem, ChangeState.Added));
             }
         }
 
         foreach (var tuple in toCompare)
         {
             var equals = EntityEquals(tuple.snapshot.Entity, tuple.current.Entity);
-            var parent = result.FirstOrDefault(x => x.TrackedItem.Key == tuple.current.Key);
-            result.Add(new CompareResultItem(parent, tuple.current, equals ? ChangeState.Unmodified : ChangeState.Modified));
+            result.Add(new CompareResultItem(tuple.current, equals ? ChangeState.Unmodified : ChangeState.Modified));
+        }
+
+        foreach (var item in result)
+        {
+            var parent = result.FirstOrDefault(x => x.TrackedItem.Key == item.TrackedItem.Key);
+            if (parent != null)
+                item.Parent = parent;
+
         }
 
         var orderedResult = result.OrderBy(x => x.Depth).ToList();

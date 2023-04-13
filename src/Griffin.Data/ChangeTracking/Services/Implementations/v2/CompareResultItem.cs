@@ -16,9 +16,8 @@ public class CompareResultItem
     /// <param name="trackedItem">Item that was analyzed.</param>
     /// <param name="state">State of the item.</param>
     /// <exception cref="ArgumentNullException">Item is null.</exception>
-    public CompareResultItem(CompareResultItem? parent, TrackedEntity2 trackedItem, ChangeState state)
+    public CompareResultItem(TrackedEntity2 trackedItem, ChangeState state)
     {
-        Parent = parent;
         TrackedItem = trackedItem ?? throw new ArgumentNullException(nameof(trackedItem));
         State = state;
     }
@@ -41,7 +40,7 @@ public class CompareResultItem
     /// <summary>
     /// Parent result item (if any).
     /// </summary>
-    public CompareResultItem? Parent { get; }
+    public CompareResultItem? Parent { get; internal set; }
 
     /// <summary>
     ///     Item being tracked (i.e. the entity).
