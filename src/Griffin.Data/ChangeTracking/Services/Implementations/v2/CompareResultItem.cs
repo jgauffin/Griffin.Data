@@ -38,6 +38,11 @@ public class CompareResultItem
     public ChangeState State { get; set; }
 
     /// <summary>
+    /// Parent result item (if any).
+    /// </summary>
+    public CompareResultItem? Parent { get; internal set; }
+
+    /// <summary>
     ///     Item being tracked (i.e. the entity).
     /// </summary>
     public TrackedEntity2 TrackedItem { get; set; }
