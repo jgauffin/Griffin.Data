@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Griffin.Data.Configuration;
+using Griffin.Data.Converters;
 
 namespace Griffin.Data.Mappings;
 
@@ -153,6 +154,11 @@ public class MappingRegistry : IMappingRegistry
             method.Invoke(mapping, new object[] { configurator });
 
             var classMapping = configurator.BuildMapping(PluralizeTableNames);
+
+            foreach (var property in classMapping.Properties)
+            {
+                
+            }
             _mappings[entityType] = classMapping;
         }
 

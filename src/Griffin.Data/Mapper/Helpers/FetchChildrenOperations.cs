@@ -30,6 +30,7 @@ internal static class FetchChildrenOperations
         {
             options.DbParameters = hasManyMapping.CreateDbConstraints(new[] { parentEntity });
             var collection = hasManyMapping.CreateCollection();
+
             await session.Query(hasManyMapping.ChildEntityType, options, collection);
             hasManyMapping.SetCollection(parentEntity, collection);
         }
@@ -126,6 +127,8 @@ internal static class FetchChildrenOperations
 
             options.DbParameters = hasManyMapping.CreateDbConstraints(parents);
 
+            IList allChildrenToGetChildrenFor = (IList)Activator.CreateInstance
+                                                (typeof(List<>).MakeGenericType(hasManyMapping.ChildEntityType));
             var childMapping = session.GetMapping(hasManyMapping.ChildEntityType);
             await using var cmd = session.CreateQueryCommand(hasManyMapping.ChildEntityType, options);
             try
@@ -133,6 +136,7 @@ internal static class FetchChildrenOperations
                 await using var reader = await cmd.ExecuteReaderAsync();
                 await reader.MapAll(childMapping, x =>
                 {
+                    allChildrenToGetChildrenFor.Add(x);
                     var fk = hasManyMapping.GetForeignKeyValue(x);
                     if (fk == null)
                     {
@@ -147,6 +151,9 @@ internal static class FetchChildrenOperations
             {
                 throw cmd.CreateDetailedException(ex, parentType, hasManyMapping.ChildEntityType);
             }
+
+            // Now load our children
+            await session.GetChildrenForMany(hasManyMapping.ChildEntityType, allChildrenToGetChildrenFor);
         }
 
         foreach (var hasOneMapping in parentMapping.Children)
@@ -174,12 +181,18 @@ internal static class FetchChildrenOperations
 
             var childMapping = session.GetMapping(hasOneMapping.ChildEntityType);
 
+            
+
             await using var cmd = session.CreateQueryCommand(hasOneMapping.ChildEntityType, options);
             try
             {
+                IList allChildrenToGetChildrenFor = (IList)Activator.CreateInstance
+                    (typeof(List<>).MakeGenericType(hasOneMapping.ChildEntityType));
+
                 await using var reader = await cmd.ExecuteReaderAsync();
                 await reader.MapAll(childMapping, x =>
                 {
+                    allChildrenToGetChildrenFor.Add(x);
                     var fkValue = hasOneMapping.GetForeignKeyValue(x);
                     if (fkValue == null)
                     {
@@ -188,6 +201,8 @@ internal static class FetchChildrenOperations
 
                     hasOneMapping.SetPropertyValue(parentIndex[fkValue], x);
                 });
+
+                await session.GetChildrenForMany(hasOneMapping.ChildEntityType, allChildrenToGetChildrenFor);
             }
             catch (Exception ex)
             {
@@ -251,6 +266,8 @@ internal static class FetchChildrenOperations
             options.DbParameters = hasOneMapping.CreateDbConstraints(kvp.Value);
 
             var childMapping = session.GetMapping(kvp.Key);
+            IList allChildrenToGetChildrenFor = (IList)Activator.CreateInstance
+                (typeof(List<>).MakeGenericType(kvp.Key));
 
             await using var cmd = session.CreateQueryCommand(kvp.Key, options);
             try
@@ -258,6 +275,7 @@ internal static class FetchChildrenOperations
                 await using var reader = await cmd.ExecuteReaderAsync();
                 await reader.MapAll(childMapping, x =>
                 {
+                    allChildrenToGetChildrenFor.Add(x);
                     var fkValue = hasOneMapping.GetForeignKeyValue(x);
                     if (fkValue == null)
                     {
@@ -267,6 +285,9 @@ internal static class FetchChildrenOperations
 
                     hasOneMapping.SetPropertyValue(parentIndex[fkValue], x);
                 });
+
+                await session.GetChildrenForMany(kvp.Key, allChildrenToGetChildrenFor);
+
             }
             catch (Exception ex)
             {

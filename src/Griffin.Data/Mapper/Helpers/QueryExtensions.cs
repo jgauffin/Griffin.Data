@@ -69,6 +69,14 @@ internal static class QueryExtensions
         return items;
     }
 
+    /// <summary>
+    /// Load a collection (for like HasMany), will also load children.
+    /// </summary>
+    /// <param name="session"></param>
+    /// <param name="entityType"></param>
+    /// <param name="options"></param>
+    /// <param name="collection"></param>
+    /// <returns></returns>
     public static async Task Query(
         this Session session,
         Type entityType,
@@ -89,7 +97,7 @@ internal static class QueryExtensions
             }
         }
 
-        if (collection.Count > 0)
+        if (collection.Count > 0 && options.LoadChildren)
         {
             await session.GetChildrenForMany(entityType, collection);
         }

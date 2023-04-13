@@ -171,7 +171,7 @@ public class Session : IDisposable
     {
         if (entityType.IsAbstract || entityType.IsInterface)
         {
-            throw new MappingException(entityType, "You should get hte mapping for the concrete type instead.");
+            throw new MappingException(entityType, "You should get the mapping for the concrete type instead.");
         }
 
         return _registry.Get(entityType);
