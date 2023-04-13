@@ -23,7 +23,7 @@ internal static class CommandExtensions
     }
 
     /// <summary>
-    ///     Apply where from an anonymous object.
+    ///     Adds "WHERE [options]" to the CommandText
     /// </summary>
     /// <param name="command">Command to apply WHERE statement to.</param>
     /// <param name="mapping">Mapping used to translate between properties and columns.</param>

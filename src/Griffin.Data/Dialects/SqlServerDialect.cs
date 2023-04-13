@@ -56,6 +56,11 @@ public class SqlServerDialect : ISqlDialect
     /// <inheritdoc />
     public void ApplyPaging(IDbCommand command, string keyColumn, int pageNumber, int? pageSize)
     {
+        if (command.CommandText.Contains("TOP("))
+        {
+            return;
+        }
+
         var ps = pageSize ?? 100;
         if (pageNumber == 1)
         {
@@ -126,7 +131,7 @@ public class SqlServerDialect : ISqlDialect
             throw new ArgumentNullException(nameof(options));
         }
 
-        if (options.Sorts.Any())
+        if (options.Sorts.Any() && !command.CommandText.Contains("ORDER BY", StringComparison.OrdinalIgnoreCase))
         {
             command.CommandText += " ORDER BY ";
             foreach (var sort in options.Sorts)
@@ -136,6 +141,12 @@ public class SqlServerDialect : ISqlDialect
             }
 
             command.CommandText = command.CommandText.Remove(command.CommandText.Length - 2, 2);
+        }
+
+        if (command.CommandText.Contains("TOP(", StringComparison.OrdinalIgnoreCase)
+            || command.CommandText.Contains(" OFFSET "))
+        {
+            return;
         }
 
         if (options.PageNumber == 1)

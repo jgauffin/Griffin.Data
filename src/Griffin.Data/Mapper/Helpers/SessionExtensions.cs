@@ -59,59 +59,87 @@ internal static class SessionExtensions
     public static async Task<TEntity> GetSingle<TEntity>(this DbCommand command, ClassMapping mapping)
         where TEntity : notnull
     {
-        await using var reader = await command.ExecuteReaderAsync();
-
-        if (!await reader.ReadAsync())
+        try
         {
-            throw new EntityNotFoundException(typeof(TEntity), command);
-        }
+            await using var reader = await command.ExecuteReaderAsync();
 
-        var entity = (TEntity)mapping.CreateInstance(reader);
-        reader.Map(entity, mapping);
-        return entity;
+            if (!await reader.ReadAsync())
+            {
+                throw new EntityNotFoundException(typeof(TEntity), command);
+            }
+
+            var entity = (TEntity)mapping.CreateInstance(reader);
+            reader.Map(entity, mapping);
+            return entity;
+        }
+        catch (Exception ex)
+        {
+            throw command.CreateDetailedException(ex);
+        }
     }
 
     public static async Task<object> GetSingle(this DbCommand command, ClassMapping mapping)
     {
-        await using var reader = await command.ExecuteReaderAsync();
-
-        if (!await reader.ReadAsync())
+        try
         {
-            throw new EntityNotFoundException(mapping.EntityType, command);
-        }
+            await using var reader = await command.ExecuteReaderAsync();
 
-        var entity = mapping.CreateInstance(reader);
-        reader.Map(entity, mapping);
-        return entity;
+            if (!await reader.ReadAsync())
+            {
+                throw new EntityNotFoundException(mapping.EntityType, command);
+            }
+
+            var entity = mapping.CreateInstance(reader);
+            reader.Map(entity, mapping);
+            return entity;
+        }
+        catch (Exception ex)
+        {
+            throw command.CreateDetailedException(ex);
+        }
     }
 
     public static async Task<object> GetSingle(this DbCommand command, ClassMapping mapping, QueryOptions options)
     {
-        await using var reader = await command.ExecuteReaderAsync();
-
-        if (!await reader.ReadAsync())
+        try
         {
-            throw new EntityNotFoundException(mapping.EntityType, command);
-        }
+            await using var reader = await command.ExecuteReaderAsync();
 
-        var factory = options.Factory ?? mapping.CreateInstance;
-        var entity = factory(reader);
-        reader.Map(entity, mapping);
-        return entity;
+            if (!await reader.ReadAsync())
+            {
+                throw new EntityNotFoundException(mapping.EntityType, command);
+            }
+
+            var factory = options.Factory ?? mapping.CreateInstance;
+            var entity = factory(reader);
+            reader.Map(entity, mapping);
+            return entity;
+        }
+        catch (Exception ex)
+        {
+            throw command.CreateDetailedException(ex);
+        }
     }
 
     public static async Task<TEntity?> GetSingleOrDefault<TEntity>(this DbCommand command, ClassMapping mapping)
     {
-        await using var reader = await command.ExecuteReaderAsync();
-
-        if (!await reader.ReadAsync())
+        try
         {
-            return default;
-        }
+            await using var reader = await command.ExecuteReaderAsync();
 
-        var entity = (TEntity)mapping.CreateInstance(reader);
-        reader.Map(entity, mapping);
-        return entity;
+            if (!await reader.ReadAsync())
+            {
+                return default;
+            }
+
+            var entity = (TEntity)mapping.CreateInstance(reader)!;
+            reader.Map(entity, mapping);
+            return entity;
+        }
+        catch (Exception ex)
+        {
+            throw command.CreateDetailedException(ex);
+        }
     }
 
     public static async Task<object?> GetSingleOrDefault(

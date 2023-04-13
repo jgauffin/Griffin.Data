@@ -7,7 +7,7 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(ProjectName).xml</DocumentationFile>
 
-        <Version>2.0.0-rc05</Version>
+        <Version>2.0.0-rc06</Version>
         <PackageReleaseNotes>Bugfixes when constraints are not being used.</PackageReleaseNotes>
     </PropertyGroup>
 
