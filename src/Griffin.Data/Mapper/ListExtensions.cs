@@ -39,7 +39,10 @@ public static class ListExtensions
     /// <returns>Found entities.</returns>
     public static async Task<List<TEntity>> List<TEntity>(this Session session, object constraints) where TEntity : notnull
     {
-        var options = GetOneExtensions.GetQueryOptionsFromConstraints<TEntity>(null, constraints);
+        var options = constraints is string s
+            ? GetOneExtensions.GetQueryOptionsFromConstraints<TEntity>(s, null)
+            : GetOneExtensions.GetQueryOptionsFromConstraints<TEntity>(null, constraints);
+
         var entities = await session.QueryInternal<TEntity>(options);
         foreach (var entity in entities)
         {

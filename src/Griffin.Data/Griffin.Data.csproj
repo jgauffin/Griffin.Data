@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(ProjectName).xml</DocumentationFile>
 
-        <Version>2.0.0-rc07</Version>
-        <PackageReleaseNotes>WHERE clause was not generated correctly sometimes..</PackageReleaseNotes>
+        <Version>2.0.0-rc08</Version>
+        <PackageReleaseNotes>Can use only SQL</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>

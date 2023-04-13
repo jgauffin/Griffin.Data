@@ -10,10 +10,32 @@ public class ListTests : IntegrationTests
     public async Task Should_work_with_just_sql_and_options()
     {
 
-        var children = await Session.List<SharedMain>("SELECT TOP(1) * FROM SharedMain WHERE Id = @id ORDER BY Id", new{id=1});
+        var items = await Session.List<SharedMain>("SELECT TOP(1) * FROM SharedMain WHERE Id = @id ORDER BY Id", new { id = 1 });
 
-        children.Should().HaveCount(1);
-        children[0].Id.Should().Be(1);
+        items.Should().HaveCount(1);
+        items[0].Id.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Should_work_with_just_sql()
+    {
+
+        var items = await Session.List<SharedMain>("SELECT TOP(1) * FROM SharedMain WHERE Id = 1 ORDER BY Id");
+
+        items.Should().HaveCount(1);
+        items[0].Id.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Should_work_with_generic_query_using_sql()
+    {
+        var items = await Session.Query<SharedMain>()
+            .Where("SELECT TOP(1) * FROM SharedMain WHERE Id = @id ORDER BY Id", new { id = 1 })
+            .Paging(1, 50)
+            .List();
+
+        items.Should().HaveCount(1);
+        items[0].Id.Should().Be(1);
     }
 
     [Fact]

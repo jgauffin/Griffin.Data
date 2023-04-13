@@ -143,7 +143,7 @@ public static class GetOneExtensions
         return entity;
     }
 
-    internal static QueryOptions GetQueryOptionsFromConstraints<TEntity>(string? sql, object constraints)
+    internal static QueryOptions GetQueryOptionsFromConstraints<TEntity>(string? sql, object? constraints)
     {
         return constraints switch
         {
