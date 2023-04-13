@@ -76,7 +76,7 @@ public class SingleEntityComparer
 
         foreach (var item in result)
         {
-            var parent = result.FirstOrDefault(x => x.TrackedItem.Key == item.TrackedItem.Key);
+            var parent = result.FirstOrDefault(x => x.TrackedItem.Key == item.TrackedItem.Parent?.Key);
             if (parent != null)
                 item.Parent = parent;
 

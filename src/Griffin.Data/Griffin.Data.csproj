@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(ProjectName).xml</DocumentationFile>
 
-        <Version>2.0.0-rc10</Version>
-        <PackageReleaseNotes>Parents are added correctly.</PackageReleaseNotes>
+        <Version>2.0.0-rc11</Version>
+        <PackageReleaseNotes>Parents are added correctly2.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>
