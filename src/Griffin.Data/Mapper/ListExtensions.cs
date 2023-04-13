@@ -21,7 +21,7 @@ public static class ListExtensions
     public static async Task<List<TEntity>> List<TEntity>(this Session session, QueryOptions<TEntity> options)
         where TEntity : notnull
     {
-        var entities = await session.Query(options);
+        var entities = await session.QueryInternal(options);
         foreach (var entity in entities)
         {
             session.Track(entity);
@@ -29,7 +29,7 @@ public static class ListExtensions
 
         return entities;
     }
-
+    
     /// <summary>
     ///     List entities.
     /// </summary>
@@ -37,9 +37,16 @@ public static class ListExtensions
     /// <param name="session">Session to load in.</param>
     /// <param name="constraints">Constrains with property names.</param>
     /// <returns>Found entities.</returns>
-    public static Task<List<TEntity>> List<TEntity>(this Session session, object constraints) where TEntity : notnull
+    public static async Task<List<TEntity>> List<TEntity>(this Session session, object constraints) where TEntity : notnull
     {
-        return session.List(new QueryOptions<TEntity>(session, constraints));
+        var options = GetOneExtensions.GetQueryOptionsFromConstraints<TEntity>(null, constraints);
+        var entities = await session.QueryInternal<TEntity>(options);
+        foreach (var entity in entities)
+        {
+            session.Track(entity);
+        }
+
+        return entities;
     }
 
     /// <summary>
@@ -98,7 +105,8 @@ public static class ListExtensions
         object? constraints = null)
     {
         var collection = (IList)Activator.CreateInstance(typeof(IList<>).MakeGenericType(entityType));
-        await session.Query(entityType, new QueryOptions(query, constraints), collection);
+        var options = GetOneExtensions.GetQueryOptionsFromConstraints(query, constraints);
+        await session.Query(entityType, options, collection);
         foreach (var entity in collection)
         {
             session.Track(entity);

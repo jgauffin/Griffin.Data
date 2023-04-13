@@ -9,7 +9,7 @@ namespace Griffin.Data.Mapper.Helpers;
 
 internal static class QueryExtensions
 {
-    public static async Task<List<TEntity>> Query<TEntity>(this Session session, QueryOptions<TEntity> options)
+    public static async Task<List<TEntity>> QueryInternal<TEntity>(this Session session, QueryOptions<TEntity> options)
     {
         if (typeof(TEntity) == typeof(object) || typeof(TEntity).IsCollection())
         {
@@ -32,6 +32,36 @@ internal static class QueryExtensions
         }
 
         if (options.Options.LoadChildren)
+        {
+            await session.GetChildrenForMany(typeof(TEntity), items);
+        }
+
+        return items;
+    }
+
+    public static async Task<List<TEntity>> QueryInternal<TEntity>(this Session session, QueryOptions options)
+    {
+        if (typeof(TEntity) == typeof(object) || typeof(TEntity).IsCollection())
+        {
+            throw new InvalidOperationException("bug bug bug.,");
+        }
+
+        var items = new List<TEntity>();
+        var mapping = session.GetMapping(typeof(TEntity));
+        await using (var cmd = session.CreateQueryCommand(typeof(TEntity), options))
+        {
+            try
+            {
+                await using var reader = await cmd.ExecuteReaderAsync();
+                await reader.MapAll<TEntity>(mapping, x => { items.Add(x); });
+            }
+            catch (DbException ex)
+            {
+                throw cmd.CreateDetailedException(ex);
+            }
+        }
+
+        if (options.LoadChildren)
         {
             await session.GetChildrenForMany(typeof(TEntity), items);
         }

@@ -24,32 +24,6 @@ public static class GetOneExtensions
     }
 
     /// <summary>
-    /// </summary>
-    /// <typeparam name="TEntity"></typeparam>
-    /// <param name="session"></param>
-    /// <param name="options"></param>
-    /// <returns></returns>
-    public static async Task<TEntity> First<TEntity>(this Session session, QueryOptions options) where TEntity : notnull
-    {
-        options.PageSize = 1;
-
-        var mapping = session.GetMapping<TEntity>();
-        TEntity entity;
-        await using (var cmd = session.CreateQueryCommand(typeof(TEntity), options))
-        {
-            entity = await cmd.GetSingle<TEntity>(mapping);
-        }
-
-        if (options.LoadChildren)
-        {
-            await session.GetChildren(entity);
-        }
-
-        session.Track(entity);
-        return entity;
-    }
-
-    /// <summary>
     ///     Find first entity.
     /// </summary>
     /// <typeparam name="TEntity">Type of entity.</typeparam>
@@ -59,7 +33,7 @@ public static class GetOneExtensions
     /// <exception cref="EntityNotFoundException">Entity was not found.</exception>
     public static Task<TEntity> First<TEntity>(this Session session, object constraints) where TEntity : notnull
     {
-        var options = new QueryOptions(null, constraints);
+        var options = GetQueryOptionsFromConstraints<TEntity>(null, constraints);
         return session.First<TEntity>(options);
     }
 
@@ -102,8 +76,8 @@ public static class GetOneExtensions
     /// <returns></returns>
     public static Task<TEntity?> FirstOrDefault<TEntity>(this Session session, object constraints)
     {
-        var options = new QueryOptions { PageSize = 1 };
-
+        var options = GetQueryOptionsFromConstraints<TEntity>(null, constraints);
+        options.PageSize = 1;
         return session.FirstOrDefault<TEntity>(options);
     }
 
@@ -146,5 +120,24 @@ public static class GetOneExtensions
 
         session.Track(entity);
         return entity;
+    }
+
+    internal static QueryOptions GetQueryOptionsFromConstraints<TEntity>(string? sql, object constraints)
+    {
+        return constraints switch
+        {
+            QueryOptions options => options,
+            QueryOptions<TEntity> gen => gen.Options,
+            _ => new QueryOptions(sql, constraints)
+        };
+    }
+
+    internal static QueryOptions GetQueryOptionsFromConstraints(string? sql, object? constraints)
+    {
+        return constraints switch
+        {
+            QueryOptions options => options,
+            _ => new QueryOptions(sql, constraints)
+        };
     }
 }

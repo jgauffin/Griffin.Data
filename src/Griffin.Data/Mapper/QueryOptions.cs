@@ -10,7 +10,7 @@ namespace Griffin.Data.Mapper;
 ///     Query options.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class QueryOptions<T>
+public class QueryOptions<T> 
 {
     /// <summary>
     /// </summary>

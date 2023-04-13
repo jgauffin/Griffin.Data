@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Griffin.Data.Queries;
 
+/// <summary>
+/// Extensions for making it easier to use queries.
+/// </summary>
 public static class QueryExtensions
 {
     /// <summary>

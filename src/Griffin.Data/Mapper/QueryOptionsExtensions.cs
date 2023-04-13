@@ -6,7 +6,7 @@ namespace Griffin.Data.Mapper;
 /// <summary>
 ///     Extensions for queries.
 /// </summary>
-public static class SessionExtensions
+public static class QueryOptionsExtensions
 {
     /// <summary>
     ///     Fetch a single entity.
@@ -81,7 +81,7 @@ public static class SessionExtensions
     /// <exception cref="MappingException">Failed to find a mapping for the requested entity type.</exception>
     public static QueryOptions<T> Query<T>(this Session session, object propertyConstraints)
     {
-        return new QueryOptions<T>(session);
+        return new QueryOptions<T>(session, propertyConstraints);
     }
 
     /// <summary>
@@ -95,6 +95,6 @@ public static class SessionExtensions
     /// <exception cref="MappingException">Failed to find a mapping for the requested entity type.</exception>
     public static QueryOptions<T> Query<T>(this Session session, string sql, object parameters)
     {
-        return new QueryOptions<T>(session);
+        return new QueryOptions<T>(session, sql, parameters);
     }
 }
