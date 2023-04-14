@@ -3,19 +3,17 @@ Griffin.Data
 
 <img src="https://ci.appveyor.com/api/projects/status/github/jgauffin/griffin.data?branch=master&svg=true" />
 
-Version 2.0 is work in progress, most features are in place but not fully completed.
+Version 2.0 is a work in progress; most features are in place but still need to be completed.
 
 Lightweight object/relation mapper (ORM) and data mapper.
 
-This library is based on the assumption that the write part of an application (changing state) is fundamentally different from the read part (presenting information from the user).
+This library assumes that the write part of an application (changing state) is fundamentally different from the read part (presenting information from the user).
 
 ## The write side
 
-The write site usually fetches one or more buinsess entities (domain entities), modify them and then persist their changes.
-A ORM is perfect for this as all entities are well defined and each entity is usally represented by a single table in the database.
+The write site usually fetches one or more business entities (domain entities), modifies them, and persists in their changes. An ORM is perfect for this as all entities are well-defined, and each entity usually represents a single table in the database.
 
-This ORM does not require any changes to your entities (no setters are required). There is a scaffolder that can generate everything required (entities, mappings etc).
-Collection properties can even be `IReadOnlyList<YourChildEntity>` to protect the state in your entities.
+This ORM does not require any changes to your entities (no setters are necessary). A scaffolder can generate everything needed (entities, mappings etc). Collection properties can even be IReadOnlyList<YourChildEntity> to protect the state in your entities.
 
 Highlights:
 
@@ -24,15 +22,15 @@ Highlights:
 * Inheritance support
 * Built in enum support (can be represented by byte, short, int and strings in the database).
 * Setters are not required
-* Child entity collections can be  `IList<T>`, `IReadOnlyList<T>` or arrays.
+* Child entity collections can be IList<T>, IReadOnlyList<T> or arrays.
 
 ## The read side
 
-Presenting information to users usally requires a join of information from different tables or aggregated queries. Since each view is unique there is not a simple way to produce classes and mappings as in the write side.
+Presenting information to users usually requires a join of data from different tables or aggregated queries; there are as many queries as views shown for the user. Because of that, there is no simple way to produce classes and mappings as on the write side.
 
-This library lets you define SQL queries and generates classes based on them. These classes can easily be regenerated when you change the query.
+This library lets you define (simple or complex) SQL queries and generates classes based on them. The generated classes can easily be regenerated when you update any of the queries.
 
-The following query, `ListUsers.query.sql` will generate a query, a result class and a query runner.
+The following query, `ListUsers.query.sql` will generate a query, a result class, and a query runner.
 
 
 ```sql
@@ -52,7 +50,7 @@ Use scaffolding to generate classes:
 dotnet gd generate queries
 ```
 
-A query can be executed like this:
+Execute queries in the following way:
 
 ```csharp
 var result = await Session.Query(new ListUsers { NameToFind = 'A%'});
@@ -63,5 +61,5 @@ Highlights:
 
 * `--sorting` will add sort options to the query
 * `--paging` will add page options to the query
-* The SQL parameter will be added as a property in the query.
-* The query class is simple and can be used as a DTO in an API (i.e. JSON friendly).
+* Adds a query property based on the SQL parameter.
+* Possible to use the query class as a DTO in an API (i.e. JSON friendly).

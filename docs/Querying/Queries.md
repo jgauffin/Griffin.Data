@@ -1,20 +1,21 @@
 Queries
 =======
 
-Queries are used when you want to create views from one or multiple tables. Typically to present things for the user or for the read side of CQRS.
+Use queries to generate information from one or multiple tables, such as on the read side of CQRS.
 
-The scaffolder generates views from SQL queries that you add to your project.
+Build the query classes manually, or use the recommended approach: The scaffolder in this library takes SQL query files and generates classes based on them.
 
 # Create a new query.
 
-Here is an example on the process of generating queries.
+Here is an example of the process of generating queries.
 
 In this case, we'll create a query that returns all active users.
 
 ## Write a SQL query
 
-Use for instance SQL Management studio (or your favorite SQL IDE) and write up some nice query.
-Here is ours:
+Use SQL Management Studio (or your favorite SQL IDE) and write a nice query.
+
+Here is a minimal example:
 
 ```sql
 SELECT u.Id, UserName
@@ -31,11 +32,11 @@ It can be named `ListActiveUsers.query.sql`:
 
 ![](solution-explorer.png)
 
-The `.query.sql` part is important as it tells the scaffolder that it should generate a new script.
+The `.query.sql` part is important as it tells the scaffolder to generate a new script.
 
 ## Run the scaffolder
 
-Open a command prompt or powershell and run the scaffolder (must have been installed first using `dotnet tool install -g griffin.data.scaffolding`).
+Open a command prompt or powershell and run the scaffolder (install it first using `dotnet tool install -g griffin.data.scaffolding`).
 
 ```
 dotnet gd queries
@@ -51,12 +52,12 @@ There is now a couple of classes in the same folder as the query script.
 
 ```csharp
 // It's empty since no parameters were supplied. 
-// It do however specify the type it will return, `ListActiveUsersResult`.
+// It does, however, specify the type it will return, `ListActiveUsersResult`.
 public class ListActiveUsers : IQuery<ListActiveUsersResult>
 {
 }
 
-// The result return from the query handler.
+// The result returned from the query handler.
 public class ListActiveUsersResult
 {
     public IReadOnlyList<ListActiveUsersResultItem> Items { get; set; }
@@ -98,7 +99,7 @@ The generated query uses regular ADO.NET to avoid mapping issues or inefficienci
 
 ## Invoke it
 
-To invoke the query to get a result, use the `Session` class.
+Use the' Session' class to invoke the query to get a result.
 
 ```csharp
 var result = await Session.Query(new ListActiveUsers());
@@ -106,9 +107,9 @@ var result = await Session.Query(new ListActiveUsers());
 
 ## Update or regenerate
 
-To update it, simply modify it. The scaffolder will not do anything with existing files. 
+To update it, modify it. The scaffolder will not do anything with existing files. 
 
-If larger changes are made, adjust the SQL file and then delete all classes to get it re-generated.
+If more extensive changes are made, adjust the SQL file and then delete all classes to get it re-generated.
 
 
 # Using query parameters
@@ -217,7 +218,7 @@ public class ListActiveUsers : IQuery<ListActiveUsersResult>
 }
 ```
 
-The generated query can be used like this:
+Use the generated query like this:
 
 ```csharp
 var query = new ListActiveUsers('jo%")

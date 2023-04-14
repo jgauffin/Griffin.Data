@@ -1,7 +1,7 @@
 Scaffolding
 ============
 
-Scaffolding generates classes, mappings and tests.
+Scaffolding generates classes, mappings, and tests.
 
 Start by installing the scaffolder from a command prompt:
 
@@ -9,12 +9,12 @@ Start by installing the scaffolder from a command prompt:
 dotnet tool install -g griffin.data.scaffolding
 ```
 
-Next go into one of your data project and run it.
+Next, go into your data project folder and run it.
 
 ```
 dotnet gd generate
 ```
 
-Once done, you will have both queries, mappings, entities and everything required.
+Once done, you will have th queries, mappings, entities and everything required.
 
 Reorganize the files to your liking.

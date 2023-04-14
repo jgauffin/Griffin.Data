@@ -1,8 +1,9 @@
 Griffin.Data documentation
 ==========================
 
-The focus of this library is to provide a object/relation mapper for **business entites** and to provide a data mapper for queries (i.e. read side in CQRS).
-It's ultimate goal is that you should not have to make any compromises when designing your business entities. They should be robust, properly encaspulated and making sure that all code follows your business rules.
+The focus of this library is to provide a object/relation mapper for **business entites** and a data mapper for queries (i.e. read side in CQRS).
+
+The ultimate goal is that you should not have to make any compromises when designing your business entities. Instead, they should be robust, properly encapsulated, and ensure that all code follows your business rules.
 
 There is also an [API guide]() available.
 

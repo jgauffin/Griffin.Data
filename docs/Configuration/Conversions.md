@@ -1,9 +1,9 @@
 Conversions
 ===========
 
-Conversions are made when the column types and the property types are not compatible.
+Conversions are made when the column and property types are incompatible.
 
-Conversions are done on property level.
+Conversions are done on a property level.
 
 Minimal example:
 
@@ -24,7 +24,7 @@ internal class UserMapping : IEntityConfigurator<User>
 }
 ```
 
-There are also built in conversions that can be added through extension methods. For instance, the library automatically handles enum to int, but supports other formats to. Below, enums are converted to strings.
+There are also built-in conversions that can be added through extension methods. For instance, the library automatically handles enum to int but supports other formats. Below, enums are converted to strings.
 
 ```csharp
 internal class UserMapping : IEntityConfigurator<User>
@@ -42,7 +42,7 @@ internal class UserMapping : IEntityConfigurator<User>
 ```
 
 
-All built in conversions are found in the [code](https://github.com/jgauffin/Griffin.Data/tree/master/src/Griffin.Data/Converters). Feel free to contribute throuh a pull request.
+All built-in conversions are found in the [code](https://github.com/jgauffin/Griffin.Data/tree/master/src/Griffin.Data/Converters). Feel free to contribute through a pull request.
 
 ## Custom converters
 
@@ -111,13 +111,13 @@ internal class UserMapping : IEntityConfigurator<User>
 
 ## Multi column converters
 
-You can store more complex structures in multiple columns and then convert them to custom classes.
+You can store more complex structures in multiple columns and convert them into custom classes.
 
-You might have children that varies and for some reason do not want to create a table for every possible child.
+You might have children that vary and do not want to create a table for every possible child type.
 
-In that case you can store them in a column as JSON and then use a converter to serialize/deserialize them.
+In that case, you can store them in a column as JSON and then use a converter to serialize/deserialize them.
 
-Multi column converters must implement the interface `IRecordToValueConverter<TPropertyType>`. It uses ADO.NETs `IDataRecord` which gives you direct access to a row in the table.
+Multi-column converters must implement the interface `IRecordToValueConverter<TPropertyType>`. It uses ADO.NETs `IDataRecord`, which gives you direct access to a row in the table.
 
 Here is the JSON example:
 
