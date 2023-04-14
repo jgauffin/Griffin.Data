@@ -7,7 +7,7 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(ProjectName).xml</DocumentationFile>
 
-        <Version>2.0.0-rc13</Version>
+        <Version>2.0.0-rc14</Version>
         <PackageReleaseNotes>Added a more detailed exception when INSERT fails.</PackageReleaseNotes>
     </PropertyGroup>
 
