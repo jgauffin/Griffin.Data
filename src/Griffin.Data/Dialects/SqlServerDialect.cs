@@ -37,7 +37,16 @@ public class SqlServerDialect : ISqlDialect
         var auto = mapping.Keys.FirstOrDefault(x => x.IsAutoIncrement);
         if (auto == null)
         {
-            await ((DbCommand)command).ExecuteNonQueryAsync();
+            try
+            {
+                await ((DbCommand)command).ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                var our = command.CreateDetailedException(ex, entity.GetType());
+                our.Data["Entity"] = entity;
+                throw our;
+            }
             return;
         }
 
@@ -49,7 +58,9 @@ public class SqlServerDialect : ISqlDialect
         }
         catch (DbException ex)
         {
-            throw command.CreateDetailedException(ex);
+            var our = command.CreateDetailedException(ex, entity.GetType());
+            our.Data["Entity"] = entity;
+            throw our;
         }
     }
 
@@ -110,7 +121,16 @@ public class SqlServerDialect : ISqlDialect
             throw new ArgumentNullException(nameof(command));
         }
 
-        await command.ExecuteNonQueryAsync();
+        try
+        {
+            await command.ExecuteNonQueryAsync();
+        }
+        catch (DbException ex)
+        {
+            var our = command.CreateDetailedException(ex, entity.GetType());
+            our.Data["Entity"] = entity;
+            throw our;
+        }
     }
 
     /// <inheritdoc />

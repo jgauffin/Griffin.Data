@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
+using Griffin.Data.Helpers;
 
 namespace Griffin.Data.Queries;
 
@@ -42,15 +43,22 @@ public abstract class ListRunner<TResultItem>
     /// <returns>Collection of entities.</returns>
     protected async Task<List<TResultItem>> MapRecords(DbCommand command)
     {
-        await using var reader = await command.ExecuteReaderAsync();
-        var collection = new List<TResultItem>();
-        while (await reader.ReadAsync())
+        try
         {
-            var item = new TResultItem();
-            MapRecord(reader, item);
-            collection.Add(item);
-        }
+            await using var reader = await command.ExecuteReaderAsync();
+            var collection = new List<TResultItem>();
+            while (await reader.ReadAsync())
+            {
+                var item = new TResultItem();
+                MapRecord(reader, item);
+                collection.Add(item);
+            }
 
-        return collection;
+            return collection;
+        }
+        catch (Exception ex)
+        {
+            throw command.CreateDetailedException(ex);
+        }
     }
 }

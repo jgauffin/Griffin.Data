@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
+using Griffin.Data.Helpers;
 
 namespace Griffin.Data.Queries;
 
@@ -21,15 +22,22 @@ public static class QueryExtensions
         this DbCommand command,
         Action<IDataRecord, TResultItem> itemFiller) where TResultItem : new()
     {
-        await using var reader = await command.ExecuteReaderAsync();
-        var collection = new List<TResultItem>();
-        while (await reader.ReadAsync())
+        try
         {
-            var item = new TResultItem();
-            itemFiller(reader, item);
-            collection.Add(item);
-        }
+            await using var reader = await command.ExecuteReaderAsync();
+            var collection = new List<TResultItem>();
+            while (await reader.ReadAsync())
+            {
+                var item = new TResultItem();
+                itemFiller(reader, item);
+                collection.Add(item);
+            }
 
-        return collection;
+            return collection;
+        }
+        catch (Exception ex)
+        {
+            throw command.CreateDetailedException(ex);
+        }
     }
 }

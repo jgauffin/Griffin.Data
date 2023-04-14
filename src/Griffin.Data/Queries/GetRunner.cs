@@ -1,6 +1,8 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
+using Griffin.Data.Helpers;
 
 namespace Griffin.Data.Queries;
 
@@ -32,16 +34,23 @@ public abstract class GetRunner<TResult>
     /// <returns>Entity if found; otherwise <c>null</c>.</returns>
     protected async Task<TResult?> FetchRecord(DbCommand command)
     {
-        await using var reader = await command.ExecuteReaderAsync();
-        if (!await reader.ReadAsync())
+        try
         {
-            return default;
+            await using var reader = await command.ExecuteReaderAsync();
+            if (!await reader.ReadAsync())
+            {
+                return default;
+            }
+
+            var item = new TResult();
+            MapRecord(reader, item);
+
+            return item;
         }
-
-        var item = new TResult();
-        MapRecord(reader, item);
-
-        return item;
+        catch (Exception ex)
+        {
+            throw command.CreateDetailedException(ex);
+        }
     }
 
     /// <summary>

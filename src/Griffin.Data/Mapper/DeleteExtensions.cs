@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using Griffin.Data.Helpers;
@@ -43,9 +44,19 @@ public static class DeleteExtensions
         }
 
         await using var command = session.CreateCommand();
-        command.CommandText = $"DELETE FROM {mapping.TableName}";
-        command.ApplyKeyWhere(mapping, entity);
-        await command.ExecuteNonQueryAsync();
+        try
+        {
+            command.CommandText = $"DELETE FROM {mapping.TableName}";
+            command.ApplyKeyWhere(mapping, entity);
+            await command.ExecuteNonQueryAsync();
+        }
+        catch (DbException ex)
+        {
+            var our = command.CreateDetailedException(ex, entity.GetType());
+            our.Data["Entity"] = entity;
+            throw our;
+        }
+
     }
 
     /// <summary>
@@ -90,7 +101,16 @@ public static class DeleteExtensions
         command.CommandText =
             $"DELETE FROM {mapping.TableName} WHERE {keyProperty.ColumnName} = @{keyProperty.PropertyName}";
         command.AddParameter(keyProperty.PropertyName, key);
-        await command.ExecuteNonQueryAsync();
+        try
+        {
+            await command.ExecuteNonQueryAsync();
+        }
+        catch (DbException ex)
+        {
+            var our = command.CreateDetailedException(ex, mapping.EntityType);
+            our.Data["Key"] = key;
+            throw our;
+        }
     }
 
     private static async Task DeleteChildren(this Session session, object parentEntity, IHasOneMapping hasOne)
@@ -145,7 +165,17 @@ public static class DeleteExtensions
         var fkValue = hasOne.GetReferencedId(parentEntity);
         command.AddParameter(hasOne.ForeignKeyColumnName, fkValue);
 
-        await command.ExecuteNonQueryAsync();
+        try
+        {
+            await command.ExecuteNonQueryAsync();
+        }
+        catch (DbException ex)
+        {
+            var our = command.CreateDetailedException(ex, mapping.EntityType);
+            our.Data["Entity"] = entity;
+            throw our;
+        }
+
     }
 
     /// <summary>
@@ -217,7 +247,15 @@ public static class DeleteExtensions
 
         var fkValue = hasMany.GetReferencedId(parentEntity);
         command.AddParameter(hasMany.ForeignKeyColumnName, fkValue);
-
-        await command.ExecuteNonQueryAsync();
+        try
+        {
+            await command.ExecuteNonQueryAsync();
+        }
+        catch (DbException ex)
+        {
+            var our = command.CreateDetailedException(ex, hasMany.ChildEntityType);
+            our.Data["ParentEntity"] = parentEntity;
+            throw our;
+        }
     }
 }

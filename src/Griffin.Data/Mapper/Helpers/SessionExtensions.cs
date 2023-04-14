@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
@@ -85,7 +86,7 @@ internal static class SessionExtensions
         }
         catch (Exception ex)
         {
-            throw command.CreateDetailedException(ex);
+            throw command.CreateDetailedException(ex, typeof(TEntity));
         }
     }
 
@@ -106,7 +107,7 @@ internal static class SessionExtensions
         }
         catch (Exception ex)
         {
-            throw command.CreateDetailedException(ex);
+            throw command.CreateDetailedException(ex, mapping.EntityType);
         }
     }
 
@@ -128,7 +129,7 @@ internal static class SessionExtensions
         }
         catch (Exception ex)
         {
-            throw command.CreateDetailedException(ex);
+            throw command.CreateDetailedException(ex, mapping.EntityType);
         }
     }
 
@@ -149,7 +150,7 @@ internal static class SessionExtensions
         }
         catch (Exception ex)
         {
-            throw command.CreateDetailedException(ex);
+            throw command.CreateDetailedException(ex, typeof(TEntity));
         }
     }
 
@@ -158,20 +159,26 @@ internal static class SessionExtensions
         ClassMapping mapping,
         QueryOptions options)
     {
-        await using var reader = await command.ExecuteReaderAsync();
-
-        if (!await reader.ReadAsync())
+        try
         {
-            return null;
-        }
+            await using var reader = await command.ExecuteReaderAsync();
+            if (!await reader.ReadAsync())
+            {
+                return null;
+            }
 
-        var factory = options.Factory ?? mapping.CreateInstance;
-        var entity = factory(reader);
-        reader.Map(entity, mapping);
-        return entity;
+            var factory = options.Factory ?? mapping.CreateInstance;
+            var entity = factory(reader);
+            reader.Map(entity, mapping);
+            return entity;
+        }
+        catch (Exception ex)
+        {
+            throw command.CreateDetailedException(ex, mapping.EntityType);
+        }
     }
 
-    private static void AddWhereColumnsAndParameters(this DbCommand cmd, IDictionary<string, object> parameters)
+    private static void AddWhereColumnsAndParameters(this IDbCommand cmd, IDictionary<string, object> parameters)
     {
         if (parameters.Count == 0)
         {

@@ -27,7 +27,7 @@ internal static class QueryExtensions
             }
             catch (DbException ex)
             {
-                throw cmd.CreateDetailedException(ex);
+                throw cmd.CreateDetailedException(ex, typeof(TEntity));
             }
         }
 
@@ -57,7 +57,7 @@ internal static class QueryExtensions
             }
             catch (DbException ex)
             {
-                throw cmd.CreateDetailedException(ex);
+                throw cmd.CreateDetailedException(ex, typeof(TEntity));
             }
         }
 
@@ -93,7 +93,7 @@ internal static class QueryExtensions
             }
             catch (DbException ex)
             {
-                throw cmd.CreateDetailedException(ex);
+                throw cmd.CreateDetailedException(ex, entityType);
             }
         }
 

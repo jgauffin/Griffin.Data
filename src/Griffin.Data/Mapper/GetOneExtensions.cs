@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Data.Common;
 using System.Threading.Tasks;
+using Griffin.Data.Helpers;
 using Griffin.Data.Mapper.Helpers;
 
 namespace Griffin.Data.Mapper;
@@ -19,8 +21,18 @@ public static class GetOneExtensions
     public static async Task<bool> Exists<TEntity>(this Session session, object constraints)
     {
         await using var cmd = session.CreateQueryCommand(typeof(TEntity), QueryOptions.Where(constraints));
-        await using var reader = await cmd.ExecuteReaderAsync();
-        return await reader.ReadAsync();
+        try
+        {
+
+            await using var reader = await cmd.ExecuteReaderAsync();
+            return await reader.ReadAsync();
+        }
+        catch (DbException ex)
+        {
+            var our = cmd.CreateDetailedException(ex, typeof(TEntity));
+            our.Data["Constraints"] = constraints;
+            throw our;
+        }
     }
 
     /// <summary>

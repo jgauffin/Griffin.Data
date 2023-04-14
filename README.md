@@ -23,6 +23,7 @@ Highlights:
 * Built in enum support (can be represented by byte, short, int and strings in the database).
 * Setters are not required
 * Child entity collections can be IList<T>, IReadOnlyList<T> or arrays.
+* Detailed exceptions to make debuggin a breaze.
 
 ## The read side
 
