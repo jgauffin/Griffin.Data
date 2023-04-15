@@ -130,26 +130,28 @@ internal static class FetchChildrenOperations
             IList allChildrenToGetChildrenFor = (IList)Activator.CreateInstance
                                                 (typeof(List<>).MakeGenericType(hasManyMapping.ChildEntityType));
             var childMapping = session.GetMapping(hasManyMapping.ChildEntityType);
-            await using var cmd = session.CreateQueryCommand(hasManyMapping.ChildEntityType, options);
-            try
+            await using (var cmd = session.CreateQueryCommand(hasManyMapping.ChildEntityType, options))
             {
-                await using var reader = await cmd.ExecuteReaderAsync();
-                await reader.MapAll(childMapping, x =>
+                try
                 {
-                    allChildrenToGetChildrenFor.Add(x);
-                    var fk = hasManyMapping.GetForeignKeyValue(x);
-                    if (fk == null)
+                    await using var reader = await cmd.ExecuteReaderAsync();
+                    await reader.MapAll(childMapping, x =>
                     {
-                        throw new MappingException(x,
-                            "Failed to lookup parent using foreign key, cannot attach child.");
-                    }
+                        allChildrenToGetChildrenFor.Add(x);
+                        var fk = hasManyMapping.GetForeignKeyValue(x);
+                        if (fk == null)
+                        {
+                            throw new MappingException(x,
+                                "Failed to lookup parent using foreign key, cannot attach child.");
+                        }
 
-                    childCollections[fk].Add(x);
-                });
-            }
-            catch (Exception ex)
-            {
-                throw cmd.CreateDetailedException(ex, parentType, hasManyMapping.ChildEntityType);
+                        childCollections[fk].Add(x);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    throw cmd.CreateDetailedException(ex, parentType, hasManyMapping.ChildEntityType);
+                }
             }
 
             // Now load our children
@@ -189,18 +191,22 @@ internal static class FetchChildrenOperations
                 IList allChildrenToGetChildrenFor = (IList)Activator.CreateInstance
                     (typeof(List<>).MakeGenericType(hasOneMapping.ChildEntityType));
 
-                await using var reader = await cmd.ExecuteReaderAsync();
-                await reader.MapAll(childMapping, x =>
+                await using (var reader = await cmd.ExecuteReaderAsync())
                 {
-                    allChildrenToGetChildrenFor.Add(x);
-                    var fkValue = hasOneMapping.GetForeignKeyValue(x);
-                    if (fkValue == null)
+                    await reader.MapAll(childMapping, x =>
                     {
-                        throw new MappingException(x, "Failed to lookup parent using foreign key, cannot attach child.");
-                    }
+                        allChildrenToGetChildrenFor.Add(x);
+                        var fkValue = hasOneMapping.GetForeignKeyValue(x);
+                        if (fkValue == null)
+                        {
+                            throw new MappingException(x,
+                                "Failed to lookup parent using foreign key, cannot attach child.");
+                        }
 
-                    hasOneMapping.SetPropertyValue(parentIndex[fkValue], x);
-                });
+                        hasOneMapping.SetPropertyValue(parentIndex[fkValue], x);
+                    });
+
+                }
 
                 await session.GetChildrenForMany(hasOneMapping.ChildEntityType, allChildrenToGetChildrenFor);
             }

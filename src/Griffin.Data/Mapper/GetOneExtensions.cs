@@ -20,7 +20,9 @@ public static class GetOneExtensions
     /// <returns></returns>
     public static async Task<bool> Exists<TEntity>(this Session session, object constraints)
     {
-        await using var cmd = session.CreateQueryCommand(typeof(TEntity), QueryOptions.Where(constraints));
+        var options = QueryOptions.Where(constraints);
+        options.PageSize = 1;
+        await using var cmd = session.CreateQueryCommand(typeof(TEntity), options);
         try
         {
 
