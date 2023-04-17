@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(ProjectName).xml</DocumentationFile>
 
-        <Version>2.0.0-rc15</Version>
-        <PackageReleaseNotes>Added a more detailed exception when INSERT fails.</PackageReleaseNotes>
+        <Version>2.0.0-rc16</Version>
+        <PackageReleaseNotes>Made Session constructor with DbTransaction public.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>

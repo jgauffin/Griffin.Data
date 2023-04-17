@@ -57,10 +57,10 @@ public class Session : IDisposable
     /// <param name="transaction">Transaction to use.</param>
     /// <param name="registry">Registry to lookup mappings in.</param>
     /// <param name="changeTracker"></param>
-    internal Session(
+    public Session(
         IDbTransaction transaction,
         IMappingRegistry registry,
-        IChangeTracker changeTracker)
+        IChangeTracker? changeTracker)
     {
         Transaction = transaction;
         _registry = registry;
