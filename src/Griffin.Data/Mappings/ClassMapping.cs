@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Reflection.Emit;
+using Griffin.Data.Configuration;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mappings.Properties;
 using Griffin.Data.Mappings.Relations;
@@ -18,7 +22,8 @@ public class ClassMapping
     private readonly List<IHasManyMapping> _collections = new();
     private readonly List<IKeyMapping> _keys;
     private readonly List<IPropertyMapping> _properties;
-
+    private bool _checkedConstructors = false;
+    private Func<IDataRecord, object>? _itemFactory;
     /// <summary>
     /// </summary>
     /// <param name="entityType">Type of entity that the mapping is for.</param>
@@ -90,9 +95,98 @@ public class ClassMapping
             throw new ArgumentNullException(nameof(record));
         }
 
-        return Activator.CreateInstance(EntityType, true);
+        if (_itemFactory != null)
+        {
+            return _itemFactory(record);
+        }
+
+        if (_checkedConstructors)
+        {
+            return Activator.CreateInstance(EntityType, true);
+        }
+
+        _checkedConstructors = true;
+
+        var result = GetConstructor();
+        if (result == null)
+        {
+            return Activator.CreateInstance(EntityType, true);
+        }
+
+        var param = Expression.Parameter(typeof(IDataRecord), "t");
+        var property = typeof(IDataRecord).GetProperties().FirstOrDefault(x =>
+            x.GetIndexParameters().Length == 1 && x.GetIndexParameters()[0].ParameterType == typeof(string));
+        if (property == null)
+        {
+            throw new InvalidOperationException("Failed to find indexer method in IDataRecord");
+        }
+
+        var constructor = result.Value.Item1;
+        List<UnaryExpression> constructorArguments = new List<UnaryExpression>();
+        foreach (var mapping in result.Value.Item2)
+        {
+            var columnNameConstant = Expression.Constant(mapping.ColumnName, typeof(string));
+            var indexerAccessor = Expression.Property(param, property, columnNameConstant);
+
+            UnaryExpression converted;
+            var converter = mapping.GetType().GetProperty("ColumnToPropertyConverter", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)?.GetValue(mapping);
+            if (converter != null)
+            {
+                var method = ((Delegate)converter).Method;
+                var target = ((Delegate)converter).Target;
+                var instance = Expression.Constant(target);
+                var converterMethod = Expression.Call(instance, method, indexerAccessor);
+                converted=Expression.Convert(converterMethod, mapping.PropertyType);
+            }
+            else
+            {
+                converted = Expression.Convert(indexerAccessor, mapping.PropertyType);
+            }
+            
+            constructorArguments.Add(converted);
+        }
+
+        var constructorExpression = Expression.New(constructor, constructorArguments);
+        _itemFactory = Expression.Lambda<Func<IDataRecord, object>>(constructorExpression, param).Compile();
+        try
+        {
+            return _itemFactory(record);
+        }
+        catch (Exception ex)
+        {
+            throw new MappingConfigurationException(EntityType,
+                "Failed to create an instance of entity using non-default constructor.", ex);
+        }
     }
 
+    private (ConstructorInfo, List<IFieldMapping>)? GetConstructor()
+    {
+        foreach (var constructor in EntityType.GetConstructors(BindingFlags.NonPublic|BindingFlags.Public|BindingFlags.Instance))
+        {
+            List<IFieldMapping> properties = new List<IFieldMapping>();
+            var parameters = constructor.GetParameters();
+            foreach (var parameter in constructor.GetParameters())
+            {
+                var prop = FindPropertyByName(parameter.Name);
+                if (prop != null)
+                {
+                    properties.Add(prop);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (parameters.Length == properties.Count)
+            {
+                return (constructor, properties);
+            }
+        }
+
+        return null;
+    }
+    
     /// <summary>
     ///     Find a specific property (looks in keys and properties for the given name, using case insensitive search).
     /// </summary>

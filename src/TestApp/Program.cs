@@ -1,27 +1,16 @@
-﻿using System.Data.SqlClient;
-using System.Reflection;
+﻿using System.Reflection;
 using Griffin.Data;
 using Griffin.Data.ChangeTracking;
 using Griffin.Data.Configuration;
 using Griffin.Data.Dialects;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mappings;
-using Griffin.Data.Scaffolding.Queries;
 using TestApp.Entities;
 
 var mappingRegistry = new MappingRegistry();
 mappingRegistry.Scan(Assembly.GetExecutingAssembly());
 
 var connectionString = "Data Source=.;Initial Catalog=GriffinData;Integrated Security=True";
-
-var gen = new QueryScaffolder();
-var dir = Path.GetFullPath("..\\..\\..", Environment.CurrentDirectory);
-
-var con = new SqlConnection(connectionString);
-con.Open();
-await gen.Generate(con, dir);
-
-return;
 
 var config = new DbConfiguration(connectionString)
 {

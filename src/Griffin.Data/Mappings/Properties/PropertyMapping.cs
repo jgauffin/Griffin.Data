@@ -7,10 +7,15 @@ using Griffin.Data.Mapper;
 
 namespace Griffin.Data.Mappings.Properties;
 
+public interface IGotColumnToPropertyConverter<in TProperty>
+{
+    Func<TProperty, object>? PropertyToColumnConverter { get; }
+}
+
 /// <summary>
 ///     Maps a property, which are not in a relationship ("boho") and not a key.
 /// </summary>
-public class PropertyMapping<TEntity, TProperty> : IPropertyMapping
+public class PropertyMapping<TEntity, TProperty> : IPropertyMapping, IGotColumnToPropertyConverter<TProperty>
 {
     private readonly Type _entityType;
     private readonly Func<TEntity, TProperty>? _getter;
@@ -47,12 +52,13 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping
         {
             if (x == null)
             {
-                return null!;
+                throw new MappingConfigurationException(_entityType,
+                    "A converter should not get invoked for null values.");
             }
 
             if (!_enumIsConfigured)
             {
-                return (int)x;
+                return (int)(object)x;
             }
 
             return PropertyToColumnConverter!(x);
@@ -61,7 +67,8 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping
         {
             if (x == null)
             {
-                return null!;
+                throw new MappingConfigurationException(_entityType,
+                    "A converter should not get invoked for null values.");
             }
 
             SelectEnumConverter(x);
@@ -69,22 +76,22 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping
         };
     }
 
-    private void SelectEnumConverter(object x)
+    private void SelectEnumConverter(object value)
     {
         _enumIsConfigured = true;
-        if (x.GetType() == typeof(short))
+        if (value is short)
         {
             var converter = new GenericToEnumConverter<short, TProperty>();
-            PropertyToColumnConverter = x => converter.PropertyToColumn((TProperty)x);
+            PropertyToColumnConverter = x => converter.PropertyToColumn(x!);
             ColumnToPropertyConverter = x => converter.ColumnToProperty((short)x);
         }
-        else if (x.GetType() == typeof(byte))
+        else if (value is byte)
         {
             var converter = new GenericToEnumConverter<byte, TProperty>();
-            PropertyToColumnConverter = x => converter.PropertyToColumn((TProperty)x);
+            PropertyToColumnConverter = x => converter.PropertyToColumn(x!);
             ColumnToPropertyConverter = x => converter.ColumnToProperty((byte)x);
         }
-        else if (x.GetType() == typeof(string))
+        else if (value is string)
         {
             PropertyToColumnConverter = y => y.ToString();
             ColumnToPropertyConverter = y =>
@@ -94,13 +101,13 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping
                     throw new InvalidOperationException("Failed to convert '" + y + "' to enum " + typeof(TProperty));
                 }
 
-                return enumValue;
+                return (TProperty)enumValue;
             };
         }
         else
         {
             var converter2 = new GenericToEnumConverter<int, TProperty>();
-            PropertyToColumnConverter = x => converter2.PropertyToColumn((TProperty)x);
+            PropertyToColumnConverter = x => converter2.PropertyToColumn(x!);
             ColumnToPropertyConverter = x => converter2.ColumnToProperty((int)x);
         }
     }
@@ -150,7 +157,7 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping
     ///         Used when the type differ, otherwise <c>null</c>.
     ///     </para>
     /// </remarks>
-    public Func<object, object>? ColumnToPropertyConverter { get; set; }
+    public Func<object, TProperty>? ColumnToPropertyConverter { get; set; }
 
     /// <summary>
     ///     Converts from a property value to a column value.
@@ -160,7 +167,7 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping
     ///         Used when the type differ, otherwise <c>null</c>.
     ///     </para>
     /// </remarks>
-    public Func<object, object>? PropertyToColumnConverter { get; set; }
+    public Func<TProperty, object>? PropertyToColumnConverter { get; set; }
 
     /// <summary>
     ///     Type of property.
@@ -271,7 +278,7 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping
 
         if (ColumnToPropertyConverter != null)
         {
-            value = ColumnToPropertyConverter(value);
+            value = ColumnToPropertyConverter((TEntity)value);
         }
 
         _setter((TEntity)entity, (TProperty)value);
@@ -286,6 +293,6 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping
     /// <inheritdoc />
     public object ConvertToColumnValue(object value)
     {
-        return PropertyToColumnConverter != null ? PropertyToColumnConverter(value) : value;
+        return PropertyToColumnConverter != null ? PropertyToColumnConverter((TProperty)value) : value;
     }
 }

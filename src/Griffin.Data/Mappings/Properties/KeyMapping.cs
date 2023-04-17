@@ -73,6 +73,9 @@ public class KeyMapping<TEntity, TProperty> : IKeyMapping
         return value;
     }
 
+    /// <inheritdoc />
+    public Type PropertyType => typeof(TProperty);
+
     /// <summary>
     ///     Column name.
     /// </summary>

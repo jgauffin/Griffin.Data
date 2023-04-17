@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Reflection;
+using FluentAssertions;
 using Griffin.Data.Configuration;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mappings;
@@ -20,6 +21,44 @@ public class ClassMappingTests
         userConfig.Property(x => x.FirstName).ColumnName("first_name");
         userConfig.MapRemainingProperties();
         _mapping = ((IMappingBuilder)userConfig).BuildMapping(true);
+    }
+
+    [Fact]
+    public void Should_be_able_to_create_instance_using_default_constructor()
+    {
+        var record = new FakeRecord(new Dictionary<string, object>());
+
+        var actual = _mapping.CreateInstance(record);
+
+        actual.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void Should_be_able_to_create_instance_using_non_default_constructor()
+    {
+        var reg = new MappingRegistry();
+        reg.Scan(Assembly.GetExecutingAssembly());
+        var mapping = reg.Get<ClassWithConstructor>();
+        var record = new FakeRecord(new Dictionary<string, object>(){{"Id", 1}, {"Name", "Jonas"}});
+
+        var actual = (ClassWithConstructor)mapping.CreateInstance(record);
+
+        actual.Id.Should().Be(1);
+        actual.Name.Should().Be("Jonas");
+    }
+
+    [Fact]
+    public void Should_be_able_to_create_instance_using_non_default_constructor_and_converter()
+    {
+        var reg = new MappingRegistry();
+        reg.Scan(Assembly.GetExecutingAssembly());
+        var mapping = reg.Get<ClassWithConstructorAndConverter>();
+        var record = new FakeRecord(new Dictionary<string, object>() { { "Id", 1 }, { "Name", 3 } });
+
+        var actual = (ClassWithConstructorAndConverter)mapping.CreateInstance(record);
+
+        actual.Id.Should().Be(1);
+        actual.Name.Should().Be("3");
     }
 
     [Fact]

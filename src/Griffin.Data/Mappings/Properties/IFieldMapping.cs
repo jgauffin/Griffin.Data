@@ -1,4 +1,6 @@
-﻿namespace Griffin.Data.Mappings.Properties;
+﻿using System;
+
+namespace Griffin.Data.Mappings.Properties;
 
 /// <summary>
 ///     Mapping of a field.
@@ -10,6 +12,8 @@
 /// </remarks>
 public interface IFieldMapping : IFieldAccessor
 {
+    public Type PropertyType { get;  }
+
     /// <summary>
     ///     Name of column.
     /// </summary>
