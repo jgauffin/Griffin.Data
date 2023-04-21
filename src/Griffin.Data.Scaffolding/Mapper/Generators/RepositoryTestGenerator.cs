@@ -20,10 +20,28 @@ namespace Griffin.Data.Scaffolding.Mapper.Generators
             sb.AppendLineIndent("{");
             sb.AppendLine();
             sb.AppendLine("[Fact]");
-            sb.AppendLine("public async Task Should_be_able_to_handle_entity()");
+            sb.AppendLine("public async Task Should_be_able_to_insert_entity()");
+            sb.AppendLineIndent("{");
+            sb.AppendLine("var entity = CreateValidEntity();");
+            sb.AppendLine();
+            sb.AppendLine("await Session.Insert(entity);");
+            sb.AppendLine("");
+
+            if (table.Columns.Any(x => x.IsAutoIncrement))
+            {
+                sb.AppendLine();
+            }
+
+
+            sb.AppendLine();
+            CreateEntityFactory(sb, table);
+        }
+
+        private void CreateEntityFactory(TabbedStringBuilder sb, Table table)
+        {
+            sb.AppendLine($"private {table.ClassName} CreateValidEntity()");
             sb.AppendLineIndent("{");
             sb.Append($"var entity = new {table.ClassName}(");
-
             var allRequired = table.Columns
                 .Where(x => !x.IsAutoIncrement && !x.IsNullable && string.IsNullOrEmpty(x.DefaultValue)).ToList();
             if (allRequired.Any())
@@ -37,17 +55,11 @@ namespace Griffin.Data.Scaffolding.Mapper.Generators
                         sb.Append(", ");
                     }
                 }
-
-                sb.AppendLine(")");
-                sb.AppendLineIndent("{");
-                foreach (var column in allRequired)
-                {
-                    sb.AppendLine($"{column.PropertyName} = {camelHump(column.PropertyName)};");
-                }
-
-                sb.DedentAppendLine("}");
-                sb.AppendLine();
             }
+
+            sb.AppendLine(");");
+            sb.AppendLine("return entity;");
+            sb.DedentAppendLine("}");
         }
 
         private string GetSampleValue(string? customPropertyType, string propertyType)

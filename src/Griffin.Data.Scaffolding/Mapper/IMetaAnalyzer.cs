@@ -6,9 +6,9 @@
 public interface IMetaAnalyzer
 {
     /// <summary>
-    /// Lowest priority runs first.
+    ///     Lowest priority runs first.
     /// </summary>
-    int Priority { get;  }
+    int Priority { get; }
 
     void Analyze(GeneratorContext context);
 }

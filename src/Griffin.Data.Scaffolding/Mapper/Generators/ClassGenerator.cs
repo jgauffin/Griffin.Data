@@ -1,6 +1,5 @@
 ﻿using Griffin.Data.Helpers;
 using Griffin.Data.Scaffolding.Config;
-using Griffin.Data.Scaffolding.Meta;
 
 namespace Griffin.Data.Scaffolding.Mapper.Generators;
 
@@ -9,11 +8,6 @@ namespace Griffin.Data.Scaffolding.Mapper.Generators;
 /// </summary>
 public class ClassGenerator : GeneratorWithNamespace
 {
-    protected override GeneratedFile GenerateFile(Table table, GeneratorContext context, string contents)
-    {
-        return new GeneratedFile($"{table.ClassName}", FileType.Domain, contents);
-    }
-
     protected override void GenerateClass(TabbedStringBuilder sb, Table table, GeneratorContext context)
     {
         sb.AppendLine($@"public class {table.ClassName}");
@@ -22,7 +16,8 @@ public class ClassGenerator : GeneratorWithNamespace
         foreach (var reference in table.References)
         {
             var propName = reference.ReferencingTable.ClassName.Replace(table.ClassName, "").Pluralize();
-            sb.AppendLine($"private readonly List<{reference.ReferencingTable.ClassName}> _{camelHump(propName)} = new();");
+            sb.AppendLine(
+                $"private readonly List<{reference.ReferencingTable.ClassName}> _{camelHump(propName)} = new();");
         }
 
         if (table.References.Any())
@@ -30,7 +25,8 @@ public class ClassGenerator : GeneratorWithNamespace
             sb.AppendLine();
         }
 
-        var allRequired = table.Columns.Where(x => !x.IsAutoIncrement && !x.IsNullable && string.IsNullOrEmpty(x.DefaultValue)).ToList();
+        var allRequired = table.Columns
+            .Where(x => !x.IsAutoIncrement && !x.IsNullable && string.IsNullOrEmpty(x.DefaultValue)).ToList();
         if (allRequired.Any())
         {
             sb.Append($"public {table.ClassName}(");
@@ -43,12 +39,14 @@ public class ClassGenerator : GeneratorWithNamespace
                     sb.Append(", ");
                 }
             }
+
             sb.AppendLine(")");
             sb.AppendLineIndent("{");
             foreach (var column in allRequired)
             {
                 sb.AppendLine($"{column.PropertyName} = {camelHump(column.PropertyName)};");
             }
+
             sb.DedentAppendLine("}");
             sb.AppendLine();
         }
@@ -91,12 +89,18 @@ public class ClassGenerator : GeneratorWithNamespace
         sb.DedentAppendLine("}");
     }
 
-    private string camelHump(string propertyName)
+    protected override GeneratedFile GenerateFile(Table table, GeneratorContext context, string contents)
     {
-        return char.ToLower(propertyName[0]) + propertyName[1..];
+        return new GeneratedFile($"{table.ClassName}", FileType.Domain, contents);
     }
+
     protected override string GetNamespaceName(Table table, ProjectFolders projectFolders)
     {
         return $"{projectFolders.DomainNamespace}.{table.RelativeNamespace}";
+    }
+
+    private string camelHump(string propertyName)
+    {
+        return char.ToLower(propertyName[0]) + propertyName[1..];
     }
 }

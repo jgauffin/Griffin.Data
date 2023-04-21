@@ -1,16 +1,10 @@
 ﻿using Griffin.Data.Helpers;
 using Griffin.Data.Scaffolding.Config;
-using Griffin.Data.Scaffolding.Meta;
 
 namespace Griffin.Data.Scaffolding.Mapper.Generators;
 
 public class MappingGenerator : GeneratorWithNamespace
 {
-    protected override GeneratedFile GenerateFile(Table table, GeneratorContext context, string contents)
-    {
-        return new GeneratedFile($"{table.ClassName}Mapping", FileType.Data, contents);
-    }
-
     protected override void AddUsings(Table table, TabbedStringBuilder sb, GeneratorContext context)
     {
         sb.AppendLine("using Griffin.Data;");
@@ -62,6 +56,11 @@ public class MappingGenerator : GeneratorWithNamespace
 
         sb.DedentAppendLine("}");
         sb.DedentAppendLine("}");
+    }
+
+    protected override GeneratedFile GenerateFile(Table table, GeneratorContext context, string contents)
+    {
+        return new GeneratedFile($"{table.ClassName}Mapping", FileType.Data, contents);
     }
 
     protected override string GetNamespaceName(Table table, ProjectFolders projectFolders)

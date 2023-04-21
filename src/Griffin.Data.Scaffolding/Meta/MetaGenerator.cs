@@ -1,17 +1,10 @@
 ﻿using System.Reflection;
 using System.Text.Json;
-using Griffin.Data.Scaffolding.Config;
-using Griffin.Data.Scaffolding.Mapper;
-using Griffin.Data.Scaffolding.Meta.Analyzers;
 
 namespace Griffin.Data.Scaffolding.Meta;
 
 internal class MetaGenerator
 {
-    public MetaGenerator()
-    {
-    }
-
     public async Task<IReadOnlyList<Table>> ReadSchema(string engineName, string connectionString)
     {
         var reader = FindReader(engineName);
@@ -30,7 +23,7 @@ internal class MetaGenerator
             return null;
         }
 
-        var settings = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+        var settings = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
         var json = File.ReadAllText(fileName);
         var jsonObj = JsonSerializer.Deserialize<ScaffoldingConfig>(json, settings);

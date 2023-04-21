@@ -1,16 +1,10 @@
 ﻿using Griffin.Data.Helpers;
 using Griffin.Data.Scaffolding.Config;
-using Griffin.Data.Scaffolding.Meta;
 
 namespace Griffin.Data.Scaffolding.Mapper.Generators;
 
 internal class RepositoryClassGenerator : GeneratorWithNamespace
 {
-    protected override GeneratedFile GenerateFile(Table table, GeneratorContext context, string contents)
-    {
-        return new GeneratedFile($"{table.ClassName}Repository", FileType.Data, contents);
-    }
-
     protected override void AddUsings(Table table, TabbedStringBuilder sb, GeneratorContext context)
     {
         sb.AppendLine("using Griffin.Data;");
@@ -57,17 +51,21 @@ internal class RepositoryClassGenerator : GeneratorWithNamespace
         sb.AppendLine("});");
         sb.DedentAppendLine("}");
 
-
         sb.DedentAppendLine("}");
     }
 
-    private string ToCamelCase(string name)
+    protected override GeneratedFile GenerateFile(Table table, GeneratorContext context, string contents)
     {
-        return char.ToLower(name[0]) + name[1..];
+        return new GeneratedFile($"{table.ClassName}Repository", FileType.Data, contents);
     }
 
     protected override string GetNamespaceName(Table table, ProjectFolders projectFolders)
     {
         return $"{projectFolders.DataNamespace}.{table.RelativeNamespace}";
+    }
+
+    private string ToCamelCase(string name)
+    {
+        return char.ToLower(name[0]) + name[1..];
     }
 }

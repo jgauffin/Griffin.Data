@@ -39,75 +39,7 @@ public class ProjectFolderGuesser
              x.Contains("Test", StringComparison.OrdinalIgnoreCase),
         x => x.Contains("Db") && x.Contains("Test", StringComparison.OrdinalIgnoreCase)
     };
-
-    private readonly List<Func<string, bool>> _testParts;
-
-    public ProjectFolderGuesser()
-    {
-        _testParts = new List<Func<string, bool>> { x => x.Contains("Tests"), x => x.EndsWith("Test") };
-    }
-
-    public void Analyze()
-    {
-        var solutionDirectory = FindFileUp(Environment.CurrentDirectory, "*.sln");
-        if (solutionDirectory == null)
-        {
-            throw new InvalidOperationException("Failed to find solution file in path: " +
-                                                Environment.CurrentDirectory);
-        }
-
-        var firstProjectDirectory = FindFileUp(Environment.CurrentDirectory, "*.csproj");
-
-        var lastPartOfDirs =
-            Directory.GetDirectories(solutionDirectory).Select(x => new DirectoryInfo(x).Name).ToList();
-
-        var dataProjectFolder = lastPartOfDirs.FirstOrDefault(dir => _dataParts.Any(filter => filter(dir)));
-        var entityFolder = lastPartOfDirs.FirstOrDefault(dir => _coreParts.Any(filter => filter(dir)));
-        var entityTestFolder =
-            lastPartOfDirs.FirstOrDefault(dir => _coreTestParts.Any(filter => filter(dir)));
-        var dataTestFolder =
-            lastPartOfDirs.FirstOrDefault(dir => _dataTestsParts.Any(filter => filter(dir)));
-
-        var config = new ScaffoldingConfiguration { TargetLocations = new TargetLocations() };
-
-        if (dataProjectFolder != null)
-        {
-            var projectFile = Directory.GetFiles(dataProjectFolder, "*.csproj").FirstOrDefault();
-            var ns = projectFile == null
-                ? new DirectoryInfo(dataProjectFolder).Name
-                : Path.GetFileNameWithoutExtension(projectFile);
-
-            var relativeDir = dataProjectFolder.Remove(0, solutionDirectory.Length).TrimStart('\\');
-            config.TargetLocations.Mappings = new TargetLocation(relativeDir, ns, $"{ns}.Mappings");
-
-            config.TargetLocations.Queries =
-                new TargetLocation(relativeDir, ns,
-                    $"{ns}.Queries");
-
-            config.TargetLocations.RepositoryClasses = new TargetLocation(relativeDir, ns, $"{ns}");
-        }
-        else
-        {
-            var projectFile = Directory.GetFiles(firstProjectDirectory, "*.csproj").FirstOrDefault();
-            var ns = projectFile == null
-                ? new DirectoryInfo(firstProjectDirectory).Name
-                : Path.GetFileNameWithoutExtension(projectFile);
-
-            var relativeDir = firstProjectDirectory.Remove(0, solutionDirectory.Length).TrimStart('\\');
-            config.TargetLocations.Mappings = new TargetLocation(relativeDir, ns, $"{ns}.Data.Mappings");
-
-            config.TargetLocations.Queries =
-                new TargetLocation(relativeDir, ns,
-                    $"{ns}.Data.Queries");
-
-            config.TargetLocations.RepositoryClasses = new TargetLocation(relativeDir, ns, $"{ns}");
-        }
-
-        if (entityFolder != null)
-        {
-        }
-    }
-
+    
     public ProjectFolders GetFolders(string rootDirectory)
     {
         var solutionDirectory = FindFileUp(rootDirectory, "*.sln");

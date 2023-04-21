@@ -1,6 +1,5 @@
 ﻿using Griffin.Data.Helpers;
 using Griffin.Data.Scaffolding.Config;
-using Griffin.Data.Scaffolding.Meta;
 
 namespace Griffin.Data.Scaffolding.Mapper.Generators;
 
@@ -20,21 +19,6 @@ public abstract class GeneratorWithNamespace : IClassGenerator
         file.RelativeDirectory = GetDirectory(table, file.FileType, context.Folders);
         context.Add(file);
     }
-
-    protected virtual string GetDirectory(Table table, FileType fileFileType, ProjectFolders folders)
-    {
-        var baseFolder = fileFileType switch
-        {
-            FileType.Data => folders.DataFolder,
-            FileType.DataTest => folders.DataTestFolder,
-            FileType.DomainTest => folders.DomainTestFolder,
-            _ => folders.DomainFolder
-        };
-
-        return $"{baseFolder}{Path.DirectorySeparatorChar}{table.RelativeNamespace.Replace('.', Path.DirectorySeparatorChar)}";
-    }
-
-    protected abstract GeneratedFile GenerateFile(Table table, GeneratorContext context, string contents);
 
     protected virtual void AddUsings(Table table, TabbedStringBuilder sb, GeneratorContext context)
     {
@@ -58,6 +42,22 @@ public abstract class GeneratorWithNamespace : IClassGenerator
     }
 
     protected abstract void GenerateClass(TabbedStringBuilder sb, Table table, GeneratorContext context);
+
+    protected abstract GeneratedFile GenerateFile(Table table, GeneratorContext context, string contents);
+
+    protected virtual string GetDirectory(Table table, FileType fileFileType, ProjectFolders folders)
+    {
+        var baseFolder = fileFileType switch
+        {
+            FileType.Data => folders.DataFolder,
+            FileType.DataTest => folders.DataTestFolder,
+            FileType.DomainTest => folders.DomainTestFolder,
+            _ => folders.DomainFolder
+        };
+
+        return
+            $"{baseFolder}{Path.DirectorySeparatorChar}{table.RelativeNamespace.Replace('.', Path.DirectorySeparatorChar)}";
+    }
 
     protected virtual string GetNamespaceName(Table table, ProjectFolders projectFolders)
     {

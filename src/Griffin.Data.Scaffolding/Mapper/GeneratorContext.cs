@@ -12,9 +12,10 @@ public class GeneratorContext
         Folders = folders;
     }
 
+    public ProjectFolders Folders { get; }
+
     public IReadOnlyList<GeneratedFile> GeneratedFiles => _files;
     public IReadOnlyList<Table> Tables { get; }
-    public ProjectFolders Folders { get; }
 
     public void Add(GeneratedFile file)
     {
