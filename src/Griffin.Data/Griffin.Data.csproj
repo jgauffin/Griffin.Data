@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Griffin.Data.xml</DocumentationFile>
 
-        <Version>2.0.0-rc18</Version>
-        <PackageReleaseNotes>Better error messages when entity is not found.</PackageReleaseNotes>
+        <Version>2.0.0-rc19</Version>
+        <PackageReleaseNotes>Made CrudOperations public.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>
