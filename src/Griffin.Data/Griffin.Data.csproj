@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Griffin.Data.xml</DocumentationFile>
 
-        <Version>2.0.0-rc19</Version>
-        <PackageReleaseNotes>Made CrudOperations public.</PackageReleaseNotes>
+        <Version>2.0.0-rc20</Version>
+        <PackageReleaseNotes>Small fix in the repository generator..</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>

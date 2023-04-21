@@ -36,7 +36,7 @@ internal class RepositoryClassGenerator : GeneratorWithNamespace
 
         sb.AppendLine(")");
         sb.AppendLineIndent("{");
-        sb.Append("return await Session.First(new {");
+        sb.Append($"return await Session.First<{table.ClassName}>(new {{");
 
         for (var i = 0; i < pks.Count; i++)
         {
