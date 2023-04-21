@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using Griffin.Data.Helpers;
-using Griffin.Data.Mapper.Helpers;
+using Griffin.Data.Mapper.Implementation;
 
 namespace Griffin.Data.Mapper;
 
@@ -10,7 +11,7 @@ namespace Griffin.Data.Mapper;
 ///     Query options.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class QueryOptions<T> 
+public class QueryOptions<T> : IHaveQueryOptions
 {
     /// <summary>
     /// </summary>
@@ -40,7 +41,6 @@ public class QueryOptions<T>
     }
 
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="session">Session (required for extension methods).</param>
     public QueryOptions(Session session)
@@ -51,6 +51,8 @@ public class QueryOptions<T>
     internal QueryOptions Options { get; } = new();
 
     internal Session Session { get; }
+
+    QueryOptions IHaveQueryOptions.Options => Options;
 
     /// <summary>
     ///     Do not load any children.
@@ -147,8 +149,10 @@ public class QueryOptions<T>
 /// <summary>
 ///     Options used to fine tune how a query should be executed.
 /// </summary>
-public class QueryOptions
+public class QueryOptions : ICanSort
 {
+    private readonly List<SortInstruction> _sorts = new();
+
     /// <summary>
     /// </summary>
     /// <param name="sql">SQL query (complete or partial, refer to the wiki for more information).</param>
@@ -163,7 +167,6 @@ public class QueryOptions
     }
 
     /// <summary>
-    /// 
     /// </summary>
     public QueryOptions()
     {
@@ -214,7 +217,7 @@ public class QueryOptions
     /// </remarks>
     public string? Sql { get; set; }
 
-    internal List<SortInstruction> Sorts { get; set; } = new();
+    IReadOnlyList<SortInstruction> ICanSort.Sorts => _sorts;
 
     /// <summary>
     ///     Ascending sort.
@@ -228,7 +231,7 @@ public class QueryOptions
             throw new ArgumentNullException(nameof(name));
         }
 
-        Sorts.Add(new SortInstruction(name, true, isPropertyName));
+        _sorts.Add(new SortInstruction(name, true, isPropertyName));
     }
 
     /// <summary>
@@ -238,7 +241,37 @@ public class QueryOptions
     /// <param name="isPropertyName">Given name is a property name.</param>
     public void OrderByDescending(string name, bool isPropertyName = true)
     {
-        Sorts.Add(new SortInstruction(name, false, isPropertyName));
+        _sorts.Add(new SortInstruction(name, false, isPropertyName));
+    }
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        var str = "";
+
+        if (!string.IsNullOrEmpty(Sql))
+        {
+            str += "    SQL: " + Sql + Environment.NewLine;
+        }
+
+        if (DbParameters?.Count > 0)
+        {
+            str += "    DbParameters: " + string.Join(", ", DbParameters.Select(x => $"{x.Key} = {x.Value}")) +
+                   Environment.NewLine;
+        }
+
+        if (Parameters?.Count > 0)
+        {
+            str += "    Parameters: " + string.Join(", ", Parameters.Select(x => $"{x.Key} = {x.Value}")) +
+                   Environment.NewLine;
+        }
+
+        if (LoadChildren)
+        {
+            str += "    LoadChildren: true" + Environment.NewLine;
+        }
+
+        return str;
     }
 
     /// <summary>

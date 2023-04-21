@@ -28,7 +28,6 @@ public class CopyService : ICopyService
     }
 
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="parent">Should be set from "source"</param>
     /// <param name="source"></param>

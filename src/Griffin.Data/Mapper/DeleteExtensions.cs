@@ -56,7 +56,6 @@ public static class DeleteExtensions
             our.Data["Entity"] = entity;
             throw our;
         }
-
     }
 
     /// <summary>
@@ -175,7 +174,6 @@ public static class DeleteExtensions
             our.Data["Entity"] = entity;
             throw our;
         }
-
     }
 
     /// <summary>

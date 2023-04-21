@@ -44,6 +44,12 @@ public interface ISqlDialect
     void ApplySorting(IDbCommand command, IList<SortEntry> entries);
 
     /// <summary>
+    ///     Create a connection using the DB engine specific ADO.NET driver.
+    /// </summary>
+    /// <returns></returns>
+    IDbConnection CreateConnection();
+
+    /// <summary>
     ///     Execute an INSERT statement.
     /// </summary>
     /// <param name="mapping">Mapping for the entity.</param>

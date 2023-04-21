@@ -4,9 +4,9 @@
 ///     Choices for <see cref="ScaffoldingConfiguration" />.
 /// </summary>
 /// <remarks>
-///<para>
-///Thi is an flags enum so that we can generate tests for each type.
-/// </para>
+///     <para>
+///         Thi is an flags enum so that we can generate tests for each type.
+///     </para>
 /// </remarks>
 [Flags]
 public enum TypeToGenerate

@@ -42,7 +42,7 @@ internal class GenericToEnumConverter<TColumn, TEnum>
             for (var i = 0; i < _values.Length; i++)
             {
                 var value = values.GetValue(i);
-                _values[i] = (TColumn)Convert.ChangeType(value, sourceType);
+                _values[i] = (TColumn)Convert.ChangeType(value, sourceType)!;
             }
         }
         else

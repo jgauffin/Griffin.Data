@@ -1,4 +1,6 @@
-﻿public class ClassWithConstructor
+﻿namespace Griffin.Data.Tests.Subjects;
+
+public class ClassWithConstructor
 {
     public ClassWithConstructor(int id, string name)
     {

@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 namespace Griffin.Data.Mapper;
 
 /// <summary>
-/// Extensions methods for <c>GetById()</c>.
+///     Extensions methods for <c>GetById()</c>.
 /// </summary>
 public static class GetByIdExtensions
 {
     /// <summary>
-    /// Get by id.
+    ///     Get by id.
     /// </summary>
     /// <typeparam name="T">Type of entity to fetch.</typeparam>
     /// <param name="session">Session to fetch entity in.</param>
@@ -33,7 +33,7 @@ public static class GetByIdExtensions
     }
 
     /// <summary>
-    /// Get by id.
+    ///     Get by id.
     /// </summary>
     /// <typeparam name="T">Type of entity to fetch.</typeparam>
     /// <param name="session">Session to fetch entity in.</param>
@@ -57,7 +57,7 @@ public static class GetByIdExtensions
     }
 
     /// <summary>
-    /// Get by id.
+    ///     Get by id.
     /// </summary>
     /// <typeparam name="T">Type of entity to fetch.</typeparam>
     /// <param name="session">Session to fetch entity in.</param>
@@ -81,7 +81,7 @@ public static class GetByIdExtensions
     }
 
     /// <summary>
-    /// Get by id.
+    ///     Get by id.
     /// </summary>
     /// <typeparam name="T">Type of entity to fetch.</typeparam>
     /// <typeparam name="TKey">Type of primary key.</typeparam>

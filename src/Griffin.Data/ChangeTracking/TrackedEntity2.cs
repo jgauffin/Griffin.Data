@@ -4,14 +4,13 @@ using System.Collections.Generic;
 namespace Griffin.Data.ChangeTracking;
 
 /// <summary>
-/// Entity being tracked (for snapshot comparison).
+///     Entity being tracked (for snapshot comparison).
 /// </summary>
 public class TrackedEntity2
 {
     private readonly List<TrackedEntity2> _children = new();
 
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="key">Generated key (consists of type name and all primary key values)</param>
     /// <param name="entity">Entity to track.</param>
@@ -24,7 +23,7 @@ public class TrackedEntity2
     }
 
     /// <summary>
-    /// Get all children.
+    ///     Get all children.
     /// </summary>
     public IReadOnlyList<TrackedEntity2> Children => _children;
 
@@ -34,7 +33,7 @@ public class TrackedEntity2
     public int Depth { get; }
 
     /// <summary>
-    /// Entity being tracked.
+    ///     Entity being tracked.
     /// </summary>
     public object Entity { get; }
 
@@ -60,7 +59,7 @@ public class TrackedEntity2
     public TrackedEntity2? Parent { get; private set; }
 
     /// <summary>
-    /// Add a new child.
+    ///     Add a new child.
     /// </summary>
     /// <param name="child">Child entity.</param>
     /// <exception cref="ArgumentNullException">child is not specified.</exception>

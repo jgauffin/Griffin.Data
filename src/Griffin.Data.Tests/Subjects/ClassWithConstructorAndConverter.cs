@@ -1,4 +1,6 @@
-﻿public class ClassWithConstructorAndConverter
+﻿namespace Griffin.Data.Tests.Subjects;
+
+public class ClassWithConstructorAndConverter
 {
     public ClassWithConstructorAndConverter(int id, string name)
     {

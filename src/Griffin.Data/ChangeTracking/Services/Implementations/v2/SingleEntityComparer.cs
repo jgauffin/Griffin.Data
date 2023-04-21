@@ -6,14 +6,13 @@ using Griffin.Data.Mappings;
 namespace Griffin.Data.ChangeTracking.Services.Implementations.v2;
 
 /// <summary>
-/// Used to compare two entities and generate a report of added/modified/removed items.
+///     Used to compare two entities and generate a report of added/modified/removed items.
 /// </summary>
 public class SingleEntityComparer
 {
     private readonly IMappingRegistry _mappingRegistry;
 
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="mappingRegistry">Used to fetch keys for entities.</param>
     /// <exception cref="ArgumentNullException">Arguments are not specified.</exception>
@@ -23,7 +22,7 @@ public class SingleEntityComparer
     }
 
     /// <summary>
-    /// Compare entities.
+    ///     Compare entities.
     /// </summary>
     /// <param name="snapshot"></param>
     /// <param name="current"></param>
@@ -36,7 +35,7 @@ public class SingleEntityComparer
         var snapshots = traverser.Traverse(snapshot).OrderBy(x => x.Depth);
         var currents = traverser.Traverse(current).OrderBy(x => x.Depth).ToList();
 
-        var existingCurrents = currents.Where(x => x.Key != null).ToDictionary(x => x.Key, x => x);
+        var existingCurrents = currents.Where(x => x.Key != null).ToDictionary(x => x.Key!, x => x);
 
         var toCompare =
             new List<(TrackedEntity2 snapshot, TrackedEntity2 current)>();
@@ -78,8 +77,9 @@ public class SingleEntityComparer
         {
             var parent = result.FirstOrDefault(x => x.TrackedItem.Key == item.TrackedItem.Parent?.Key);
             if (parent != null)
+            {
                 item.Parent = parent;
-
+            }
         }
 
         var orderedResult = result.OrderBy(x => x.Depth).ToList();

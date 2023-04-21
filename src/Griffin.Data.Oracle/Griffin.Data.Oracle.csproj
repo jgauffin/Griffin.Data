@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.1;net60</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <LangVersion>default</LangVersion>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Griffin.Data.Oracle.xml</DocumentationFile>
+
+        <Version>1.0.0-rc01</Version>
+        <PackageReleaseNotes>First pre-release.</PackageReleaseNotes>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>Griffin.Data.Oracle</PackageId>
+        <Authors>Jonas Gauffin</Authors>
+        <Description>Oracle Integration for Griffin.Data.</Description>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <Copyright>Copyright 2023 © Jonas Gauffin. All rights reserved.</Copyright>
+        <PackageTags>data-mapper, orm, sqlserver, queries, oracle</PackageTags>
+        <PackageProjectUrl>https://github.com/jgauffin/griffin.data</PackageProjectUrl>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <NoWarn>NU1701</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Oracle.ManagedDataAccess" Version="21.10.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Griffin.Data\Griffin.Data.csproj" />
+    </ItemGroup>
+
+</Project>

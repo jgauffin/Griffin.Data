@@ -1,7 +1,7 @@
 One to many
 ===========
 
-One to many means that one class has a collection of children in a property.
+One-to-many means that one class has a collection of children on a property.
 
 ```csharp
 public class User
@@ -10,7 +10,7 @@ public class User
 }
 ```
 
-If you are designing business entites, the above code is flawed, since the ´User` looses control of its children. It cannot check if the child is valid for it, since children can be added directly to the collection.
+If you design business entities, the above code is flawed since the ´User` loses control of its children. Furthermore, it cannot check if the child is valid for it since children can be added directly to the collection.
 
 A better design is to use `IReadOnlyList<Address>` interface since it prevents direct adds to the collection:
 
@@ -33,13 +33,13 @@ public class User
 }
 ```
 
-A sharp eye mights see that the `Address` property do not have any accessors (get/set). That's OK as long as the backing field is named as the property (`SomeProperty => _someProperty`).
+A sharp eye might see that the `Address` property has no accessors (get/set). That's OK if the backing field is named as the property (`SomeProperty => _someProperty`).
 
 ## Complete example
 
 Here is a minimal complete example.
 
-First we have a parent and child class:
+First, we have a parent and child class:
 
 ```csharp
 public class SomeParent
@@ -105,10 +105,9 @@ create table SomeChildren
 
 ## Inheritance
 
-Inheritance in one to many relationships are a challenge since the collection of children can have different subclasses. That means that the parent
-table cannot contain the type, nor the child tables (as that would require a query against all possible child tables).
+Inheritance in one-to-many relationships is challenging since the collection of children can have different subclasses. That means that the parent table cannot contain the type, nor the child tables (as that would require a query against all possible child tables).
 
-Therefore, inheritance is not supported in has many relationships directly. You can however create a connection table that are used to tell which child type to load.
+Therefore, inheritance is not supported in has-many relationships directly. You can, however, create a connection table that is used to tell which child type to load.
 
 ```csharp
 public class SomeParent
@@ -128,22 +127,22 @@ public class ChildConnector
 
     // This property is used to load the correct type
     // The type of field doesn't matter for the library.
-    // enum, string or int are the most common.
+    // enum, string, or int are the most common.
     public string DataType { get; set; }
 
     // The correct child is loaded into this property.
     public IData Data { get; set; }
 }
 
-// We need a base, can either be a class or an interface.
+// We need a base type, either a class or an interface.
 public interface IData
 {
     // All children must have a parent Id
-    // that referes to SomeParent in this case.
+    // that refers to SomeParent in this case.
     int ParentId { get; set; }
 }
 
-// Finally one of the sub classes.
+// Finally, one of the subclasses.
 public class SomeData : IData
 {
     public int Id { get; set; }
@@ -152,9 +151,9 @@ public class SomeData : IData
 }
 ```
 
-Take advantage of this structure by moving all common column/properties into the ChildConnector class and then have only sub class specific data in the sub classes.
+Take advantage of this structure by moving all common columns/properties into the ChildConnector class and then have only sub-class-specific data in the sub-classes.
 
-The mappings looks like normal one to many mappings, but with a discriminator configuration:
+The mappings look like normal one-to-many mappings, but with a discriminator configuration:
 
 ```csharp
 internal class SomeParentMapping : IEntityConfigurator<SomeParent>
@@ -209,7 +208,7 @@ internal class SomeChildMapping : IEntityConfigurator<SomeChild>
 }
 ```
 
-The tables are the same, except the junction table and updated foreign keys.
+The tables are the same, except for the junction table and updated foreign keys.
 
 ```sql
 create table SomeParents
@@ -234,7 +233,7 @@ create table SomeChildren
 
 ## Limiting rows for child entities
 
-Sometimes you do not want to get all rows for child entites.
+Sometimes you want to get only specific rows of child entities.
 
 Here is an example:
 
@@ -246,7 +245,7 @@ public class MainClass
 }
 ```
 
-To achive that, configure a SubsetColumn. 
+To achieve that, configure a SubsetColumn. 
 
 ```sql
 create table SubClass
@@ -257,7 +256,7 @@ create table SubClass
 )
 ```
 
-The contents of the column will be managed by the library (i.e. it's not added in the classes).
+The contents of the column will be managed by the library (i.e., it's not added to the classes).
 
 ```csharp
 internal class MainClassMapping : IEntityConfigurator<MainClass>
@@ -283,7 +282,7 @@ internal class MainClassMapping : IEntityConfigurator<MainClass>
 
 ## Restrictions
 
-The following restrictions apply to has many mappings.
+The following restrictions apply to has-many mappings.
 
 ### Must be an interface
 

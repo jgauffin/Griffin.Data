@@ -14,13 +14,14 @@ public class QueryRunnerGenerator : IQueryGenerator
         sb.AppendLine("using Griffin.Data.Queries;");
         sb.AppendLine();
 
-        if (meta.Namespace.Length > 0)  
+        if (meta.Namespace.Length > 0)
         {
             sb.AppendLine($"namespace {meta.Namespace}.Queries.Runners");
             sb.AppendLineIndent("{");
         }
 
-        sb.AppendLine($@"public class {meta.QueryName}Runner :  IQueryRunner<{meta.QueryName}, {meta.QueryName}Result>");
+        sb.AppendLine(
+            $@"public class {meta.QueryName}Runner :  IQueryRunner<{meta.QueryName}, {meta.QueryName}Result>");
         sb.AppendLineIndent("{");
         sb.AppendLine("private readonly Session _session;");
         sb.AppendLine($"public {meta.QueryName}Runner(Session session)");
@@ -39,9 +40,9 @@ public class QueryRunnerGenerator : IQueryGenerator
             sb.DedentAppendLine("}");
         }
 
-        return Task.FromResult(new GeneratedFile(meta.QueryName + "Runner", sb.ToString())
+        return Task.FromResult(new GeneratedFile(meta.QueryName + "Runner", FileType.Data, sb.ToString())
         {
-            RelativeDirectory = "QueryRunners\\",
+            RelativeDirectory = "QueryRunners\\"
         });
     }
 
@@ -99,7 +100,7 @@ public class QueryRunnerGenerator : IQueryGenerator
         sb.AppendLine("await using var command = Session.CreateCommand();");
         sb.Append("command.CommandText = @\"");
         var reader = new StringReader(meta.SqlQuery);
-        bool isFirstLine = true;
+        var isFirstLine = true;
         while (true)
         {
             var line = reader.ReadLine();
@@ -116,17 +117,18 @@ public class QueryRunnerGenerator : IQueryGenerator
             {
                 sb.Append("                         ");
             }
-            
+
             sb.AppendLine(line);
         }
 
         sb.RemoveLineEnding();
         sb.AppendLine("\";");
         sb.AppendLine();
-        
+
         foreach (var parameter in meta.Parameters)
         {
-            sb.AppendLine($"command.AddParameter(\"{parameter.Name}\", query.{char.ToUpper(parameter.Name[0])}{parameter.Name[1..]});");
+            sb.AppendLine(
+                $"command.AddParameter(\"{parameter.Name}\", query.{char.ToUpper(parameter.Name[0])}{parameter.Name[1..]});");
         }
 
         sb.AppendLine();
@@ -135,7 +137,8 @@ public class QueryRunnerGenerator : IQueryGenerator
         {
             sb.AppendLine("if (query.PageNumber != null)");
             sb.AppendLineIndent("{");
-            sb.AppendLine($"Session.Dialect.ApplyPaging(command, \"{meta.Columns[0].Name}\", query.PageNumber.Value, query.PageSize);");
+            sb.AppendLine(
+                $"Session.Dialect.ApplyPaging(command, \"{meta.Columns[0].Name}\", query.PageNumber.Value, query.PageSize);");
             sb.DedentAppendLine("}");
             sb.AppendLine();
         }

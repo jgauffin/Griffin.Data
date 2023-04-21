@@ -9,6 +9,40 @@ namespace Griffin.Data.Mapper.Helpers;
 
 internal static class QueryExtensions
 {
+    /// <summary>
+    ///     Load a collection (for like HasMany), will also load children.
+    /// </summary>
+    /// <param name="session"></param>
+    /// <param name="entityType"></param>
+    /// <param name="options"></param>
+    /// <param name="collection"></param>
+    /// <returns></returns>
+    public static async Task Query(
+        this Session session,
+        Type entityType,
+        QueryOptions options,
+        IList collection)
+    {
+        var mapping = session.GetMapping(entityType);
+        await using (var cmd = session.CreateQueryCommand(entityType, options))
+        {
+            try
+            {
+                await using var reader = await cmd.ExecuteReaderAsync();
+                await reader.MapAll(mapping, x => { collection.Add(x); });
+            }
+            catch (DbException ex)
+            {
+                throw cmd.CreateDetailedException(ex, entityType);
+            }
+        }
+
+        if (collection.Count > 0 && options.LoadChildren)
+        {
+            await session.GetChildrenForMany(entityType, collection);
+        }
+    }
+
     public static async Task<List<TEntity>> QueryInternal<TEntity>(this Session session, QueryOptions<TEntity> options)
     {
         if (typeof(TEntity) == typeof(object) || typeof(TEntity).IsCollection())
@@ -67,39 +101,5 @@ internal static class QueryExtensions
         }
 
         return items;
-    }
-
-    /// <summary>
-    /// Load a collection (for like HasMany), will also load children.
-    /// </summary>
-    /// <param name="session"></param>
-    /// <param name="entityType"></param>
-    /// <param name="options"></param>
-    /// <param name="collection"></param>
-    /// <returns></returns>
-    public static async Task Query(
-        this Session session,
-        Type entityType,
-        QueryOptions options,
-        IList collection)
-    {
-        var mapping = session.GetMapping(entityType);
-        await using (var cmd = session.CreateQueryCommand(entityType, options))
-        {
-            try
-            {
-                await using var reader = await cmd.ExecuteReaderAsync();
-                await reader.MapAll(mapping, x => { collection.Add(x); });
-            }
-            catch (DbException ex)
-            {
-                throw cmd.CreateDetailedException(ex, entityType);
-            }
-        }
-
-        if (collection.Count > 0 && options.LoadChildren)
-        {
-            await session.GetChildrenForMany(entityType, collection);
-        }
     }
 }

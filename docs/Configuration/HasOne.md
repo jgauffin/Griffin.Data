@@ -1,7 +1,7 @@
 One to zero/one
 ==============
 
-One to one means that one class has a single child entity. 
+One-to-one means that one class has a single child entity. 
 
 ```csharp
 public class User
@@ -24,7 +24,7 @@ public class User
 
 Here is a minimal complete example.
 
-First we have a parent and child class:
+First, we have a parent and child class:
 
 ```csharp
 public class SomeParent
@@ -90,7 +90,7 @@ create table SomeChildren
 
 ## Inheritance
 
-Inheritance is easy to create. You need to have two properties in your parent class, one to specify which type of child and one for the child itself.
+Inheritance is easy to configure. First, add two properties in your parent class, one to specify which child type and one for the child. The "child type" property can consist of anything, as you use it, and not the library, to determine the child type.
 
 
 ```csharp
@@ -100,22 +100,22 @@ public class SomeParent
 
     // This property is used to load the correct type
     // The type of field doesn't matter for the library.
-    // enum, string or int are the most common.
+    // enum, string, or int are the most common.
     public string ChildType { get; set; }
 
     // The correct child is loaded into this property.
     public ISomeChildBaseType Child { get; set; }
 }
 
-// We need a base, can either be a class or an interface.
+// We need a base type, either a class or an interface.
 public interface ISomeChildBaseType
 {
     // All children must have a parent Id
-    // that referes to SomeParent in this case.
+    // that refers to SomeParent in this case.
     int ParentId { get; set; }
 }
 
-// Finally one of the sub classes.
+// Finally, one of the sub classes.
 public class SomeData : ISomeChildBaseType
 {
     public int Id { get; set; }
@@ -124,7 +124,7 @@ public class SomeData : ISomeChildBaseType
 }
 ```
 
-The mappings looks like normal one to one mappings, but with a discriminator configuration:
+The mappings look like regular one-to-one mappings, but with a discriminator configuration:
 
 ```csharp
 internal class SomeParentMapping : IEntityConfigurator<SomeParent>
@@ -145,6 +145,7 @@ internal class SomeParentMapping : IEntityConfigurator<SomeParent>
 
     private Type? ChildSelector(string arg)
     {
+        // Could have been an int or en enum too
         return arg switch
         {
             "SomeData" => typeof(SomeData),
@@ -165,7 +166,7 @@ internal class SomeChildMapping : IEntityConfigurator<SomeChild>
 }
 ```
 
-The tables are the same, except the extra field in the parent table.
+The tables are the same except for the extra field in the parent table.
 
 ```sql
 create table SomeParents
@@ -184,7 +185,7 @@ create table SomeChildren
 
 ## Limiting rows for child entities
 
-Sometimes you do not want to get all rows for child entites.
+Sometimes you want to get only specific rows of the child entities.
 
 Here is an example:
 
@@ -196,7 +197,7 @@ public class MainClass
 }
 ```
 
-To achive that, configure a SubsetColumn. 
+To achieve that, configure a SubsetColumn. 
 
 ```sql
 create table SubClass
@@ -207,7 +208,7 @@ create table SubClass
 )
 ```
 
-The contents of the column will be managed by the library (i.e. it's not added in the classes).
+The contents of the column will be managed by the library (i.e. it's not added to the classes).
 
 ```csharp
 internal class MainClassMapping : IEntityConfigurator<MainClass>

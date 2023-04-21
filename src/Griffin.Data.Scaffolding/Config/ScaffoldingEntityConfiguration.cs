@@ -5,6 +5,21 @@
 /// </summary>
 public class ScaffoldingEntityConfiguration
 {
+    public ScaffoldingEntityConfiguration(string tableName)
+    {
+        TableName = tableName ?? throw new ArgumentNullException(nameof(tableName));
+    }
+
+    /// <summary>
+    ///     Directory to create the entity in (can be used to override default location).
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Default is the same as the namespace.
+    ///     </para>
+    /// </remarks>
+    public string? Directory { get; set; }
+
     /// <summary>
     ///     Name of entity.
     /// </summary>
@@ -26,17 +41,7 @@ public class ScaffoldingEntityConfiguration
     public string? Namespace { get; set; }
 
     /// <summary>
-    ///     Directory to create the entity in (can be used to override default location).
-    /// </summary>
-    /// <remarks>
-    ///     <para>
-    ///         Default is the same as the namespace.
-    ///     </para>
-    /// </remarks>
-    public string? Directory { get; set; }
-
-    /// <summary>
     ///     Table to read from.
     /// </summary>
-    public string TableName { get; set; }
+    public string TableName { get; }
 }

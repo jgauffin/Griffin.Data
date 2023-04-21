@@ -6,9 +6,6 @@ using Griffin.Data.Helpers;
 
 namespace Griffin.Data.ChangeTracking.Services.Implementations;
 
-
-
-
 /// <summary>
 ///     Implementation of <see cref="ICopyService" />.
 /// </summary>

@@ -112,6 +112,11 @@ internal static class DataReaderOperations
             throw new ArgumentNullException(nameof(mapping));
         }
 
+        if (addMethod == null)
+        {
+            throw new ArgumentNullException(nameof(addMethod));
+        }
+
         //TODO: Create a list of property accessors here
         // and loop through them using the int index in the record
         // for faster processing.

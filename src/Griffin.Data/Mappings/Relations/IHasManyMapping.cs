@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Griffin.Data.Mappings.Relations;
@@ -23,7 +22,7 @@ public interface IHasManyMapping : IRelationShip
     IList CreateCollection();
 
     /// <summary>
-    /// Get collection from parent property.
+    ///     Get collection from parent property.
     /// </summary>
     /// <param name="parentEntity">Parent entity</param>
     /// <returns>Collection instance if there is one assigned to the property; otherwise <c>null</c>.</returns>

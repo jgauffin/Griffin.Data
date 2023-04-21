@@ -8,7 +8,7 @@ using Griffin.Data.Helpers;
 namespace Griffin.Data.Queries;
 
 /// <summary>
-/// Extensions for making it easier to use queries.
+///     Extensions for making it easier to use queries.
 /// </summary>
 public static class QueryExtensions
 {

@@ -12,8 +12,6 @@ namespace Griffin.Data.Mappings.Properties;
 /// </remarks>
 public interface IFieldMapping : IFieldAccessor
 {
-    public Type PropertyType { get;  }
-
     /// <summary>
     ///     Name of column.
     /// </summary>
@@ -23,6 +21,11 @@ public interface IFieldMapping : IFieldAccessor
     ///     Name of property.
     /// </summary>
     string PropertyName { get; }
+
+    /// <summary>
+    ///     Property type.
+    /// </summary>
+    public Type PropertyType { get; }
 
     /// <summary>
     ///     Convert a property value to a column value.

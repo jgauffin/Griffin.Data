@@ -1,7 +1,7 @@
 ﻿namespace TestApp.Users.Queries;
 
 /// <summary>
-/// Query example.
+///     Query example.
 /// </summary>
 public class ListUsersResult
 {

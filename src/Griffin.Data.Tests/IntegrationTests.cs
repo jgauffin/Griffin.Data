@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Reflection;
 using Griffin.Data.ChangeTracking;
 using Griffin.Data.Mappings;
+using Griffin.Data.SqlServer;
 
 namespace Griffin.Data.Tests;
 
@@ -20,7 +21,7 @@ public abstract class IntegrationTests : IDisposable
         _transaction = _connection.BeginTransaction();
         _mappingRegistry.Scan(Assembly.GetExecutingAssembly());
         ChangeTracking = new SnapshotChangeTracking(_mappingRegistry);
-        Session = new Session(_transaction, _mappingRegistry, ChangeTracking);
+        Session = new Session(_transaction, _mappingRegistry, new SqlServerDialect(), ChangeTracking);
     }
 
     public SnapshotChangeTracking ChangeTracking { get; }
@@ -33,6 +34,7 @@ public abstract class IntegrationTests : IDisposable
 
     public void Dispose()
     {
+        GC.SuppressFinalize(this);
         _transaction.Dispose();
         _connection.Dispose();
     }

@@ -30,17 +30,17 @@ public class ClassMappingConfigurator<TEntity> : IMappingBuilder, IClassMappingC
         _tableName = typeof(TEntity).Name.Pluralize();
     }
 
+    /// <summary>
+    ///     Table name has been specified explicitly.
+    /// </summary>
+    public bool IsTableNameSpecified { get; set; }
+
     /// <inheritdoc />
     public void TableName(string tableName)
     {
         IsTableNameSpecified = true;
         _tableName = tableName ?? throw new ArgumentNullException(nameof(tableName));
     }
-
-    /// <summary>
-    /// Table name has been specified explicitly.
-    /// </summary>
-    public bool IsTableNameSpecified { get; set; }
 
     /// <inheritdoc />
     public KeyConfigurator<TEntity, TProperty> Key<TProperty>(Expression<Func<TEntity, TProperty>> selector)
@@ -129,8 +129,12 @@ public class ClassMappingConfigurator<TEntity> : IMappingBuilder, IClassMappingC
     /// <inheritdoc />
     public void MapRemainingProperties()
     {
-        var methodName = nameof(GenerateProperty);
-        var method = GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance)!;
+        const string methodName = nameof(GenerateProperty);
+        var method = GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
+        if (method == null)
+        {
+            throw new InvalidOperationException("Failed to get generate method from this.");
+        }
 
         var props = typeof(TEntity).GetProperties();
         foreach (var prop in props)
@@ -151,7 +155,13 @@ public class ClassMappingConfigurator<TEntity> : IMappingBuilder, IClassMappingC
             }
 
             var propMapping =
-                (IPropertyMapping)method.MakeGenericMethod(prop.PropertyType).Invoke(this, new object[] { prop });
+                (IPropertyMapping?)method.MakeGenericMethod(prop.PropertyType).Invoke(this, new object[] { prop });
+            if (propMapping == null)
+            {
+                throw new InvalidOperationException(
+                    $"Failed to retrieve property mapping for {prop.Name} in type {typeof(TEntity)}");
+            }
+
             _properties.Add(propMapping);
         }
     }

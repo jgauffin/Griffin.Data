@@ -1,9 +1,9 @@
 Querying
 ========
 
-This information is regarding querying business entities, and not for using read-side queries.
+This information is regarding querying business entities and not for using read-side queries.
 
-Querying lets you either fetch a single or multiple entities of the same type. 
+Querying lets you fetch single or multiple entities of the same type. 
 
 Queries can either use only parameters (where the parameter names must be property names):
 
@@ -25,25 +25,26 @@ var users = session.First<User>("SELECT * FROM Users WHERE user_id = @userId", n
 
 ## Query rules
 
-There are some rules that must be obeyed in queries:
+There is a simple rule to follow when making queries.
 
-* Constrains (`QueryOptions.Where(new { userId })`) must always use property names.
-* When both a SQL query (complete or short) are used, the constraint keys must match those used in the query.
-* SQL Queries must always use column names.
-
-Example:
+When using parameters only, the key must be property names:
 
 ```csharp
-// SQL = use the same name as in the query.
-var users = session.First<User>("user_id = @userId", new { userId });
-
-// No query = use property name.
 var users = session.First<User>(new { UserId });
 ```
+When using a SQL statement (complete or short form), keys must be the same as in the SQL query:
+
+```csharp
+var users = session.First<User>("user_id = @userId", new { userId });
+```
+
+SQL statements can be just the WHERE clause, as in the example above, or a complete SQL statement.
+
+Paging and sorting can be taken care of by this library to apply them in a DB engine-specific way.
 
 ## Getting a single entity
 
-If you have a single key column you can use the `GetById<T>()` method:
+For entities with a single key column,  use the `GetById<T>()` method.
 
 ```csharp
 var user = await session.GetById<User>(userId);

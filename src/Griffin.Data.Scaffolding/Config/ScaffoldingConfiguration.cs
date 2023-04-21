@@ -5,11 +5,11 @@
 /// </summary>
 /// <remarks>
 ///     <para>
-///         Used to tell the scaffodler what to generate and when to do it. The configuration can either be
+///         Used to tell the scaffolder what to generate and when to do it. The configuration can either be
 ///         manually specified or by adding a <c>griffin.data.config.json</c> to your class library.
 ///     </para>
 /// </remarks>
-public class ScaffoldingConfiguration
+internal class ScaffoldingConfiguration
 {
     public const string Filename = "datamapper.config.json";
 
@@ -33,11 +33,6 @@ public class ScaffoldingConfiguration
     public ICollection<ScaffoldingEntityConfiguration>? Entities { get; } = new List<ScaffoldingEntityConfiguration>();
 
     /// <summary>
-    ///     Where different types of classes are generated.
-    /// </summary>
-    public TargetLocations? TargetLocations { get; set; }
-
-    /// <summary>
     ///     Name of the ADO.NET Provider (default is SqlServer).
     /// </summary>
     public string? SqlProviderName { get; set; }
@@ -53,6 +48,11 @@ public class ScaffoldingConfiguration
     ///     <para>Use <see cref="TypesToGenerate" /> to specify which types of classes to scaffold.</para>
     /// </remarks>
     public ICollection<string>? Tables { get; } = new List<string>();
+
+    /// <summary>
+    ///     Where different types of classes are generated.
+    /// </summary>
+    public TargetLocations? TargetLocations { get; set; }
 
     /// <summary>
     ///     Type of classes to scaffold.

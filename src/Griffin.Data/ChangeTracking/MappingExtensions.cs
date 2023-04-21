@@ -22,7 +22,7 @@ internal static class MappingExtensions
 
     public static string? GenerateKey(this ClassMapping mapping, object entity)
     {
-        List<object> keys = new List<object>();
+        var keys = new List<object>();
         foreach (var keyMapping in mapping.Keys)
         {
             var value = keyMapping.GetColumnValue(entity);

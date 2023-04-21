@@ -29,7 +29,7 @@ public static class ListExtensions
 
         return entities;
     }
-    
+
     /// <summary>
     ///     List entities.
     /// </summary>
@@ -37,7 +37,8 @@ public static class ListExtensions
     /// <param name="session">Session to load in.</param>
     /// <param name="constraints">Constrains with property names.</param>
     /// <returns>Found entities.</returns>
-    public static async Task<List<TEntity>> List<TEntity>(this Session session, object constraints) where TEntity : notnull
+    public static async Task<List<TEntity>> List<TEntity>(this Session session, object constraints)
+        where TEntity : notnull
     {
         var options = constraints is string s
             ? GetOneExtensions.GetQueryOptionsFromConstraints<TEntity>(s, null)
@@ -80,7 +81,7 @@ public static class ListExtensions
     /// <returns>A generic list (for the specified entity type), but returned as <c>IList</c>.</returns>
     public static async Task<IList> List(this Session session, Type entityType, QueryOptions options)
     {
-        var collection = (IList)Activator.CreateInstance(typeof(IList<>).MakeGenericType(entityType));
+        var collection = (IList)Activator.CreateInstance(typeof(IList<>).MakeGenericType(entityType))!;
         await session.Query(entityType, options, collection);
         foreach (var entity in collection)
         {
@@ -107,7 +108,7 @@ public static class ListExtensions
         string? query = null,
         object? constraints = null)
     {
-        var collection = (IList)Activator.CreateInstance(typeof(IList<>).MakeGenericType(entityType));
+        var collection = (IList)Activator.CreateInstance(typeof(IList<>).MakeGenericType(entityType))!;
         var options = GetOneExtensions.GetQueryOptionsFromConstraints(query, constraints);
         await session.Query(entityType, options, collection);
         foreach (var entity in collection)

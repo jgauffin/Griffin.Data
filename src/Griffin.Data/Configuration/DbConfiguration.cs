@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Data.SqlClient;
 using Griffin.Data.Dialects;
 using Griffin.Data.Mappings;
 
@@ -27,7 +26,7 @@ public class DbConfiguration
     /// <summary>
     ///     Dialect used to apply DB engine specific SQL variants to generated statements.
     /// </summary>
-    public ISqlDialect Dialect { get; set; } = new SqlServerDialect();
+    public ISqlDialect? Dialect { get; set; }
 
     /// <summary>
     ///     Registry used to load mappings.
@@ -66,10 +65,16 @@ public class DbConfiguration
     ///     Create a new active transaction.
     /// </summary>
     /// <returns>Active transaction.</returns>
-    public IDbTransaction BeginTransaction()
+    public IDbConnection OpenConnection()
     {
-        var con = new SqlConnection(ConnectionString);
-        con.Open();
-        return con.BeginTransaction();
+        if (Dialect == null)
+        {
+            throw new InvalidOperationException("DbConfiguration do not have a Dialect specified.");
+        }
+
+        var connection = Dialect.CreateConnection();
+        connection.ConnectionString = ConnectionString;
+        connection.Open();
+        return connection;
     }
 }

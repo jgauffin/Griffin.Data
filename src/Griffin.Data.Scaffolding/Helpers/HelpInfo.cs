@@ -1,32 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 
-namespace Griffin.Data.Scaffolding.Helpers
+namespace Griffin.Data.Scaffolding.Helpers;
+
+internal class HelpInfo
 {
-    internal class HelpInfo
+    public static void Display()
     {
-        public static void Display()
-        {
-            var versionString = Assembly.GetExecutingAssembly()?
-                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-                .InformationalVersion
-                .ToString();
+        var versionString = Assembly.GetExecutingAssembly()?
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+            .InformationalVersion;
 
-            System.Console.WriteLine($"Griffin.Data Scaffolding v{versionString}");
-            System.Console.WriteLine("-------------");
-            System.Console.WriteLine();
-            System.Console.WriteLine("Usage:");
-            System.Console.WriteLine();
-            System.Console.WriteLine("  gd config             Generate a config file.");
-            System.Console.WriteLine();
-            System.Console.WriteLine("  gd generate           Generate queries and entities.");
-            System.Console.WriteLine("  gd generate mappings  Generate entities and mappings.");
-            System.Console.WriteLine("  gd generate repos     Generate repositories (requires that entities have been generated).");
-            System.Console.WriteLine("  gd generate queries   Generate queries.");
-        }
+        Console.WriteLine($"Griffin.Data Scaffolding v{versionString}");
+        Console.WriteLine("-------------");
+        Console.WriteLine();
+        Console.WriteLine("Usage:");
+        Console.WriteLine();
+        Console.WriteLine("  gd config             Generate a config file.");
+        Console.WriteLine();
+        Console.WriteLine("  gd generate           Generate queries and entities.");
+        Console.WriteLine("  gd generate mappings  Generate entities and mappings.");
+        Console.WriteLine(
+            "  gd generate repos     Generate repositories (requires that entities have been generated).");
+        Console.WriteLine("  gd generate queries   Generate queries.");
     }
 }

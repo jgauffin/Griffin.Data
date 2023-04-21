@@ -14,12 +14,12 @@ public class QueryMetaColumn
     /// <summary>
     ///     Name of the column.
     /// </summary>
-    public string Name { get; private set; }
+    public string Name { get; }
 
     /// <summary>
     ///     Type of property.
     /// </summary>
-    public Type PropertyType { get; private set; }
+    public Type PropertyType { get; }
 
     /// <summary>
     ///     Data type (without size specification).

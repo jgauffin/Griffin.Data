@@ -3,7 +3,7 @@
 /// <summary>
 ///     Namespaces that different types of generated classes should be placed in.
 /// </summary>
-public class TargetLocations
+internal class TargetLocations
 {
     /// <summary>
     ///     Where entities should be located.

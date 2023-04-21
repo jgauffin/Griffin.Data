@@ -2,20 +2,19 @@
 using Griffin.Data.Scaffolding.Mapper;
 using Griffin.Data.Scaffolding.Queries;
 
-namespace Griffin.Data.Scaffolding.Helpers
-{
-    internal class GeneratorHelper
-    {
-        public static async Task GenerateQueries(IDbConnection connection, string directory)
-        {
-            var scaffolder = new QueryScaffolder();
-            await scaffolder.Generate(connection, directory);
-        }
+namespace Griffin.Data.Scaffolding.Helpers;
 
-        public static async Task GenerateOrm(IDbConnection connection, string directory)
-        {
-            var scaffolder = new MapperScaffolder();
-            await scaffolder.Generate(connection, directory);
-        }
+internal class GeneratorHelper
+{
+    public static async Task GenerateOrm(string dbEngineName, string connectionString, string directory)
+    {
+        var scaffolder = new MapperScaffolder();
+        await scaffolder.Generate(dbEngineName, connectionString, directory);
+    }
+
+    public static async Task GenerateQueries(IDbConnection connection, string directory)
+    {
+        var scaffolder = new QueryScaffolder();
+        await scaffolder.Generate(connection, directory);
     }
 }

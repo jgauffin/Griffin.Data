@@ -16,7 +16,6 @@ public class ChangePersister
     private readonly IMappingRegistry _mappingRegistry;
 
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="mappingRegistry">Used to find mappings to assign foreign keys.</param>
     /// <exception cref="ArgumentNullException">Arguments are not specified.</exception>
@@ -26,7 +25,7 @@ public class ChangePersister
     }
 
     /// <summary>
-    /// Persist changes.
+    ///     Persist changes.
     /// </summary>
     /// <param name="session">Session to perform CRUD operations in.</param>
     /// <param name="items">Items to persist (unmodified items will be ignored).</param>

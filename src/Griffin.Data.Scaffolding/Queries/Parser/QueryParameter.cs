@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Griffin.Data.Scaffolding.Queries.Parser;
+﻿namespace Griffin.Data.Scaffolding.Queries.Parser;
 
 public class QueryParameter
 {

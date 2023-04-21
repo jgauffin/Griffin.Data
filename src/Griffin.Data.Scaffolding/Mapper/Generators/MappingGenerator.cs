@@ -1,31 +1,30 @@
-﻿using System.Linq;
-using Griffin.Data.Helpers;
-using Griffin.Data.Scaffolding.Helpers;
+﻿using Griffin.Data.Helpers;
+using Griffin.Data.Scaffolding.Config;
 using Griffin.Data.Scaffolding.Meta;
 
 namespace Griffin.Data.Scaffolding.Mapper.Generators;
 
-public class MappingGenerator
+public class MappingGenerator : GeneratorWithNamespace
 {
-    public string Generate(Table table)
+    protected override GeneratedFile GenerateFile(Table table, GeneratorContext context, string contents)
     {
-        var sb = new TabbedStringBuilder();
+        return new GeneratedFile($"{table.ClassName}Mapping", FileType.Data, contents);
+    }
+
+    protected override void AddUsings(Table table, TabbedStringBuilder sb, GeneratorContext context)
+    {
         sb.AppendLine("using Griffin.Data;");
         sb.AppendLine("using Griffin.Data.Configuration;");
-        sb.AppendLine();
+        sb.AppendLine($"using {context.Folders.DomainFolder}.{table.RelativeNamespace};");
+    }
 
-        if (table.Namespace.Length > 0)
-        {
-            sb.AppendLine($"namespace {table.Namespace}.Data.Mappings");
-            sb.AppendLineIndent("{");
-            sb.AppendLine();
-        }
-
+    protected override void GenerateClass(TabbedStringBuilder sb, Table table, GeneratorContext context)
+    {
         sb.AppendLine($@"class {table.ClassName}Mapping : IEntityConfigurator<{table.ClassName}>");
         sb.AppendLineIndent("{");
         sb.AppendLine($"public void Configure(IClassMappingConfigurator<{table.ClassName}> config)");
         sb.AppendLineIndent("{");
-        sb.AppendLine($"config.TableName(\"{table.TableName}\");");
+        sb.AppendLine($"config.TableName(\"{table.Name}\");");
 
         foreach (var column in table.Columns)
         {
@@ -38,9 +37,9 @@ public class MappingGenerator
                 sb.Append($"config.Property(x => x.{column.PropertyName})");
             }
 
-            if (column.ColumnName != column.PropertyName)
+            if (column.Name != column.PropertyName)
             {
-                sb.Append($".ColumnName(\"{column.ColumnName}\")");
+                sb.Append($".ColumnName(\"{column.Name}\")");
             }
 
             sb.AppendLine(";");
@@ -48,7 +47,7 @@ public class MappingGenerator
 
         foreach (var reference in table.References)
         {
-            var childColumn = reference.ReferencingTable.Columns.First(x => x.ColumnName == reference.ForeignKeyColumn);
+            var childColumn = reference.ReferencingTable.Columns.First(x => x.Name == reference.ForeignKeyColumn);
             var propName = reference.ReferencingTable.ClassName.Replace(table.ClassName, "").Pluralize();
 
             sb.AppendLine($"config.HasMany(x => x.{propName})");
@@ -63,7 +62,10 @@ public class MappingGenerator
 
         sb.DedentAppendLine("}");
         sb.DedentAppendLine("}");
+    }
 
-        return sb.ToString();
+    protected override string GetNamespaceName(Table table, ProjectFolders projectFolders)
+    {
+        return $"{projectFolders.DataFolder}.{table.RelativeNamespace}.Mappings";
     }
 }

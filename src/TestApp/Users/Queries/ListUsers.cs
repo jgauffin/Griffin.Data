@@ -1,5 +1,7 @@
 ﻿using Griffin.Data.Queries;
 
+#pragma warning disable CS8618
+
 namespace TestApp.Users.Queries;
 
 public class ListUsers : IQuery<ListUsersResult>, IPagedQuery, ISortedQuery

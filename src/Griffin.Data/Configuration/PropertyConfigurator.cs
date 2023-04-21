@@ -1,6 +1,5 @@
 ﻿using System;
 using Griffin.Data.Converters;
-using Griffin.Data.Converters.Enums;
 using Griffin.Data.Mappings.Properties;
 
 namespace Griffin.Data.Configuration;
@@ -52,7 +51,7 @@ public class PropertyConfigurator<TEntity, TProperty> where TProperty : notnull
         }
 
         _mapping.ColumnToPropertyConverter = columnValue => converter.ColumnToProperty((TColumn)columnValue);
-        _mapping.PropertyToColumnConverter = propertyValue => converter.PropertyToColumn((TProperty)propertyValue);
+        _mapping.PropertyToColumnConverter = propertyValue => converter.PropertyToColumn(propertyValue);
     }
 
     /// <summary>

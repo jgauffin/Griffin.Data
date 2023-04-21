@@ -33,14 +33,14 @@ public class CompareResultItem
     public int Depth => TrackedItem.Depth;
 
     /// <summary>
+    ///     Parent result item (if any).
+    /// </summary>
+    public CompareResultItem? Parent { get; internal set; }
+
+    /// <summary>
     ///     State of the entity.
     /// </summary>
     public ChangeState State { get; set; }
-
-    /// <summary>
-    /// Parent result item (if any).
-    /// </summary>
-    public CompareResultItem? Parent { get; internal set; }
 
     /// <summary>
     ///     Item being tracked (i.e. the entity).

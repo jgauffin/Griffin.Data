@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
-using Griffin.Data.Helpers;
-using Griffin.Data.Scaffolding.Helpers;
-using Griffin.Data.Scaffolding.Meta;
+﻿using Griffin.Data.Helpers;
 using Griffin.Data.Scaffolding.Queries.Meta;
 
 namespace Griffin.Data.Scaffolding.Queries.Generators;
@@ -106,9 +100,7 @@ public class QueryClassGenerator : IQueryGenerator
             sb.DedentAppendLine("}");
         }
 
-        return Task.FromResult(new GeneratedFile(meta.QueryName, sb.ToString())
-        {
-            RelativeDirectory = "Queries\\"
-        });
+        return Task.FromResult(
+            new GeneratedFile(meta.QueryName, FileType.Domain, sb.ToString()) { RelativeDirectory = "Queries\\" });
     }
 }

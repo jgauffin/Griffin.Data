@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
+using System.IO;
+using System.Linq;
 
 namespace Griffin.Data.Helpers;
 
@@ -36,25 +38,71 @@ public static class DbCommandExtensions
     }
 
     /// <summary>
-    ///     Create a command from a transaction.
+    ///     Create a new database command (and enlist it in the transaction).
     /// </summary>
-    /// <param name="transaction"></param>
-    /// <returns></returns>
-    /// <remarks>
-    ///     <para>
-    ///         This method is required since the ADO.NET interfaces do not contain any async methods while the abstract base
-    ///         classes do.
-    ///     </para>
-    /// </remarks>
+    /// <param name="transaction">Transaction to create command on.</param>
+    /// <returns>Created command.</returns>
     public static DbCommand CreateCommand(this IDbTransaction transaction)
     {
-        if (transaction == null)
+        if (transaction.Connection == null)
         {
-            throw new ArgumentNullException(nameof(transaction));
+            throw new InvalidOperationException(
+                "The transaction has been committed. You may not use the session any more.");
         }
 
-        var cmd = transaction.Connection.CreateCommand();
+        var cmd = transaction.Connection!.CreateCommand();
         cmd.Transaction = transaction;
         return (DbCommand)cmd;
+    }
+
+    /// <summary>
+    ///     Create a detailed exception with information from the command.
+    /// </summary>
+    /// <param name="command">Command that failed.</param>
+    /// <param name="ex">Inner exception</param>
+    /// <returns>More detailed exception.</returns>
+    public static InvalidDataException CreateDetailedException(this IDbCommand command, Exception ex)
+    {
+        var ps = command.Parameters.Cast<IDataParameter>().Select(x => $"{x.ParameterName}={x.Value}");
+        var e = new InvalidDataException(
+            $"{ex.Message}\r\n  SQL: '{command.CommandText}'\r\n  Parameters: {string.Join(", ", ps)}", ex);
+        return e;
+    }
+
+    /// <summary>
+    ///     Create a detailed exception with information from the command.
+    /// </summary>
+    /// <param name="command">Command that failed.</param>
+    /// <param name="ex">Inner exception</param>
+    /// <param name="entityType">Type of entity that the command was for.</param>
+    /// <returns>More detailed exception.</returns>
+    public static InvalidDataException CreateDetailedException(this IDbCommand command, Exception ex, Type entityType)
+    {
+        var ps = command.Parameters.Cast<IDataParameter>().Select(x => $"{x.ParameterName}={x.Value}");
+        var e = new InvalidDataException(
+            $"{ex.Message}\r\n  EntityType: {entityType.FullName}\r\n  SQL: '{command.CommandText}'\r\n  Parameters: {string.Join(", ", ps)}",
+            ex);
+        return e;
+    }
+
+    /// <summary>
+    ///     Create a detailed exception with information from the command (during an attempt to fetch a child.)
+    /// </summary>
+    /// <param name="command">Command that failed.</param>
+    /// <param name="ex">Inner exception</param>
+    /// <param name="parentType">Parent entity type.</param>
+    /// <param name="entityType">Child entity type</param>
+    /// <returns>More detailed exception.</returns>
+    public static InvalidDataException CreateDetailedException(
+        this IDbCommand command,
+        Exception ex,
+        Type parentType,
+        Type entityType)
+    {
+        var ps = command.Parameters.Cast<IDataParameter>().Select(x => $"{x.ParameterName}={x.Value}");
+        var e = new InvalidDataException(
+            $"{ex.Message}\r\n  ParentType: {parentType.FullName}\r\n  EntityType: {entityType.FullName}\r\n  SQL: '{command.CommandText}'\r\n  Parameters: {string.Join(", ", ps)}",
+            ex);
+        return e;
     }
 }

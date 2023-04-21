@@ -7,18 +7,13 @@ using Griffin.Data.Mapper;
 
 namespace Griffin.Data.Mappings.Properties;
 
-public interface IGotColumnToPropertyConverter<in TProperty>
-{
-    Func<TProperty, object>? PropertyToColumnConverter { get; }
-}
-
 /// <summary>
 ///     Maps a property, which are not in a relationship ("boho") and not a key.
 /// </summary>
 public class PropertyMapping<TEntity, TProperty> : IPropertyMapping, IGotColumnToPropertyConverter<TProperty>
 {
     private readonly Type _entityType;
-    private readonly Func<TEntity, TProperty>? _getter;
+    private readonly Func<TEntity, TProperty?>? _getter;
     private readonly Action<TEntity, TProperty>? _setter;
     private bool _canReadFromDatabase;
     private bool _canWriteToDatabase;
@@ -31,7 +26,7 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping, IGotColumnT
     /// <param name="setter"></param>
     public PropertyMapping(
         string propertyName,
-        Func<TEntity, TProperty>? getter,
+        Func<TEntity, TProperty?>? getter,
         Action<TEntity, TProperty>? setter)
     {
         PropertyName = propertyName;
@@ -75,43 +70,6 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping, IGotColumnT
             return ColumnToPropertyConverter!(x);
         };
     }
-
-    private void SelectEnumConverter(object value)
-    {
-        _enumIsConfigured = true;
-        if (value is short)
-        {
-            var converter = new GenericToEnumConverter<short, TProperty>();
-            PropertyToColumnConverter = x => converter.PropertyToColumn(x!);
-            ColumnToPropertyConverter = x => converter.ColumnToProperty((short)x);
-        }
-        else if (value is byte)
-        {
-            var converter = new GenericToEnumConverter<byte, TProperty>();
-            PropertyToColumnConverter = x => converter.PropertyToColumn(x!);
-            ColumnToPropertyConverter = x => converter.ColumnToProperty((byte)x);
-        }
-        else if (value is string)
-        {
-            PropertyToColumnConverter = y => y.ToString();
-            ColumnToPropertyConverter = y =>
-            {
-                if (!Enum.TryParse(typeof(TProperty), (string)y, true, out var enumValue))
-                {
-                    throw new InvalidOperationException("Failed to convert '" + y + "' to enum " + typeof(TProperty));
-                }
-
-                return (TProperty)enumValue;
-            };
-        }
-        else
-        {
-            var converter2 = new GenericToEnumConverter<int, TProperty>();
-            PropertyToColumnConverter = x => converter2.PropertyToColumn(x!);
-            ColumnToPropertyConverter = x => converter2.ColumnToProperty((int)x);
-        }
-    }
-
 
     /// <summary>
     ///     Specifies if this property can be used when reading from the database.
@@ -160,6 +118,17 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping, IGotColumnT
     public Func<object, TProperty>? ColumnToPropertyConverter { get; set; }
 
     /// <summary>
+    ///     Converter used when this property requires multiple columns to generate a property value.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         One use case if a child entity is serialized and stored as a column. In that case the child type is required
+    ///         (and therefore stored in another column).
+    ///     </para>
+    /// </remarks>
+    public IRecordToValueConverter<TProperty>? RecordToPropertyConverter { get; set; }
+
+    /// <summary>
     ///     Converts from a property value to a column value.
     /// </summary>
     /// <remarks>
@@ -173,17 +142,6 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping, IGotColumnT
     ///     Type of property.
     /// </summary>
     public Type PropertyType { get; }
-
-    /// <summary>
-    ///     Converter used when this property requires multiple columns to generate a property value.
-    /// </summary>
-    /// <remarks>
-    ///     <para>
-    ///         One use case if a child entity is serialized and stored as a column. In that case the child type is required
-    ///         (and therefore stored in another column).
-    ///     </para>
-    /// </remarks>
-    public IRecordToValueConverter<TProperty>? RecordToPropertyConverter { get; set; }
 
     /// <summary>
     ///     do not include in reads and writes. Remove once mapping is generated.
@@ -259,6 +217,16 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping, IGotColumnT
     /// <inheritdoc />
     public void MapRecord(IDataRecord record, object entity)
     {
+        if (record == null)
+        {
+            throw new ArgumentNullException(nameof(record));
+        }
+
+        if (entity == null)
+        {
+            throw new ArgumentNullException(nameof(entity));
+        }
+
         if (_setter == null || !CanReadFromDatabase)
         {
             return;
@@ -271,14 +239,14 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping, IGotColumnT
         }
 
         var value = record[ColumnName];
-        if (value is DBNull)
+        if (value is DBNull or null)
         {
             return;
         }
 
         if (ColumnToPropertyConverter != null)
         {
-            value = ColumnToPropertyConverter((TEntity)value);
+            value = ColumnToPropertyConverter((TEntity)value)!;
         }
 
         _setter((TEntity)entity, (TProperty)value);
@@ -294,5 +262,42 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping, IGotColumnT
     public object ConvertToColumnValue(object value)
     {
         return PropertyToColumnConverter != null ? PropertyToColumnConverter((TProperty)value) : value;
+    }
+
+    private void SelectEnumConverter(object value)
+    {
+        _enumIsConfigured = true;
+        if (value is short)
+        {
+            var converter = new GenericToEnumConverter<short, TProperty>();
+            PropertyToColumnConverter = x => converter.PropertyToColumn(x!);
+            ColumnToPropertyConverter = x => converter.ColumnToProperty((short)x);
+        }
+        else if (value is byte)
+        {
+            var converter = new GenericToEnumConverter<byte, TProperty>();
+            PropertyToColumnConverter = x => converter.PropertyToColumn(x!);
+            ColumnToPropertyConverter = x => converter.ColumnToProperty((byte)x);
+        }
+        else if (value is string)
+        {
+            PropertyToColumnConverter = y => y?.ToString() ?? throw new MappingException(typeof(TEntity),
+                $"Failed to convert property value '{y}'. (null values are not supported by converters)");
+            ColumnToPropertyConverter = y =>
+            {
+                if (!Enum.TryParse(typeof(TProperty), (string)y, true, out var enumValue) || enumValue == null)
+                {
+                    throw new InvalidOperationException($"Failed to convert '{y}' to enum '{typeof(TProperty)}'");
+                }
+
+                return (TProperty)enumValue;
+            };
+        }
+        else
+        {
+            var converter2 = new GenericToEnumConverter<int, TProperty>();
+            PropertyToColumnConverter = x => converter2.PropertyToColumn(x!);
+            ColumnToPropertyConverter = x => converter2.ColumnToProperty((int)x);
+        }
     }
 }

@@ -16,16 +16,6 @@ public class GetOneTests : IntegrationTests
     }
 
     [Fact]
-    public async Task Should_not_find_non_existent_when_using_queryOptions()
-    {
-        var item = await Session.Query<MainTable>()
-            .Where(new { name = "Other" })
-            .FirstOrDefault();
-
-        item.Should().BeNull();
-    }
-
-    [Fact]
     public async Task Should_find_when_using_queryOptions()
     {
         var item = await Session.Query<MainTable>()
@@ -34,7 +24,6 @@ public class GetOneTests : IntegrationTests
 
         item.Money.Should().Be(39093289238);
     }
-
 
     [Fact]
     public async Task Should_get_child_entities_per_default()
@@ -78,6 +67,16 @@ public class GetOneTests : IntegrationTests
 
         actual.Left.Value.Should().Be("Stop");
         actual.Right.Value.Should().Be("Skip");
+    }
+
+    [Fact]
+    public async Task Should_not_find_non_existent_when_using_queryOptions()
+    {
+        var item = await Session.Query<MainTable>()
+            .Where(new { name = "Other" })
+            .FirstOrDefault();
+
+        item.Should().BeNull();
     }
 
     [Fact]

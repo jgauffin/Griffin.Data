@@ -1,5 +1,7 @@
 ﻿using System.Data;
 
+namespace Griffin.Data.Tests.Helpers;
+
 public class FakeRecord : IDataRecord
 {
     private readonly IDictionary<string, object> _values;
@@ -8,6 +10,7 @@ public class FakeRecord : IDataRecord
     {
         _values = values;
     }
+
     public bool GetBoolean(int i)
     {
         throw new NotImplementedException();
@@ -132,11 +135,5 @@ public class FakeRecord : IDataRecord
 
     public object this[int i] => throw new NotImplementedException();
 
-    public object this[string name]
-    {
-        get
-        {
-            return _values[name];
-        }
-    }
+    public object this[string name] => _values[name];
 }

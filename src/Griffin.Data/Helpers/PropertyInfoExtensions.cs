@@ -18,7 +18,7 @@ public static class PropertyInfoExtensions
     /// <remarks>
     ///     <para>Tries all possible ways, including using the backing field directly.</para>
     /// </remarks>
-    public static Func<TParent, TChild>? GenerateGetterDelegate<TParent, TChild>(this PropertyInfo property)
+    public static Func<TParent, TChild?>? GenerateGetterDelegate<TParent, TChild>(this PropertyInfo property)
         where TParent : notnull where TChild : notnull
     {
         if (property == null)
@@ -28,13 +28,13 @@ public static class PropertyInfoExtensions
 
         if (property.CanRead)
         {
-            return entity => (TChild)property.GetValue(entity);
+            return entity => (TChild?)property.GetValue(entity);
         }
 
         var getterMethod = property.GetGetMethod();
         if (getterMethod != null)
         {
-            return entity => (TChild)getterMethod.Invoke(entity, null);
+            return entity => (TChild?)getterMethod.Invoke(entity, null);
         }
 
         var camelCase = property.Name.Length == 0
@@ -55,7 +55,7 @@ public static class PropertyInfoExtensions
             return null;
         }
 
-        return x => (TChild)field.GetValue(x);
+        return x => (TChild?)field.GetValue(x);
     }
 
     /// <summary>
@@ -67,7 +67,7 @@ public static class PropertyInfoExtensions
     /// <remarks>
     ///     <para>Tries all possible ways, including using the backing field directly.</para>
     /// </remarks>
-    public static Func<object, object>? GenerateGetterDelegate(this PropertyInfo property)
+    public static Func<object, object?>? GenerateGetterDelegate(this PropertyInfo property)
     {
         if (property == null)
         {

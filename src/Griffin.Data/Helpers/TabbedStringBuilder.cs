@@ -85,7 +85,7 @@ public class TabbedStringBuilder
     }
 
     /// <summary>
-    /// Remove line ending from the last line.
+    ///     Remove line ending from the last line.
     /// </summary>
     public void RemoveLineEnding()
     {

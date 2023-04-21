@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.1;net60</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <LangVersion>default</LangVersion>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Griffin.Data.MySql.xml</DocumentationFile>
+
+        <Version>1.0.0-rc01</Version>
+        <PackageReleaseNotes>First pre-release.</PackageReleaseNotes>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>Griffin.Data.MySql</PackageId>
+        <Authors>Jonas Gauffin</Authors>
+        <Description>MySQL Integration for Griffin.Data.</Description>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <Copyright>Copyright 2023 © Jonas Gauffin. All rights reserved.</Copyright>
+        <PackageTags>data-mapper, orm, sqlserver, queries, mysql</PackageTags>
+        <PackageProjectUrl>https://github.com/jgauffin/griffin.data</PackageProjectUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MySql.Data" Version="8.0.33" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Griffin.Data\Griffin.Data.csproj" />
+    </ItemGroup>
+
+</Project>

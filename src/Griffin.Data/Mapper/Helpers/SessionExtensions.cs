@@ -16,7 +16,7 @@ internal static class SessionExtensions
         var mapping = session.GetMapping(entityType);
 
         var sql = options.Sql ?? "";
-        var cmd = CommandExtensions.CreateCommand(session.Transaction);
+        var cmd = session.Transaction.CreateCommand();
 
         if (string.IsNullOrEmpty(sql))
         {
@@ -60,7 +60,6 @@ internal static class SessionExtensions
                     cmd.AddParameter(parameter.Key, parameter.Value);
                 }
             }
-            
         }
 
         session.Dialect.ApplyQueryOptions(mapping, cmd, options);

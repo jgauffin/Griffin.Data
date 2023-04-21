@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using Griffin.Data.Helpers;
-using Griffin.Data.Scaffolding.Helpers;
+﻿using Griffin.Data.Helpers;
+using Griffin.Data.Scaffolding.Config;
 using Griffin.Data.Scaffolding.Meta;
 
 namespace Griffin.Data.Scaffolding.Mapper.Generators;
@@ -9,92 +7,96 @@ namespace Griffin.Data.Scaffolding.Mapper.Generators;
 /// <summary>
 ///     Generate a entity class.
 /// </summary>
-public class ClassGenerator
+public class ClassGenerator : GeneratorWithNamespace
 {
-    private static readonly Dictionary<Type, string> Aliases =
-        new()
-        {
-            { typeof(byte), "byte" },
-            { typeof(sbyte), "sbyte" },
-            { typeof(short), "short" },
-            { typeof(ushort), "ushort" },
-            { typeof(int), "int" },
-            { typeof(uint), "uint" },
-            { typeof(long), "long" },
-            { typeof(ulong), "ulong" },
-            { typeof(float), "float" },
-            { typeof(double), "double" },
-            { typeof(decimal), "decimal" },
-            { typeof(object), "object" },
-            { typeof(bool), "bool" },
-            { typeof(char), "char" },
-            { typeof(string), "string" },
-            { typeof(void), "void" }
-        };
-
-    /// <summary>
-    ///     Generate an entity class from a table.
-    /// </summary>
-    /// <param name="table">Table to generate for.</param>
-    /// <param name="allTables">All read tables (required to be able to build relations).</param>
-    /// <returns>Generated class (including namespace).</returns>
-    public string Generate(Table table, IReadOnlyList<Table> allTables)
+    protected override GeneratedFile GenerateFile(Table table, GeneratorContext context, string contents)
     {
-        if (table == null)
-        {
-            throw new ArgumentNullException(nameof(table));
-        }
+        return new GeneratedFile($"{table.ClassName}", FileType.Domain, contents);
+    }
 
-        if (allTables == null)
-        {
-            throw new ArgumentNullException(nameof(allTables));
-        }
-
-        var sb = new TabbedStringBuilder();
-        if (table.Namespace.Length > 0)
-        {
-            sb.AppendLine($"namespace {table.Namespace}.Domain");
-            sb.AppendLineIndent("{");
-        }
-
+    protected override void GenerateClass(TabbedStringBuilder sb, Table table, GeneratorContext context)
+    {
         sb.AppendLine($@"public class {table.ClassName}");
         sb.AppendLineIndent("{");
+
+        foreach (var reference in table.References)
+        {
+            var propName = reference.ReferencingTable.ClassName.Replace(table.ClassName, "").Pluralize();
+            sb.AppendLine($"private readonly List<{reference.ReferencingTable.ClassName}> _{camelHump(propName)} = new();");
+        }
+
+        if (table.References.Any())
+        {
+            sb.AppendLine();
+        }
+
+        var allRequired = table.Columns.Where(x => !x.IsAutoIncrement && !x.IsNullable && string.IsNullOrEmpty(x.DefaultValue)).ToList();
+        if (allRequired.Any())
+        {
+            sb.Append($"public {table.ClassName}(");
+            for (var index = 0; index < allRequired.Count; index++)
+            {
+                var column = allRequired[index];
+                sb.Append($"{column.CustomPropertyType ?? column.PropertyType} {camelHump(column.PropertyName)}");
+                if (index < allRequired.Count - 1)
+                {
+                    sb.Append(", ");
+                }
+            }
+            sb.AppendLine(")");
+            sb.AppendLineIndent("{");
+            foreach (var column in allRequired)
+            {
+                sb.AppendLine($"{column.PropertyName} = {camelHump(column.PropertyName)};");
+            }
+            sb.DedentAppendLine("}");
+            sb.AppendLine();
+        }
+
         foreach (var column in table.Columns)
         {
-            var typeName = Aliases.TryGetValue(column.PropertyType, out var a) ? a : column.PropertyType.Name;
-            sb.Append($"public {typeName} {column.PropertyName} {{ get; set; }}");
+            var typeName = column.CustomPropertyType ?? column.PropertyType;
+            if (!column.IsNullable)
+            {
+                sb.Append($"public {typeName} {column.PropertyName} {{ get; private set; }}");
+            }
+            else
+            {
+                sb.Append($"public {typeName} {column.PropertyName} {{ get; set; }}");
+            }
+
             if (string.IsNullOrEmpty(column.DefaultValue))
             {
                 sb.AppendLine();
                 continue;
             }
 
-            if (column.PropertyType == typeof(string))
-            {
-                sb.AppendLine($" = \"{column.DefaultValue}\";");
-            }
-            else
-            {
-                sb.AppendLine($" = {column.DefaultValue};");
-            }
+            var valueStr = typeName == "string"
+                ? $"\"{column.DefaultValue}\";"
+                : $"{column.DefaultValue};";
+            sb.AppendLine($" = {valueStr}");
         }
 
+        sb.AppendLine();
         foreach (var reference in table.References)
         {
             var propName = reference.ReferencingTable.ClassName.Replace(table.ClassName, "").Pluralize();
             sb.AppendLine(
-                $"public IReadOnlyList<{reference.ReferencingTable.ClassName}> {propName} {{ get; private set; }} = new List<{reference.ReferencingTable.ClassName}>();");
+                $"public IReadOnlyList<{reference.ReferencingTable.ClassName}> {propName} => _{camelHump(propName)};");
             sb.AppendLine(
                 $"// public {reference.ReferencingTable.ClassName} {reference.ReferencingTable.ClassName} {{ get; set; }}");
+            sb.AppendLine();
         }
 
         sb.DedentAppendLine("}");
+    }
 
-        if (table.Namespace.Length > 0)
-        {
-            sb.DedentAppendLine("}");
-        }
-
-        return sb.ToString();
+    private string camelHump(string propertyName)
+    {
+        return char.ToLower(propertyName[0]) + propertyName[1..];
+    }
+    protected override string GetNamespaceName(Table table, ProjectFolders projectFolders)
+    {
+        return $"{projectFolders.DomainNamespace}.{table.RelativeNamespace}";
     }
 }

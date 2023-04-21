@@ -2,13 +2,15 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>default</LangVersion>
+        <TargetFrameworks>net6.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>gd</ToolCommandName>
         <PackageOutputPath>./nupkg</PackageOutputPath>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <ExcludeAssets>content;contentFiles</ExcludeAssets>
 
         <Version>1.0.0-rc37</Version>
         <PackageReleaseNotes>Tests.</PackageReleaseNotes>
@@ -25,11 +27,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+        <PackageReference Include="System.Text.Json" Version="7.0.2" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Griffin.Data\Griffin.Data.csproj" />
+        <ProjectReference Include="..\Griffin.Data\Griffin.Data.csproj" />
     </ItemGroup>
 
 </Project>

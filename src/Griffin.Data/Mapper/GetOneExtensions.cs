@@ -25,7 +25,6 @@ public static class GetOneExtensions
         await using var cmd = session.CreateQueryCommand(typeof(TEntity), options);
         try
         {
-
             await using var reader = await cmd.ExecuteReaderAsync();
             return await reader.ReadAsync();
         }
@@ -50,7 +49,9 @@ public static class GetOneExtensions
         var options = GetQueryOptionsFromConstraints<TEntity>(null, constraints);
         var entity = await session.FirstOrDefault<TEntity>(options);
         if (entity == null)
+        {
             throw new EntityNotFoundException(typeof(TEntity), constraints);
+        }
 
         return entity;
     }
@@ -63,11 +64,14 @@ public static class GetOneExtensions
     /// <param name="options">Query to use..</param>
     /// <returns></returns>
     /// <exception cref="EntityNotFoundException">Entity was not found.</exception>
-    public static async Task<TEntity> First<TEntity>(this Session session, QueryOptions<TEntity> options) where TEntity : notnull
+    public static async Task<TEntity> First<TEntity>(this Session session, QueryOptions<TEntity> options)
+        where TEntity : notnull
     {
         var entity = await session.FirstOrDefault<TEntity>(options.Options);
         if (entity == null)
+        {
             throw new EntityNotFoundException(typeof(TEntity), options);
+        }
 
         return entity;
     }

@@ -1,12 +1,12 @@
 Configuration
 =============
 
-This library uses a class called `Session` to perform all operations. The session contains information such as configured mappings, database transaction, change tracking and a SQL dialect implementation.
+This library uses a class called `Session` to perform all operations. The session contains information such as configured mappings, a database transaction, an (optional) change-tracking implementation, and a SQL dialect implementation.
 Because of that, you need to start by configuring which features to use.
 
-That is done with the help of the `DbConfiguration` class.
+Use the `DbConfiguration` class to configure this library.
 
-At minimum configure the connection string and where to find mappings.
+At a minimum, configure the connection string and where to find mappings.
 
 ```csharp
 var config =  new DbConfiguration();
@@ -18,14 +18,14 @@ config.RegisterMappings(typeof(OneMapping).Assembly);
 config.ConnectionString = configuration.GetConnectionString("Db");
 ```
 
-Once done, the configuration should be past to the `Session` class. If you use microsofts DI container you can configure it as follows:
+For DI users, add both classes to the container information. Here is a Microsoft DI container example:
 
 ```csharp
 services.AddSingleton<DbConfiguration>();
 services.AddScoped<Session>();
 ```
 
-Or if don't use a container, you can just create it directly:
+When not using a DI, create the `Session` as this:
 
 ```csharp
 using (var session = new Session(config))
@@ -38,7 +38,7 @@ using (var session = new Session(config))
 }
 ```
 
-If you have enabled change tracking, you can skip the persistance step (i.e. calling Update).
+If you have enabled change tracking, you can skip the persistence step (i.e. calling Update).
 
 ```csharp
 config.EnableSnapshotTracking();
@@ -81,7 +81,7 @@ internal class UserMapping : IEntityConfigurator<User>
         // Required since the table name differs from the class name
         config.TableName("Users");
 
-        // required since we use a auto incremented column as PK.
+        // required since we use an auto incremented column as PK.
         config.Key(x => x.Id).AutoIncrement();
 
         // Optional, but added to show how. Read more later.
@@ -108,7 +108,7 @@ class User
 }
 ```
 
-To avoid a lot if simple configurations you can simply call `MapRemaningProperties()`:
+To avoid a lot of simple configurations you can simply call `MapRemaningProperties()`:
 
 ```csharp
 internal class UserMapping : IEntityConfigurator<User>
@@ -121,13 +121,12 @@ internal class UserMapping : IEntityConfigurator<User>
 }
 ```
 
-For that to work, some rules must be followed:
+`MapRemaningProperties()` works when the following rules are followed:
 
 * The column and the property has the same name.
 * The column and the property has the same type.
 * The column is not auto-generated or requires a sequence/generator
 * The property is not for a child entity.
-
 
 ```csharp
 class User
@@ -138,8 +137,8 @@ class User
         FirstName = firstName;
     }
 
-    // Required by this library when non default constructors exist.
-    // Can be private though to protect the state of the business entity.
+    // Required by this library when non-default constructors exist.
+    // Can be private to protect the state of the business entity.
     protected User() {
 
     }
@@ -155,7 +154,7 @@ class User
 
     public void Add(Address address)
     {
-        // Checks etc to make sure that the address is valid for this user.
+        // Checks etc to ensure the address is valid for this user.
         // [...]
 
         _addresses.Add(address);
@@ -178,9 +177,9 @@ class Address
 
 ## Conversions
 
-some times the type of the DB column and the class property does not match. As such, a conversion is required between the property and the column.
+Sometimes the type of the DB column and the class property does not match. As such, a conversion is required between the property and the column.
 
-This library supprorts conversions for regular properties and some conversions are built in.
+This library supports conversions for regular properties, and some conversions are built in.
 
 ## More information
 

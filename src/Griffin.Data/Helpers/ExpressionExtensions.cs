@@ -55,7 +55,7 @@ public static class ExpressionExtensions
     }
 
     /// <summary>
-    /// Get PropertyInfo from a lambda expression.
+    ///     Get PropertyInfo from a lambda expression.
     /// </summary>
     /// <typeparam name="TEntity">Type of entity.</typeparam>
     /// <typeparam name="TProperty">Type of property in the specified entity.</typeparam>

@@ -142,7 +142,6 @@ public static class InsertExtensions
             }
         }
 
-
         columns = columns.Remove(columns.Length - 2, 2);
         values = values.Remove(values.Length - 2, 2);
 

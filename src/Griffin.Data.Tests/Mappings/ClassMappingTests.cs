@@ -3,6 +3,7 @@ using FluentAssertions;
 using Griffin.Data.Configuration;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mappings;
+using Griffin.Data.Tests.Helpers;
 using Griffin.Data.Tests.Subjects;
 
 namespace Griffin.Data.Tests.Mappings;
@@ -39,7 +40,7 @@ public class ClassMappingTests
         var reg = new MappingRegistry();
         reg.Scan(Assembly.GetExecutingAssembly());
         var mapping = reg.Get<ClassWithConstructor>();
-        var record = new FakeRecord(new Dictionary<string, object>(){{"Id", 1}, {"Name", "Jonas"}});
+        var record = new FakeRecord(new Dictionary<string, object> { { "Id", 1 }, { "Name", "Jonas" } });
 
         var actual = (ClassWithConstructor)mapping.CreateInstance(record);
 
@@ -53,7 +54,7 @@ public class ClassMappingTests
         var reg = new MappingRegistry();
         reg.Scan(Assembly.GetExecutingAssembly());
         var mapping = reg.Get<ClassWithConstructorAndConverter>();
-        var record = new FakeRecord(new Dictionary<string, object>() { { "Id", 1 }, { "Name", 3 } });
+        var record = new FakeRecord(new Dictionary<string, object> { { "Id", 1 }, { "Name", 3 } });
 
         var actual = (ClassWithConstructorAndConverter)mapping.CreateInstance(record);
 

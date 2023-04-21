@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.1;net60</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <LangVersion>default</LangVersion>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Griffin.Data.PostgreSql.xml</DocumentationFile>
+
+        <Version>1.0.0-rc01</Version>
+        <PackageReleaseNotes>First pre-release.</PackageReleaseNotes>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>Griffin.Data.PostgreSql</PackageId>
+        <Authors>Jonas Gauffin</Authors>
+        <Description>PostgreSQL Integration for Griffin.Data.</Description>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <Copyright>Copyright 2023 © Jonas Gauffin. All rights reserved.</Copyright>
+        <PackageTags>data-mapper, orm, sqlserver, queries, postgresql, npgsql</PackageTags>
+        <PackageProjectUrl>https://github.com/jgauffin/griffin.data</PackageProjectUrl>
+    </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql" Version="7.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Griffin.Data\Griffin.Data.csproj" />
+  </ItemGroup>
+
+</Project>

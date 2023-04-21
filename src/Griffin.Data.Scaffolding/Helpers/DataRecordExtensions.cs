@@ -1,5 +1,4 @@
-﻿using System;
-using System.Data;
+﻿using System.Data;
 
 namespace Griffin.Data.Scaffolding.Helpers;
 

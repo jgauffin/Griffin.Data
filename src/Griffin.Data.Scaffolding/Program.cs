@@ -21,7 +21,7 @@ if (conString == null)
     return;
 }
 
-var connection = new SqlConnection(conString);
+await using var connection = new SqlConnection(conString);
 connection.Open();
 
 switch (args[0])
@@ -30,21 +30,25 @@ switch (args[0])
     {
         if (args.Length == 1)
         {
-            await GeneratorHelper.GenerateOrm(connection, Environment.CurrentDirectory);
+            await GeneratorHelper.GenerateOrm("SqlServer", conString, Environment.CurrentDirectory);
             await GeneratorHelper.GenerateQueries(connection, Environment.CurrentDirectory);
         }
-        else switch (args[1])
+        else
         {
-            case "queries":
-                await GeneratorHelper.GenerateQueries(connection, Environment.CurrentDirectory);
-                break;
-            case "mappings":
-                await GeneratorHelper.GenerateOrm(connection, Environment.CurrentDirectory);
-                break;
-            default:
-                Console.WriteLine("Unknown command");
-                break;
+            switch (args[1])
+            {
+                case "queries":
+                    await GeneratorHelper.GenerateQueries(connection, Environment.CurrentDirectory);
+                    break;
+                case "mappings":
+                    await GeneratorHelper.GenerateOrm("SqlServer", conString, Environment.CurrentDirectory);
+                    break;
+                default:
+                    Console.WriteLine("Unknown command: " + args[1]);
+                    break;
+            }
         }
+
         return;
     }
 
@@ -53,7 +57,7 @@ switch (args[0])
         break;
 
     case "mappings":
-        await GeneratorHelper.GenerateOrm(connection, Environment.CurrentDirectory);
+        await GeneratorHelper.GenerateOrm("SqlServer", conString, Environment.CurrentDirectory);
         break;
 
     case "config":

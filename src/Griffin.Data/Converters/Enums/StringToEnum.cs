@@ -23,6 +23,6 @@ public class StringToEnum<TEnum> : ISingleValueConverter<string, TEnum> where TE
     /// <inheritdoc />
     public string PropertyToColumn([NotNull] TEnum value)
     {
-        return value.ToString();
+        return value.ToString()!;
     }
 }

@@ -21,6 +21,7 @@ public class Session : IDisposable
     private readonly IChangeTracker? _changeTracker;
     private readonly IMappingRegistry _registry;
     private bool _commitOnDispose;
+    private IDbConnection? _connection;
     private bool _done;
 
     /// <summary>
@@ -34,9 +35,12 @@ public class Session : IDisposable
     /// </remarks>
     public Session(DbConfiguration configuration, IEnumerable<IChangeTracker> changeTrackers)
     {
-        Transaction = configuration.BeginTransaction();
+        _connection = configuration.OpenConnection();
+        Transaction = _connection.BeginTransaction();
+
+        Dialect = configuration.Dialect ??
+                  throw new InvalidOperationException("DbConfiguration.Dialect has not been configured.");
         _registry = configuration.MappingRegistry;
-        Dialect = configuration.Dialect;
         _changeTracker = changeTrackers.FirstOrDefault();
     }
 
@@ -46,9 +50,17 @@ public class Session : IDisposable
     /// <param name="changeTracker">Optional change tracker.</param>
     public Session(DbConfiguration configuration, IChangeTracker? changeTracker = null)
     {
-        Transaction = configuration.BeginTransaction();
+        if (configuration == null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
+        _connection = configuration.OpenConnection();
+        Transaction = _connection.BeginTransaction();
+
+        Dialect = configuration.Dialect ??
+                  throw new InvalidOperationException("DbConfiguration.Dialect has not been configured.");
         _registry = configuration.MappingRegistry;
-        Dialect = configuration.Dialect;
         _changeTracker = changeTracker;
     }
 
@@ -56,21 +68,24 @@ public class Session : IDisposable
     /// </summary>
     /// <param name="transaction">Transaction to use.</param>
     /// <param name="registry">Registry to lookup mappings in.</param>
+    /// <param name="dialect">SQL dialect</param>
     /// <param name="changeTracker"></param>
     public Session(
         IDbTransaction transaction,
         IMappingRegistry registry,
+        ISqlDialect dialect,
         IChangeTracker? changeTracker)
     {
-        Transaction = transaction;
-        _registry = registry;
+        Dialect = dialect ?? throw new ArgumentNullException(nameof(dialect));
+        Transaction = transaction ?? throw new ArgumentNullException(nameof(transaction));
+        _registry = registry ?? throw new ArgumentNullException(nameof(registry));
         _changeTracker = changeTracker;
     }
 
     /// <summary>
     ///     Dialect used to apply DB engine specific SQL statements.
     /// </summary>
-    public ISqlDialect Dialect { get; set; } = new SqlServerDialect();
+    public ISqlDialect Dialect { get; }
 
     /// <summary>
     ///     Current DB transaction.
@@ -86,7 +101,6 @@ public class Session : IDisposable
             return;
         }
 
-        var con = Transaction.Connection;
         if (_commitOnDispose)
         {
             Transaction.Commit();
@@ -97,7 +111,8 @@ public class Session : IDisposable
         }
 
         Transaction.Dispose();
-        con?.Dispose();
+        _connection?.Dispose();
+        _connection = null;
     }
 
     /// <summary>
@@ -118,7 +133,7 @@ public class Session : IDisposable
     /// <returns>Created command.</returns>
     public DbCommand CreateCommand()
     {
-        return CommandExtensions.CreateCommand(Transaction);
+        return Transaction.CreateCommand();
     }
 
     /// <summary>

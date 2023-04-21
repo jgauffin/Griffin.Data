@@ -1,9 +1,15 @@
-﻿namespace Griffin.Data.Scaffolding.Config
+﻿namespace Griffin.Data.Scaffolding.Config;
+
+internal class TargetLocation
 {
-    public class TargetLocation
+    public TargetLocation(string projectDirectory, string projectName, string namespaceTemplate)
     {
-        public string ProjectName { get; set; }
-        public string ProjectDirectory { get; set; }
-        public string NamespaceTemplate { get; set; }
+        ProjectDirectory = projectDirectory;
+        ProjectName = projectName;
+        NamespaceTemplate = namespaceTemplate;
     }
+
+    public string NamespaceTemplate { get; }
+    public string ProjectDirectory { get; }
+    public string ProjectName { get; }
 }

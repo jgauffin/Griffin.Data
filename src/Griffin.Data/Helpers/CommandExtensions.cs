@@ -2,8 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
-using System.IO;
 using System.Linq;
 using Griffin.Data.Mappings;
 
@@ -20,7 +18,7 @@ internal static class CommandExtensions
     /// <param name="command">Command to apply WHERE statement to.</param>
     /// <param name="mapping">Mapping used to translate between properties and columns.</param>
     /// <param name="propertyConstraints">Property/Value pairs in an anonymous object.</param>
-    public static void ApplyConstraints(this IDbCommand command, ClassMapping mapping, object propertyConstraints)
+    internal static void ApplyConstraints(this IDbCommand command, ClassMapping mapping, object propertyConstraints)
     {
         var sql = " WHERE ";
         var dict = propertyConstraints.ToDictionary();
@@ -64,7 +62,7 @@ internal static class CommandExtensions
     /// <param name="command">Command to add "WHERE xxx" to.</param>
     /// <param name="mapping">Mapping used to translate between properties and columns.</param>
     /// <param name="entity">Entity to fetch information from.</param>
-    public static void ApplyKeyWhere(this IDbCommand command, ClassMapping mapping, object entity)
+    internal static void ApplyKeyWhere(this IDbCommand command, ClassMapping mapping, object entity)
     {
         var sql = " WHERE ";
         foreach (var key in mapping.Keys)
@@ -78,54 +76,12 @@ internal static class CommandExtensions
     }
 
     /// <summary>
-    ///     Create a new database command (and enlist it in the transaction).
-    /// </summary>
-    /// <param name="transaction">Transaction to create command on.</param>
-    /// <returns>Created command.</returns>
-    public static DbCommand CreateCommand(this IDbTransaction transaction)
-    {
-        if (transaction.Connection == null)
-        {
-            throw new InvalidOperationException(
-                "The transaction has been committed. You may not use the session any more.");
-        }
-
-        var cmd = transaction.Connection!.CreateCommand();
-        cmd.Transaction = transaction;
-        return (DbCommand)cmd;
-    }
-
-    public static InvalidDataException CreateDetailedException(this IDbCommand command, Exception ex)
-    {
-        var ps = command.Parameters.Cast<IDataParameter>().Select(x => $"{x.ParameterName}={x.Value}");
-        var e = new InvalidDataException(
-            $"{ex.Message}\r\n  SQL: '{command.CommandText}'\r\n  Parameters: {string.Join(", ", ps)}", ex);
-        return e;
-    }
-
-    public static InvalidDataException CreateDetailedException(this IDbCommand command, Exception ex, Type entityType)
-    {
-        var ps = command.Parameters.Cast<IDataParameter>().Select(x => $"{x.ParameterName}={x.Value}");
-        var e = new InvalidDataException(
-            $"{ex.Message}\r\n  EntityType: {entityType.FullName}\r\n  SQL: '{command.CommandText}'\r\n  Parameters: {string.Join(", ", ps)}", ex);
-        return e;
-    }
-
-    public static InvalidDataException CreateDetailedException(this IDbCommand command, Exception ex, Type parentType, Type entityType)
-    {
-        var ps = command.Parameters.Cast<IDataParameter>().Select(x => $"{x.ParameterName}={x.Value}");
-        var e = new InvalidDataException(
-            $"{ex.Message}\r\n  ParentType: {parentType.FullName}\r\n  EntityType: {entityType.FullName}\r\n  SQL: '{command.CommandText}'\r\n  Parameters: {string.Join(", ", ps)}", ex);
-        return e;
-    }
-
-    /// <summary>
     ///     Convert an anonymous object to a dictionary.
     /// </summary>
     /// <param name="content">Object to convert.</param>
     /// <returns>dictionary.</returns>
     /// <exception cref="ArgumentNullException">Content is null.</exception>
-    public static IDictionary<string, object> ToDictionary(this object content)
+    internal static IDictionary<string, object> ToDictionary(this object content)
     {
         switch (content)
         {
@@ -136,7 +92,7 @@ internal static class CommandExtensions
         }
 
         var props = content.GetType().GetProperties();
-        var pairDictionary = props.ToDictionary(x => x.Name, x => x.GetValue(content, null));
+        var pairDictionary = props.ToDictionary(x => x.Name, x => x.GetValue(content, null)!);
         return pairDictionary;
     }
 }

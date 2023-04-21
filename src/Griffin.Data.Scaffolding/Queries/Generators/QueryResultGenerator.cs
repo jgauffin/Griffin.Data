@@ -1,11 +1,9 @@
-﻿using System.Threading.Tasks;
-using Griffin.Data.Helpers;
-using Griffin.Data.Scaffolding.Helpers;
+﻿using Griffin.Data.Helpers;
 using Griffin.Data.Scaffolding.Queries.Meta;
 
 namespace Griffin.Data.Scaffolding.Queries.Generators;
 
-public class QueryResultGenerator:IQueryGenerator
+public class QueryResultGenerator : IQueryGenerator
 {
     public Task<GeneratedFile> Generate(QueryMeta meta)
     {
@@ -26,9 +24,9 @@ public class QueryResultGenerator:IQueryGenerator
             sb.DedentAppendLine("}");
         }
 
-        return Task.FromResult(new GeneratedFile(meta.QueryName + "Result", sb.ToString())
+        return Task.FromResult(new GeneratedFile(meta.QueryName + "Result", FileType.Domain, sb.ToString())
         {
-            RelativeDirectory = "Queries\\",
+            RelativeDirectory = "Queries\\"
         });
     }
 }

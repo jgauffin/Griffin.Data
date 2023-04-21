@@ -127,8 +127,8 @@ internal static class FetchChildrenOperations
 
             options.DbParameters = hasManyMapping.CreateDbConstraints(parents);
 
-            IList allChildrenToGetChildrenFor = (IList)Activator.CreateInstance
-                                                (typeof(List<>).MakeGenericType(hasManyMapping.ChildEntityType));
+            var allChildrenToGetChildrenFor = (IList)Activator.CreateInstance
+                (typeof(List<>).MakeGenericType(hasManyMapping.ChildEntityType))!;
             var childMapping = session.GetMapping(hasManyMapping.ChildEntityType);
             await using (var cmd = session.CreateQueryCommand(hasManyMapping.ChildEntityType, options))
             {
@@ -183,19 +183,17 @@ internal static class FetchChildrenOperations
 
             var childMapping = session.GetMapping(hasOneMapping.ChildEntityType);
 
-            
-
             await using var cmd = session.CreateQueryCommand(hasOneMapping.ChildEntityType, options);
             try
             {
-                IList allChildrenToGetChildrenFor = (IList)Activator.CreateInstance
-                    (typeof(List<>).MakeGenericType(hasOneMapping.ChildEntityType));
+                var allChildrenToGetChildrenFor = (IList)Activator.CreateInstance
+                    (typeof(List<>).MakeGenericType(hasOneMapping.ChildEntityType))!;
 
                 await using (var reader = await cmd.ExecuteReaderAsync())
                 {
                     await reader.MapAll(childMapping, x =>
                     {
-                        allChildrenToGetChildrenFor.Add(x);
+                        allChildrenToGetChildrenFor.Add(x!);
                         var fkValue = hasOneMapping.GetForeignKeyValue(x);
                         if (fkValue == null)
                         {
@@ -205,7 +203,6 @@ internal static class FetchChildrenOperations
 
                         hasOneMapping.SetPropertyValue(parentIndex[fkValue], x);
                     });
-
                 }
 
                 await session.GetChildrenForMany(hasOneMapping.ChildEntityType, allChildrenToGetChildrenFor);
@@ -235,7 +232,7 @@ internal static class FetchChildrenOperations
     {
         var discriminatorIndex = new Dictionary<Type, IList>();
         var parentIndex = new Dictionary<object, object>();
-        Type parentType =typeof(object);
+        var parentType = typeof(object);
 
         foreach (var parent in parents)
         {
@@ -259,7 +256,7 @@ internal static class FetchChildrenOperations
 
             if (!discriminatorIndex.TryGetValue(den, out var items))
             {
-                items = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(parentMapping.EntityType));
+                items = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(parentMapping.EntityType))!;
                 discriminatorIndex[den] = items;
             }
 
@@ -272,8 +269,8 @@ internal static class FetchChildrenOperations
             options.DbParameters = hasOneMapping.CreateDbConstraints(kvp.Value);
 
             var childMapping = session.GetMapping(kvp.Key);
-            IList allChildrenToGetChildrenFor = (IList)Activator.CreateInstance
-                (typeof(List<>).MakeGenericType(kvp.Key));
+            var allChildrenToGetChildrenFor = (IList)Activator.CreateInstance
+                (typeof(List<>).MakeGenericType(kvp.Key))!;
 
             await using var cmd = session.CreateQueryCommand(kvp.Key, options);
             try
@@ -293,7 +290,6 @@ internal static class FetchChildrenOperations
                 });
 
                 await session.GetChildrenForMany(kvp.Key, allChildrenToGetChildrenFor);
-
             }
             catch (Exception ex)
             {

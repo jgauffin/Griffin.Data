@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 namespace Griffin.Data.Helpers;
 
 /// <summary>
-/// Class used to pluralize/singularize.
+///     Class used to pluralize/singularize.
 /// </summary>
 public static class Inflector
 {
@@ -83,7 +83,7 @@ public static class Inflector
     #endregion
 
     /// <summary>
-    /// Make camel case of name.
+    ///     Make camel case of name.
     /// </summary>
     /// <param name="lowercaseAndUnderscoredWord">Name to adjust</param>
     /// <returns>Fixed string.</returns>
@@ -93,7 +93,7 @@ public static class Inflector
     }
 
     /// <summary>
-    /// Make pascal case of name.
+    ///     Make pascal case of name.
     /// </summary>
     /// <param name="word">Name to adjust</param>
     /// <returns>Fixed string.</returns>
@@ -103,7 +103,7 @@ public static class Inflector
     }
 
     /// <summary>
-    /// Change capital letters to underscore + letter.
+    ///     Change capital letters to underscore + letter.
     /// </summary>
     /// <param name="underscoredWord">Name to adjust</param>
     /// <returns>Fixed string.</returns>
@@ -113,7 +113,7 @@ public static class Inflector
     }
 
     /// <summary>
-    /// Replace underscore with spaces.
+    ///     Replace underscore with spaces.
     /// </summary>
     /// <param name="lowercaseAndUnderscoredWord">Name to adjust</param>
     /// <returns>Fixed string.</returns>
@@ -123,7 +123,7 @@ public static class Inflector
     }
 
     /// <summary>
-    /// Make pascal case of name.
+    ///     Make pascal case of name.
     /// </summary>
     /// <param name="lowercaseAndUnderscoredWord">Name to adjust</param>
     /// <returns>Fixed string.</returns>
@@ -134,7 +134,7 @@ public static class Inflector
     }
 
     /// <summary>
-    /// Make word plural.
+    ///     Make word plural.
     /// </summary>
     /// <param name="word">Name to adjust</param>
     /// <returns>Fixed string.</returns>
@@ -144,32 +144,13 @@ public static class Inflector
     }
 
     /// <summary>
-    /// Make word singular.
+    ///     Make word singular.
     /// </summary>
     /// <param name="word">Name to adjust</param>
     /// <returns>Fixed string.</returns>
     public static string Singularize(this string word)
     {
         return ApplyRules(Singulars, word);
-    }
-
-    private static string Titleize(this string word)
-    {
-        return Regex.Replace(Humanize(Underscore(word)), @"\b([a-z])",
-            match => match.Captures[0].Value.ToUpper());
-    }
-
-    private static string Uncapitalize(this string word)
-    {
-        return word.Substring(0, 1).ToLower() + word.Substring(1);
-    }
-
-    private static string Underscore(this string pascalCasedWord)
-    {
-        return Regex.Replace(
-            Regex.Replace(
-                Regex.Replace(pascalCasedWord, @"([A-Z]+)([A-Z][a-z])", "$1_$2"), @"([a-z\d])([A-Z])",
-                "$1_$2"), @"[-\s]", "_").ToLower();
     }
 
     private static void AddIrregular(string singular, string plural)
@@ -238,6 +219,25 @@ public static class Inflector
             default:
                 return numberString + "th";
         }
+    }
+
+    private static string Titleize(this string word)
+    {
+        return Regex.Replace(Humanize(Underscore(word)), @"\b([a-z])",
+            match => match.Captures[0].Value.ToUpper());
+    }
+
+    private static string Uncapitalize(this string word)
+    {
+        return word.Substring(0, 1).ToLower() + word.Substring(1);
+    }
+
+    private static string Underscore(this string pascalCasedWord)
+    {
+        return Regex.Replace(
+            Regex.Replace(
+                Regex.Replace(pascalCasedWord, @"([A-Z]+)([A-Z][a-z])", "$1_$2"), @"([a-z\d])([A-Z])",
+                "$1_$2"), @"[-\s]", "_").ToLower();
     }
 
     private class Rule

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using Griffin.Data.Helpers;
+using Griffin.Data.Mapper.Implementation;
 
 namespace Griffin.Data.Mapper;
 
@@ -20,7 +21,6 @@ public class EntityNotFoundException : Exception
     private readonly string _constraintsStr;
 
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="entityType">Type of entity that was not found.</param>
     /// <param name="constraints">Constraints used when querying.</param>
@@ -32,13 +32,28 @@ public class EntityNotFoundException : Exception
             throw new ArgumentNullException(nameof(constraints));
         }
 
+        var options = constraints switch
+        {
+            QueryOptions ops => ops,
+            IHaveQueryOptions ops2 => ops2.Options,
+            _ => null
+        };
+
+        if (options != null)
+        {
+            Constraints = options.DbParameters ?? options.Parameters ?? new Dictionary<string, object>();
+            _constraintsStr = options.ToString();
+        }
+        else
+        {
+            Constraints = constraints.ToDictionary();
+            _constraintsStr = string.Join(", ", Constraints.Select(x => $"{x.Key}: {x.Value}"));
+        }
+
         EntityType = entityType ?? throw new ArgumentNullException(nameof(entityType));
-        Constraints = constraints.ToDictionary();
-        _constraintsStr = string.Join(", ", Constraints.Select(x => $"{x.Key}: {x.Value}"));
     }
 
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="entityType">Type of entity that was not found.</param>
     /// <param name="command">Command used when trying to find the entity.</param>
@@ -50,9 +65,17 @@ public class EntityNotFoundException : Exception
         }
 
         var ps = new Dictionary<string, object>();
-        foreach (IDataParameter parameter in command.Parameters)
+        if (command.Parameters != null)
         {
-            ps[parameter.ParameterName] = parameter.Value;
+            foreach (IDataParameter parameter in command.Parameters)
+            {
+                if (parameter.Value == null)
+                {
+                    continue;
+                }
+
+                ps[parameter.ParameterName] = parameter.Value;
+            }
         }
 
         EntityType = entityType;
@@ -61,16 +84,16 @@ public class EntityNotFoundException : Exception
     }
 
     /// <summary>
-    /// All specified constraints.
+    ///     All specified constraints.
     /// </summary>
     public IDictionary<string, object> Constraints { get; }
 
     /// <summary>
-    /// Type of entity that was not found.
+    ///     Type of entity that was not found.
     /// </summary>
     public Type EntityType { get; }
 
     /// <inheritdoc />
     public override string Message =>
-        $"{EntityType.Name}: Failed to find an entity using constraints '{_constraintsStr}'";
+        $"{EntityType.Name}: Failed to find an entity using constraints: " + _constraintsStr;
 }

@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using Griffin.Data.Scaffolding.Queries.Meta;
+﻿using Griffin.Data.Scaffolding.Queries.Meta;
 
-namespace Griffin.Data.Scaffolding.Queries.Generators
+namespace Griffin.Data.Scaffolding.Queries.Generators;
+
+internal interface IQueryGenerator
 {
-    internal interface IQueryGenerator
-    {
-        Task<GeneratedFile> Generate(QueryMeta meta);
-    }
+    Task<GeneratedFile> Generate(QueryMeta meta);
 }

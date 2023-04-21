@@ -78,7 +78,7 @@ public class PropertyMappingTests
     {
         var sut = new PropertyMapping<User, string>("FirstName", GetValue, SetValue)
         {
-            PropertyToColumnConverter = x => int.Parse((string)x)
+            PropertyToColumnConverter = x => int.Parse(x)
         };
         _value = "5";
 

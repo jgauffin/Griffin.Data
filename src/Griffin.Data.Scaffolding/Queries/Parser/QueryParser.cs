@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿using System.Text;
 
 namespace Griffin.Data.Scaffolding.Queries.Parser;
 
@@ -50,12 +48,12 @@ internal class QueryParser
             _query.AppendLine(line);
         }
 
-        return new QueryFile(Path.GetDirectoryName(fullPath)!, Path.GetFileNameWithoutExtension(fullPath), _query.ToString())
+        return new QueryFile(Path.GetDirectoryName(fullPath)!, Path.GetFileNameWithoutExtension(fullPath),
+            _query.ToString())
         {
             Parameters = _parameters,
             UsePaging = _usePaging,
             UseSorting = _useSorting
         };
     }
-    
 }

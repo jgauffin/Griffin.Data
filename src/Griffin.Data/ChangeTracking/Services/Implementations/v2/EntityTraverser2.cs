@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using Griffin.Data;
 using Griffin.Data.Helpers;
 using Griffin.Data.Mappings;
 
@@ -23,7 +21,6 @@ internal class EntityTraverser2
     }
 
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="source"></param>
     /// <returns></returns>

@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Reflection.Emit;
 using Griffin.Data.Configuration;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mappings.Properties;
 using Griffin.Data.Mappings.Relations;
+using static System.String;
 
 namespace Griffin.Data.Mappings;
 
@@ -22,8 +21,10 @@ public class ClassMapping
     private readonly List<IHasManyMapping> _collections = new();
     private readonly List<IKeyMapping> _keys;
     private readonly List<IPropertyMapping> _properties;
-    private bool _checkedConstructors = false;
+    private bool _checkedConstructors;
+    private Func<object>? _defaultConstructorFactory;
     private Func<IDataRecord, object>? _itemFactory;
+
     /// <summary>
     /// </summary>
     /// <param name="entityType">Type of entity that the mapping is for.</param>
@@ -102,7 +103,7 @@ public class ClassMapping
 
         if (_checkedConstructors)
         {
-            return Activator.CreateInstance(EntityType, true);
+            return _defaultConstructorFactory!();
         }
 
         _checkedConstructors = true;
@@ -110,7 +111,8 @@ public class ClassMapping
         var result = GetConstructor();
         if (result == null)
         {
-            return Activator.CreateInstance(EntityType, true);
+            CreateDefaultConstructor();
+            return _defaultConstructorFactory!();
         }
 
         var param = Expression.Parameter(typeof(IDataRecord), "t");
@@ -122,27 +124,28 @@ public class ClassMapping
         }
 
         var constructor = result.Value.Item1;
-        List<UnaryExpression> constructorArguments = new List<UnaryExpression>();
+        var constructorArguments = new List<UnaryExpression>();
         foreach (var mapping in result.Value.Item2)
         {
             var columnNameConstant = Expression.Constant(mapping.ColumnName, typeof(string));
             var indexerAccessor = Expression.Property(param, property, columnNameConstant);
 
             UnaryExpression converted;
-            var converter = mapping.GetType().GetProperty("ColumnToPropertyConverter", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)?.GetValue(mapping);
+            var converter = mapping.GetType().GetProperty("ColumnToPropertyConverter",
+                BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)?.GetValue(mapping);
             if (converter != null)
             {
                 var method = ((Delegate)converter).Method;
                 var target = ((Delegate)converter).Target;
                 var instance = Expression.Constant(target);
                 var converterMethod = Expression.Call(instance, method, indexerAccessor);
-                converted=Expression.Convert(converterMethod, mapping.PropertyType);
+                converted = Expression.Convert(converterMethod, mapping.PropertyType);
             }
             else
             {
                 converted = Expression.Convert(indexerAccessor, mapping.PropertyType);
             }
-            
+
             constructorArguments.Add(converted);
         }
 
@@ -159,34 +162,6 @@ public class ClassMapping
         }
     }
 
-    private (ConstructorInfo, List<IFieldMapping>)? GetConstructor()
-    {
-        foreach (var constructor in EntityType.GetConstructors(BindingFlags.NonPublic|BindingFlags.Public|BindingFlags.Instance))
-        {
-            List<IFieldMapping> properties = new List<IFieldMapping>();
-            var parameters = constructor.GetParameters();
-            foreach (var parameter in constructor.GetParameters())
-            {
-                var prop = FindPropertyByName(parameter.Name);
-                if (prop != null)
-                {
-                    properties.Add(prop);
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            if (parameters.Length == properties.Count)
-            {
-                return (constructor, properties);
-            }
-        }
-
-        return null;
-    }
-    
     /// <summary>
     ///     Find a specific property (looks in keys and properties for the given name, using case insensitive search).
     /// </summary>
@@ -222,7 +197,7 @@ public class ClassMapping
     }
 
     /// <summary>
-    /// Get the relationship configuration for a specific child entity.
+    ///     Get the relationship configuration for a specific child entity.
     /// </summary>
     /// <param name="childType">Type of child entity.</param>
     /// <returns>Mapping if found; otherwise <c>null</c>.</returns>
@@ -266,5 +241,53 @@ public class ClassMapping
     public override string ToString()
     {
         return EntityType.Name;
+    }
+
+    private void CreateDefaultConstructor()
+    {
+        var defaultConstructor =
+            EntityType.GetConstructor(BindingFlags.NonPublic | BindingFlags.Public, null, Type.EmptyTypes, null);
+        if (defaultConstructor == null)
+        {
+            throw new MappingConfigurationException(EntityType,
+                "There is no default constructor nor a constructor where arguments matches properties. Can therefore not instantiate the entity.");
+        }
+
+        var newExpression = Expression.New(defaultConstructor);
+        _defaultConstructorFactory = Expression.Lambda<Func<object>>(newExpression).Compile();
+    }
+
+    private (ConstructorInfo, List<IFieldMapping>)? GetConstructor()
+    {
+        foreach (var constructor in EntityType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Public |
+                                                               BindingFlags.Instance))
+        {
+            var properties = new List<IFieldMapping>();
+            var parameters = constructor.GetParameters();
+            foreach (var parameter in constructor.GetParameters())
+            {
+                if (IsNullOrEmpty(parameter.Name))
+                {
+                    continue;
+                }
+
+                var prop = FindPropertyByName(parameter.Name);
+                if (prop != null)
+                {
+                    properties.Add(prop);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (parameters.Length == properties.Count)
+            {
+                return (constructor, properties);
+            }
+        }
+
+        return null;
     }
 }
