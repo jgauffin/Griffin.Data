@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -28,6 +28,12 @@
     <ProjectReference Include="..\Griffin.Data.Scaffolding\Griffin.Data.Scaffolding.csproj" />
     <ProjectReference Include="..\Griffin.Data.SqlServer\Griffin.Data.SqlServer.csproj" />
     <ProjectReference Include="..\Griffin.Data\Griffin.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Griffin.Data.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

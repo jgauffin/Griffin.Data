@@ -12,8 +12,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <ExcludeAssets>content;contentFiles</ExcludeAssets>
 
-        <Version>1.0.0-rc37</Version>
-        <PackageReleaseNotes>Tests.</PackageReleaseNotes>
+        <Version>1.0.0-rc38</Version>
+        <PackageReleaseNotes>Corrected most generators.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>

@@ -9,6 +9,6 @@ public class ScaffolderTest
     {
         var s = new MapperScaffolder();
         var constr = "Data Source=.;Initial Catalog=GriffinData;Integrated Security=True";
-        await s.Generate("SqlServer", constr, @"C:\temp");
+        await s.Generate("SqlServer", constr, @"C:\temp\DemoProject");
     }
 }

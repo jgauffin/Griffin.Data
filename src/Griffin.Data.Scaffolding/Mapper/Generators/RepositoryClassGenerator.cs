@@ -8,6 +8,7 @@ internal class RepositoryClassGenerator : GeneratorWithNamespace
     protected override void AddUsings(Table table, TabbedStringBuilder sb, GeneratorContext context)
     {
         sb.AppendLine("using Griffin.Data;");
+        sb.AppendLine("using Griffin.Data.Domain;");
         sb.AppendLine($"using {context.Folders.DomainNamespace}.{table.RelativeNamespace};");
     }
 

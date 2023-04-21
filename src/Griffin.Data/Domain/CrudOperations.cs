@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Griffin.Data.Mapper;
 
-namespace Griffin.Data.Domain.Implementation;
+namespace Griffin.Data.Domain;
 
 /// <summary>
 ///     Performs CRUD for entities.
@@ -16,32 +16,35 @@ namespace Griffin.Data.Domain.Implementation;
 /// </remarks>
 public class CrudOperations<TEntity> : ICrudOperations<TEntity>
 {
-    private readonly Session _session;
-
     /// <summary>
     /// </summary>
     /// <param name="session">Session sued to </param>
     /// <exception cref="ArgumentNullException"></exception>
     public CrudOperations(Session session)
     {
-        _session = session ?? throw new ArgumentNullException(nameof(session));
+        Session = session ?? throw new ArgumentNullException(nameof(session));
     }
+
+    /// <summary>
+    ///     Session used.
+    /// </summary>
+    protected Session Session { get; }
 
     /// <inheritdoc />
     public async Task Create([DisallowNull] TEntity entity)
     {
-        await _session.Insert(entity);
+        await Session.Insert(entity);
     }
 
     /// <inheritdoc />
     public async Task Delete([DisallowNull] TEntity entity)
     {
-        await _session.Delete(entity);
+        await Session.Delete(entity);
     }
 
     /// <inheritdoc />
     public async Task Update([DisallowNull] TEntity entity)
     {
-        await _session.Update(entity);
+        await Session.Update(entity);
     }
 }
