@@ -8,17 +8,17 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Griffin.Data.SqlServer.xml</DocumentationFile>
 
-        <Version>1.0.0-rc01</Version>
-        <PackageReleaseNotes>First pre-release.</PackageReleaseNotes>
+        <Version>1.0.0-rc02</Version>
+        <PackageReleaseNotes>The package is now marked correctly.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>
-        <PackageId>Griffin.Data.PostgreSql</PackageId>
+        <PackageId>Griffin.Data.SqlServer</PackageId>
         <Authors>Jonas Gauffin</Authors>
         <Description>SQL Server Integration for Griffin.Data.</Description>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <Copyright>Copyright 2023 © Jonas Gauffin. All rights reserved.</Copyright>
-        <PackageTags>data-mapper, orm, sqlserver, queries, postgresql, mssql</PackageTags>
+        <PackageTags>data-mapper, orm, sqlserver, queries, mssql</PackageTags>
         <PackageProjectUrl>https://github.com/jgauffin/griffin.data</PackageProjectUrl>
     </PropertyGroup>
 

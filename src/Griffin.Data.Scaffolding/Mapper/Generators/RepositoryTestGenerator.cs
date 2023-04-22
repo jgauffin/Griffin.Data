@@ -37,7 +37,7 @@ namespace Griffin.Data.Scaffolding.Mapper.Generators
             CreateEntityFactory(sb, table);
         }
 
-        private void CreateEntityFactory(TabbedStringBuilder sb, Table table)
+        private static void CreateEntityFactory(TabbedStringBuilder sb, Table table)
         {
             sb.AppendLine($"private {table.ClassName} CreateValidEntity()");
             sb.AppendLineIndent("{");
@@ -62,7 +62,7 @@ namespace Griffin.Data.Scaffolding.Mapper.Generators
             sb.DedentAppendLine("}");
         }
 
-        private string GetSampleValue(string? customPropertyType, string propertyType)
+        private static string GetSampleValue(string? customPropertyType, string propertyType)
         {
             if (customPropertyType != null)
             {
@@ -84,10 +84,6 @@ namespace Griffin.Data.Scaffolding.Mapper.Generators
         protected override GeneratedFile GenerateFile(Table table, GeneratorContext context, string contents)
         {
             return new GeneratedFile(table.ClassName + "RepositoryTests", FileType.DataTest, contents);
-        }
-        private string camelHump(string propertyName)
-        {
-            return char.ToLower(propertyName[0]) + propertyName[1..];
         }
     }
 }

@@ -8,7 +8,7 @@ public class ScaffolderTest
     public async Task Test1()
     {
         var s = new MapperScaffolder();
-        var constr = "Data Source=.;Initial Catalog=GriffinData;Integrated Security=True";
+        var constr = "Data Source=.;Initial Catalog=Sample;Integrated Security=True";
         await s.Generate("SqlServer", constr, @"C:\temp\DemoProject");
     }
 }

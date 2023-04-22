@@ -8,13 +8,14 @@ internal class RepositoryClassGenerator : GeneratorWithNamespace
     protected override void AddUsings(Table table, TabbedStringBuilder sb, GeneratorContext context)
     {
         sb.AppendLine("using Griffin.Data;");
+        sb.AppendLine("using Griffin.Data.Mapper;");
         sb.AppendLine("using Griffin.Data.Domain;");
         sb.AppendLine($"using {context.Folders.DomainNamespace}.{table.RelativeNamespace};");
     }
 
     protected override void GenerateClass(TabbedStringBuilder sb, Table table, GeneratorContext context)
     {
-        sb.AppendLine($"public class {table.ClassName}Repository : CrudOperations<{table.ClassName}>");
+        sb.AppendLine($"public class {table.ClassName}Repository : CrudOperations<{table.ClassName}>, I{table.ClassName}Repository");
         sb.AppendLineIndent("{");
 
         sb.AppendLine($"public {table.ClassName}Repository(Session session) : base(session)");
