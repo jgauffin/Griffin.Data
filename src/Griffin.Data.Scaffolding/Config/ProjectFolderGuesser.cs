@@ -28,6 +28,7 @@ public class ProjectFolderGuesser
     {
         x => x.EndsWith("Data", StringComparison.OrdinalIgnoreCase),
         x => x.Contains("Repositories", StringComparison.OrdinalIgnoreCase),
+        x => x.Contains("Datalayer", StringComparison.OrdinalIgnoreCase),
         x => x.Contains("Db")
     };
 
@@ -37,9 +38,11 @@ public class ProjectFolderGuesser
              x.Contains("Test", StringComparison.OrdinalIgnoreCase),
         x => x.Contains("Repositories", StringComparison.OrdinalIgnoreCase) &&
              x.Contains("Test", StringComparison.OrdinalIgnoreCase),
+        x => x.Contains("Datalayer", StringComparison.OrdinalIgnoreCase) &&
+             x.Contains("Test", StringComparison.OrdinalIgnoreCase),
         x => x.Contains("Db") && x.Contains("Test", StringComparison.OrdinalIgnoreCase)
     };
-    
+
     public ProjectFolders GetFolders(string rootDirectory)
     {
         var solutionDirectory = FindFileUp(rootDirectory, "*.sln");

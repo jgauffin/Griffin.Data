@@ -24,7 +24,7 @@ public class Table
     /// <summary>
     ///     Suggested class name after the table name has been cleaned and normalized.
     /// </summary>
-    public string ClassName { get; set; }
+    public string ClassName { get; private set; }
 
     /// <summary>
     ///     Columns defined in the table.
@@ -86,6 +86,22 @@ public class Table
     public Column GetColumn(string columnName)
     {
         return Columns.Single(x => string.Compare(x.Name, columnName, StringComparison.OrdinalIgnoreCase) == 0);
+    }
+
+    /// <summary>
+    ///     Remove parent suffix from our class name.
+    /// </summary>
+    /// <param name="parentName"></param>
+    /// <exception cref="InvalidOperationException"></exception>
+    public void RemoveParentSuffix(string parentName)
+    {
+        if (!ClassName.StartsWith(parentName))
+        {
+            throw new InvalidOperationException(
+                $"Cannot remove '{parentName}' since our name do not contain it: {ClassName}.");
+        }
+
+        ClassName = ClassName[parentName.Length..];
     }
 
     /// <inheritdoc />

@@ -1,4 +1,4 @@
-﻿namespace Griffin.Data.Scaffolding.Meta.Analyzers;
+﻿namespace Griffin.Data.Scaffolding.Mapper.Analyzers;
 
 internal class NamespaceWip
 {

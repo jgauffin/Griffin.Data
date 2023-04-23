@@ -78,7 +78,8 @@ public class QueryScaffolder
         var subDirs = Directory.GetDirectories(directory);
         foreach (var subDir in subDirs)
         {
-            if (subDir.StartsWith("."))
+            var folderName = new DirectoryInfo(subDir).Name;
+            if (folderName.StartsWith(".") || folderName == "bin" || folderName == "obj")
             {
                 continue;
             }

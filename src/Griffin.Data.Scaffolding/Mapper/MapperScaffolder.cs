@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Griffin.Data.Dialects;
 using Griffin.Data.Scaffolding.Config;
 using Griffin.Data.Scaffolding.Mapper.Generators;
 using Griffin.Data.Scaffolding.Meta;
@@ -21,17 +22,17 @@ public class MapperScaffolder
 
     /// <summary>
     /// </summary>
-    /// <param name="connectionString"></param>
-    /// <param name="directory"></param>
-    /// <param name="engineName"></param>
+    /// <param name="connectionString">Connection string.</param>
+    /// <param name="directory">Solution directory.</param>
+    /// <param name="dialect">Used to create the correct SchemaReader.</param>
     /// <returns></returns>
-    public async Task Generate(string engineName, string connectionString, string directory)
+    public async Task Generate(ISqlDialect dialect, string connectionString, string directory)
     {
         var namespaceFinder = new ProjectFolderGuesser();
         var folders = namespaceFinder.GetFolders(directory);
 
         var meta = new MetaGenerator();
-        var tables = await meta.ReadSchema(engineName, connectionString);
+        var tables = await meta.ReadSchema(dialect, connectionString);
 
         var context = new GeneratorContext(tables, folders);
         foreach (var analyzer in _analyzers.OrderBy(x => x.Priority))

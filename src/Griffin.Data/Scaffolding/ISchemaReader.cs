@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Data;
+using System.Threading.Tasks;
 
 namespace Griffin.Data.Scaffolding;
 
@@ -10,7 +11,8 @@ public interface ISchemaReader
     /// <summary>
     ///     Read schema and generate meta data.
     /// </summary>
+    /// <param name="connection">Open and active connection.</param>
     /// <param name="context">Context to add tables to.</param>
     /// <returns>Task.</returns>
-    Task ReadSchema(SchemaReaderContext context);
+    Task ReadSchema(IDbConnection connection, SchemaReaderContext context);
 }

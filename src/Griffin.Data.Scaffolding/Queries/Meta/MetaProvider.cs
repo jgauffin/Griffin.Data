@@ -49,7 +49,7 @@ internal class MetaProvider
             }
             else
             {
-                propertyType = SqlType.ToDotNetType(parameter.SqlType[..pos]);
+                propertyType = SqlType.ToDotNetType(parameter.SqlType);
             }
 
             var p = new QueryMetaParameter(parameter.Name, propertyType) { DefaultValue = parameter.TestValue };

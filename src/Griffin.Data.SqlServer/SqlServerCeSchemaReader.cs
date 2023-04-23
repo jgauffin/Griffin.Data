@@ -4,7 +4,6 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
-using Griffin.Data.Meta;
 using Griffin.Data.Scaffolding;
 
 namespace Griffin.Data.SqlServer;
@@ -12,7 +11,6 @@ namespace Griffin.Data.SqlServer;
 /// <summary>
 ///     TODO: IS this express now?
 /// </summary>
-[SchemaReader("SqlServerCE")]
 internal class SqlServerCeSchemaReader : ISchemaReader
 {
     private const string TableSql = @"SELECT *
@@ -36,13 +34,17 @@ internal class SqlServerCeSchemaReader : ISchemaReader
 
     // SchemaReader.ReadSchema
 
-    public async Task ReadSchema(SchemaReaderContext context)
+    /// <inheritdoc />
+    public async Task ReadSchema(IDbConnection connection, SchemaReaderContext context)
     {
         var result = new List<Table>();
-        await using var connection = new SqlConnection(context.ConnectionString);
-        connection.Open();
 
-        var cmd = connection.CreateCommand();
+        if (connection is not SqlConnection con)
+        {
+            throw new InvalidOperationException("The SqlServer reader expected a SqlConnection.");
+        }
+
+        var cmd = con.CreateCommand();
         cmd.CommandText = TableSql;
 
         //pull the TableCollection in a reader
@@ -52,7 +54,7 @@ internal class SqlServerCeSchemaReader : ISchemaReader
             while (await rdr.ReadAsync())
             {
                 var name = rdr["TABLE_NAME"].ToString()!;
-                var tbl = new Table(name) { ClassName = Inflector.Instance.MakeSingular(context.Cleanup(name)) };
+                var tbl = new Table(name);
 
                 result.Add(tbl);
                 context.Add(tbl);
@@ -140,7 +142,7 @@ internal class SqlServerCeSchemaReader : ISchemaReader
             var propType = GetPropertyType((string)rdr["DataType"]);
             var col = new Column(name, "", propType)
             {
-                PropertyName = Inflector.Instance.MakeSingular(context.Cleanup(name)),
+                PropertyName = name.ToPropertyName(),
                 IsNullable = rdr["IsNullable"].ToString() == "YES",
                 IsAutoIncrement = rdr["AUTOINC_INCREMENT"] != DBNull.Value
             };

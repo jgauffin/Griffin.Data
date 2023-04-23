@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using Griffin.Data.ChangeTracking;
 using Griffin.Data.Dialects;
 using Griffin.Data.Mappings;
 
@@ -17,6 +18,11 @@ public class DbConfiguration
     {
         ConnectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
     }
+
+    /// <summary>
+    ///     Change tracker to use (optional).
+    /// </summary>
+    public Func<IChangeTracker>? ChangeTrackerFactory { get; set; }
 
     /// <summary>
     ///     Standard ADO.NET Connection string used to connect to the database.

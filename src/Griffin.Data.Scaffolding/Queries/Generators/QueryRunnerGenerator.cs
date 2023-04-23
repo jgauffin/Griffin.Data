@@ -82,7 +82,7 @@ public class QueryRunnerGenerator : IQueryGenerator
 
     private static void GenerateMapMethod(QueryMeta meta, TabbedStringBuilder sb)
     {
-        sb.AppendLine($"protected override void MapRecord(IDataRecord record, {meta.QueryName}ResultItem item)");
+        sb.AppendLine($"protected void MapRecord(IDataRecord record, {meta.QueryName}ResultItem item)");
         sb.AppendLineIndent("{");
         var index = 0;
         foreach (var column in meta.Columns)
@@ -97,7 +97,7 @@ public class QueryRunnerGenerator : IQueryGenerator
     {
         sb.AppendLine($"public async Task<{meta.QueryName}Result> Execute({meta.QueryName} query)");
         sb.AppendLineIndent("{");
-        sb.AppendLine("await using var command = Session.CreateCommand();");
+        sb.AppendLine("await using var command = _session.CreateCommand();");
         sb.Append("command.CommandText = @\"");
         var reader = new StringReader(meta.SqlQuery);
         var isFirstLine = true;
@@ -152,7 +152,7 @@ public class QueryRunnerGenerator : IQueryGenerator
             sb.AppendLine();
         }
 
-        sb.AppendLine($"var items = await command.GenerateQueryResult<{meta.QueryName}Result>(MapRecord);");
+        sb.AppendLine($"var items = await command.GenerateQueryResult<{meta.QueryName}ResultItem>(MapRecord);");
         sb.AppendLine($"return new {meta.QueryName}Result {{ Items = items }};");
         sb.DedentAppendLine("}");
     }

@@ -1,7 +1,6 @@
 ﻿using Griffin.Data.Helpers;
-using Griffin.Data.Scaffolding.Mapper;
 
-namespace Griffin.Data.Scaffolding.Meta.Analyzers;
+namespace Griffin.Data.Scaffolding.Mapper.Analyzers;
 
 public class EnumAnalyzer : IMetaAnalyzer
 {

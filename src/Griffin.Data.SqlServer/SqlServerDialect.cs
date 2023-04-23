@@ -11,18 +11,31 @@ using Griffin.Data.Mapper;
 using Griffin.Data.Mapper.Implementation;
 using Griffin.Data.Mappings;
 using Griffin.Data.Queries;
+using Griffin.Data.Scaffolding;
 
 namespace Griffin.Data.SqlServer;
 
 /// <summary>
 ///     Adapter for Microsoft SQL Server.
 /// </summary>
+[DbEngineName("mssql")]
 public class SqlServerDialect : ISqlDialect
 {
+    /// <summary>
+    ///     SQL Server engine name.
+    /// </summary>
+    public const string EngineName = "mssql";
+
     /// <inheritdoc />
     public IDbConnection CreateConnection()
     {
         return new SqlConnection();
+    }
+
+    /// <inheritdoc />
+    public ISchemaReader CreateSchemaReader()
+    {
+        return new SqlServerSchemaReader();
     }
 
     /// <inheritdoc />

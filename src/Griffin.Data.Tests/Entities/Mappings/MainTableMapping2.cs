@@ -1,4 +1,4 @@
-using Griffin.Data.Configuration;
+﻿using Griffin.Data.Configuration;
 
 namespace Griffin.Data.Tests.Entities.Mappings;
 

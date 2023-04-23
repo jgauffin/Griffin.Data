@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using Griffin.Data.Meta;
 using Griffin.Data.Scaffolding;
 using Oracle.ManagedDataAccess.Client;
 
@@ -12,7 +11,6 @@ namespace Griffin.Data.Oracle;
 /// <summary>
 ///     Schema reader for Oracle SQL.
 /// </summary>
-[SchemaReader("Oracle")]
 internal class OracleSchemaReader : ISchemaReader
 {
     private const string TableSql = @"select TABLE_NAME from USER_TableCollection";
@@ -26,13 +24,16 @@ internal class OracleSchemaReader : ISchemaReader
  where table_name = upper(:tableName)
  order by column_id";
 
-    public async Task ReadSchema(SchemaReaderContext context)
+    public async Task ReadSchema(IDbConnection connection, SchemaReaderContext context)
     {
         var result = new List<Table>();
 
-        await using var connection = new OracleConnection(context.ConnectionString);
-        await connection.OpenAsync();
-        var cmd = connection.CreateCommand();
+        if (connection is not OracleConnection con)
+        {
+            throw new InvalidOperationException("The Oracle reader expected an OracleConnection.");
+        }
+
+        var cmd = con.CreateCommand();
         cmd.CommandText = TableSql;
         cmd.GetType().GetProperty("BindByName")!.SetValue(cmd, true, null);
 
@@ -46,10 +47,8 @@ internal class OracleSchemaReader : ISchemaReader
                 var tbl = new Table(name)
                 {
                     SchemaName = rdr["TABLE_SCHEMA"].ToString(),
-                    IsView = string.Compare(rdr["TABLE_TYPE"].ToString(), "View",
-                                 StringComparison.OrdinalIgnoreCase) ==
-                             0,
-                    ClassName = Inflector.Instance.MakeSingular(context.Cleanup(name))
+                    IsView = string.Equals(rdr["TABLE_TYPE"].ToString(), "View",
+                        StringComparison.OrdinalIgnoreCase)
                 };
 
                 result.Add(tbl);
@@ -58,10 +57,10 @@ internal class OracleSchemaReader : ISchemaReader
 
         foreach (var tbl in result)
         {
-            tbl.Columns = LoadColumns(connection, context, tbl);
+            tbl.Columns = LoadColumns(con, tbl);
 
             // Mark the primary key
-            var primaryKey = GetPrimaryKey(connection, tbl.Name);
+            var primaryKey = GetPrimaryKey(con, tbl.Name);
             var pkColumn = tbl.Columns.SingleOrDefault(x => x.Name.ToLower().Trim() == primaryKey.ToLower().Trim());
             if (pkColumn != null)
             {
@@ -147,7 +146,7 @@ and ucc.position = 1";
         return sysType;
     }
 
-    private List<Column> LoadColumns(OracleConnection connection, SchemaReaderContext context, Table tbl)
+    private List<Column> LoadColumns(OracleConnection connection, Table tbl)
     {
         using var cmd = connection.CreateCommand();
         cmd.CommandText = ColumnSql;
@@ -173,7 +172,7 @@ and ucc.position = 1";
             var propType = GetPropertyType(rdr["DataType"].ToString()!, (string)rdr["DataScale"]);
             var col = new Column(name, dataType, propType)
             {
-                PropertyName = context.Cleanup(name),
+                PropertyName = name.ToPropertyName(),
                 IsNullable = rdr["IsNullable"].ToString() == "YES",
                 IsAutoIncrement = true
             };

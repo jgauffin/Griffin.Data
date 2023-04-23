@@ -246,7 +246,14 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping, IGotColumnT
 
         if (ColumnToPropertyConverter != null)
         {
-            value = ColumnToPropertyConverter((TEntity)value)!;
+            try
+            {
+                value = ColumnToPropertyConverter(value)!;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidCastException($"Cannot convert {typeof(TEntity)}.{PropertyName}: " + ex.Message);
+            }
         }
 
         _setter((TEntity)entity, (TProperty)value);

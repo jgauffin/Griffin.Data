@@ -5,13 +5,11 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
-using Griffin.Data.Meta;
 using Griffin.Data.Scaffolding;
 using Griffin.Data.Scaffolding.Meta;
 
 namespace Griffin.Data.SqlServer;
 
-[SchemaReader("SqlServer")]
 internal class SqlServerSchemaReader : ISchemaReader
 {
     // SchemaReader.ReadSchema
@@ -20,13 +18,16 @@ internal class SqlServerSchemaReader : ISchemaReader
 		FROM  INFORMATION_SCHEMA.Tables
 		WHERE TABLE_TYPE='BASE TABLE' OR TABLE_TYPE='VIEW'";
 
-    public async Task ReadSchema(SchemaReaderContext context)
+    public async Task ReadSchema(IDbConnection connection, SchemaReaderContext context)
     {
         var result = new List<Table>();
 
-        await using var connection = new SqlConnection(context.ConnectionString);
-        await connection.OpenAsync();
-        var cmd = connection.CreateCommand();
+        if (connection is not SqlConnection con)
+        {
+            throw new InvalidOperationException("The SqlServer reader expected a SqlConnection.");
+        }
+
+        var cmd = con.CreateCommand();
         cmd.CommandText = TableSql;
 
         //pull the TableCollection in a reader
@@ -40,9 +41,7 @@ internal class SqlServerSchemaReader : ISchemaReader
                 {
                     SchemaName = rdr["TABLE_SCHEMA"].ToString(),
                     IsView = string.Compare(rdr["TABLE_TYPE"].ToString(), "View",
-                                 StringComparison.OrdinalIgnoreCase) ==
-                             0,
-                    ClassName = Inflector.Instance.MakeSingular(context.Cleanup(name))
+                        StringComparison.OrdinalIgnoreCase) == 0
                 };
 
                 result.Add(tbl);
@@ -52,12 +51,12 @@ internal class SqlServerSchemaReader : ISchemaReader
 
         foreach (var tbl in result)
         {
-            tbl.Columns = LoadColumns(connection, context, tbl);
+            tbl.Columns = LoadColumns(con, tbl);
         }
 
         var tables = result.ToDictionary(x => x.Name, x => x);
         await AddForeignKeys(tables, connection);
-        await SetPrimaryKeys(connection, tables);
+        await SetPrimaryKeys(con, tables);
     }
 
     public async Task AddForeignKeys(IDictionary<string, Table> tables, IDbConnection connection)
@@ -76,7 +75,7 @@ internal class SqlServerSchemaReader : ISchemaReader
         while (await reader.ReadAsync())
         {
             found = true;
-            var parentTable = reader.GetString(1);
+            var foreignKeyTable = reader.GetString(1);
             var foreignKeyColumn = reader.GetString(2);
             var referencedTable = reader.GetString(3);
             var referencedColumn = reader.GetString(4);
@@ -90,18 +89,18 @@ internal class SqlServerSchemaReader : ISchemaReader
                 continue;
             }
 
-            if (!tables.TryGetValue(parentTable, out var p))
+            if (!tables.TryGetValue(foreignKeyTable, out var foreignKeyMeta))
             {
                 continue;
             }
 
-            if (!tables.TryGetValue(referencedTable, out var r))
+            if (!tables.TryGetValue(referencedTable, out var referencedMeta))
             {
                 continue;
             }
 
-            p.ForeignKeys.Add(new ForeignKeyColumn(foreignKeyColumn, p, referencedColumn));
-            r.References.Add(new Reference(referencedColumn, p, foreignKeyColumn));
+            foreignKeyMeta.ForeignKeys.Add(new ForeignKeyColumn(foreignKeyColumn, referencedMeta, referencedColumn));
+            referencedMeta.References.Add(new Reference(referencedColumn, foreignKeyMeta, foreignKeyColumn));
         }
 
         if (!found)
@@ -116,10 +115,7 @@ internal class SqlServerSchemaReader : ISchemaReader
 
                 var className = column.PropertyName.Replace("Id", "");
                 var referencedTable = tables.Values.FirstOrDefault(x => x.ClassName == className);
-                if (referencedTable != null)
-                {
-                    referencedTable.References.Add(new Reference("Id", table, column.PropertyName));
-                }
+                referencedTable?.References.Add(new Reference("Id", table, column.PropertyName));
             }
         }
     }
@@ -154,7 +150,7 @@ internal class SqlServerSchemaReader : ISchemaReader
         };
     }
 
-    private static List<Column> LoadColumns(SqlConnection connection, SchemaReaderContext context, Table tbl)
+    private static List<Column> LoadColumns(SqlConnection connection, Table tbl)
     {
         using var cmd = connection.CreateCommand();
         cmd.CommandText = @"SELECT 
@@ -197,7 +193,7 @@ internal class SqlServerSchemaReader : ISchemaReader
             {
                 MaxStringLength = reader.GetNullableInt("MaxLength"),
                 DefaultValue = reader.GetNullableString("DefaultSetting"),
-                PropertyName = context.Cleanup(name),
+                PropertyName = name.ToPropertyName(),
                 IsNullable = reader.GetNullableString("IsNullable") == "YES",
                 IsAutoIncrement = (int)reader["IsIdentity"] == 1
             };

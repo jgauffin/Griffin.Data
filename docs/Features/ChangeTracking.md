@@ -13,6 +13,19 @@ As this implementation uses snapshots, the memory footprint of each `Session` is
  services.AddScoped<IChangeTracker, SnapshotChangeTracking>();
  ```
 
+ You can also add it directly to the `DbConfiguration`:
+
+ ```csharp
+ var connectionString = config.GetConnectionString("Db");
+
+ var config = new DbConfiguration(connectionString)
+ {
+    SqlDialect = new SqlServerDialect();
+ };
+config.ChangeTrackerFactory = () => new SnapshotChangeTracking(config.MappingRegistry);
+ ```
+ 
+
  ## Checking state
 
 To check the state of an entity, invoke `changeTracker.GetState(yourEntity);`. 

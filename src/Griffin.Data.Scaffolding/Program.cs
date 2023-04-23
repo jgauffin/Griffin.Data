@@ -1,5 +1,4 @@
-﻿using System.Data.SqlClient;
-using Griffin.Data.Scaffolding.Helpers;
+﻿using Griffin.Data.Scaffolding.Helpers;
 using Microsoft.Extensions.Configuration;
 
 if (args.Length == 0)
@@ -21,24 +20,21 @@ if (conString == null)
     return;
 }
 
-await using var connection = new SqlConnection(conString);
-connection.Open();
-
 switch (args[0])
 {
     case "generate":
     {
         if (args.Length == 1)
         {
-            await GeneratorHelper.GenerateOrm("SqlServer", conString, Environment.CurrentDirectory);
-            await GeneratorHelper.GenerateQueries(connection, Environment.CurrentDirectory);
+            await GeneratorHelper.GenerateOrm("mssql", conString, Environment.CurrentDirectory);
+            await GeneratorHelper.GenerateQueries("mssql", conString, Environment.CurrentDirectory);
         }
         else
         {
             switch (args[1])
             {
                 case "queries":
-                    await GeneratorHelper.GenerateQueries(connection, Environment.CurrentDirectory);
+                    await GeneratorHelper.GenerateQueries("mssql", conString, Environment.CurrentDirectory);
                     break;
                 case "mappings":
                     await GeneratorHelper.GenerateOrm("SqlServer", conString, Environment.CurrentDirectory);
@@ -53,7 +49,7 @@ switch (args[0])
     }
 
     case "queries":
-        await GeneratorHelper.GenerateQueries(connection, Environment.CurrentDirectory);
+        await GeneratorHelper.GenerateQueries("mssql", conString, Environment.CurrentDirectory);
         break;
 
     case "mappings":

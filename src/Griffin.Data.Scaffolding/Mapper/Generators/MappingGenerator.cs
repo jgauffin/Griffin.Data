@@ -14,7 +14,7 @@ public class MappingGenerator : GeneratorWithNamespace
 
     protected override void GenerateClass(TabbedStringBuilder sb, Table table, GeneratorContext context)
     {
-        sb.AppendLine($@"class {table.ClassName}Mapping : IEntityConfigurator<{table.ClassName}>");
+        sb.AppendLine($@"public class {table.ClassName}Mapping : IEntityConfigurator<{table.ClassName}>");
         sb.AppendLineIndent("{");
         sb.AppendLine($"public void Configure(IClassMappingConfigurator<{table.ClassName}> config)");
         sb.AppendLineIndent("{");
@@ -61,6 +61,11 @@ public class MappingGenerator : GeneratorWithNamespace
     protected override GeneratedFile GenerateFile(Table table, GeneratorContext context, string contents)
     {
         return new GeneratedFile($"{table.ClassName}Mapping", FileType.Data, contents);
+    }
+
+    protected override string GetDirectory(Table table, FileType fileFileType, ProjectFolders folders)
+    {
+        return Path.Combine(base.GetDirectory(table, fileFileType, folders), "Mappings");
     }
 
     protected override string GetNamespaceName(Table table, ProjectFolders projectFolders)

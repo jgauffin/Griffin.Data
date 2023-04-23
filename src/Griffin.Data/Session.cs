@@ -16,7 +16,7 @@ namespace Griffin.Data;
 /// <summary>
 ///     Unit of work for the DB.
 /// </summary>
-public class Session : IDisposable
+public sealed class Session : IDisposable
 {
     private readonly IChangeTracker? _changeTracker;
     private readonly IMappingRegistry _registry;
@@ -47,21 +47,20 @@ public class Session : IDisposable
     /// <summary>
     /// </summary>
     /// <param name="configuration">Configuration to use.</param>
-    /// <param name="changeTracker">Optional change tracker.</param>
-    public Session(DbConfiguration configuration, IChangeTracker? changeTracker = null)
+    /// <remarks>
+    ///     <para>
+    ///         Some IoC containers requires a IEnumerable instead of nullable for optional parameters.
+    ///     </para>
+    /// </remarks>
+    public Session(DbConfiguration configuration)
     {
-        if (configuration == null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
         _connection = configuration.OpenConnection();
         Transaction = _connection.BeginTransaction();
 
         Dialect = configuration.Dialect ??
                   throw new InvalidOperationException("DbConfiguration.Dialect has not been configured.");
         _registry = configuration.MappingRegistry;
-        _changeTracker = changeTracker;
+        _changeTracker = configuration.ChangeTrackerFactory?.Invoke();
     }
 
     /// <summary>

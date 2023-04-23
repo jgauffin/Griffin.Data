@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using Griffin.Data.Meta;
 using Griffin.Data.Scaffolding;
 using Npgsql;
 
 namespace Griffin.Data.PostgreSql;
 
-[SchemaReader("PostgreSql")]
 internal class PostGreSqlSchemaReader : ISchemaReader
 {
     private const string TableSql = @"
@@ -25,14 +23,17 @@ internal class PostGreSqlSchemaReader : ISchemaReader
 			WHERE table_name=@tableName;
 			";
 
-    // SchemaReader.ReadSchema
-    public async Task ReadSchema(SchemaReaderContext context)
+    /// <inheritdoc />
+    public async Task ReadSchema(IDbConnection connection, SchemaReaderContext context)
     {
         var result = new List<Table>();
 
-        await using var connection = new NpgsqlConnection(context.ConnectionString);
-        await connection.OpenAsync();
-        var cmd = connection.CreateCommand();
+        if (connection is not NpgsqlConnection con)
+        {
+            throw new InvalidOperationException("The PostgreSql reader expected a NpgsqlConnection.");
+        }
+
+        var cmd = con.CreateCommand();
         cmd.CommandText = TableSql;
 
         //pull the TableCollection in a reader
@@ -45,9 +46,8 @@ internal class PostGreSqlSchemaReader : ISchemaReader
                 var tbl = new Table(name)
                 {
                     SchemaName = rdr["table_schema"].ToString(),
-                    IsView = String.Compare(rdr["table_type"].ToString(), "View",
-                        StringComparison.OrdinalIgnoreCase) == 0,
-                    ClassName = Inflector.Instance.MakeSingular(context.Cleanup(name))
+                    IsView = string.Equals(rdr["table_type"].ToString(), "View",
+                        StringComparison.OrdinalIgnoreCase)
                 };
 
                 result.Add(tbl);
@@ -57,10 +57,10 @@ internal class PostGreSqlSchemaReader : ISchemaReader
 
         foreach (var tbl in result)
         {
-            tbl.Columns = LoadColumns(connection, tbl);
+            tbl.Columns = LoadColumns(con, tbl);
 
             // Mark the primary key
-            var primaryKey = GetPrimaryKey(connection, tbl.Name);
+            var primaryKey = GetPrimaryKey(con, tbl.Name);
             var pkColumn = tbl.Columns.SingleOrDefault(x => x.Name.ToLower().Trim() == primaryKey.ToLower().Trim());
             if (pkColumn != null)
             {

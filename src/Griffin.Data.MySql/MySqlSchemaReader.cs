@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
-using Griffin.Data.Meta;
 using Griffin.Data.Scaffolding;
 using MySql.Data.MySqlClient;
 
 namespace Griffin.Data.MySql;
 
-[SchemaReader("MySql")]
 internal class MySqlSchemaReader : ISchemaReader
 {
     private const string TableSql = @"
@@ -17,13 +15,17 @@ internal class MySqlSchemaReader : ISchemaReader
 			WHERE (table_type='BASE TABLE' OR table_type='VIEW')
 			";
 
-    public async Task ReadSchema(SchemaReaderContext context)
+    /// <inheritdoc />
+    public async Task ReadSchema(IDbConnection connection, SchemaReaderContext context)
     {
         var tables = new List<Table>();
 
-        await using var connection = new MySqlConnection(context.ConnectionString);
-        await connection.OpenAsync();
-        var cmd = connection.CreateCommand();
+        if (connection is not MySqlConnection mySqlConnection)
+        {
+            throw new InvalidOperationException("The MySQL reader expected a MysqlConnection.");
+        }
+
+        var cmd = mySqlConnection.CreateCommand();
         cmd.CommandText = TableSql;
 
         //pull the TableCollection in a reader
@@ -37,8 +39,7 @@ internal class MySqlSchemaReader : ISchemaReader
                 {
                     SchemaName = rdr["TABLE_SCHEMA"].ToString(),
                     IsView =
-                        string.Equals(rdr["TABLE_TYPE"].ToString(), "View", StringComparison.OrdinalIgnoreCase),
-                    ClassName = Inflector.Instance.MakeSingular(context.Cleanup(tableName.Normalize()))
+                        string.Equals(rdr["TABLE_TYPE"].ToString(), "View", StringComparison.OrdinalIgnoreCase)
                 };
 
                 context.Add(tbl);
@@ -46,7 +47,7 @@ internal class MySqlSchemaReader : ISchemaReader
             }
         }
 
-        var schema = await connection.GetSchemaAsync("COLUMNS");
+        var schema = await mySqlConnection.GetSchemaAsync("COLUMNS");
         foreach (var item in tables)
         {
             item.Columns = new List<Column>();
@@ -59,7 +60,7 @@ internal class MySqlSchemaReader : ISchemaReader
                 var propertyType = GetPropertyType(row);
 
                 var col = new Column(row["COLUMN_NAME"].ToString()!, dataType, propertyType);
-                col.PropertyName = context.Cleanup(col.Name);
+                col.PropertyName = col.Name.ToPropertyName();
                 col.IsNullable = row["IS_NULLABLE"].ToString() == "YES";
                 col.IsPrimaryKey = row["COLUMN_KEY"].ToString() == "PRI";
                 col.IsAutoIncrement = row["extra"].ToString()!.ToLower()

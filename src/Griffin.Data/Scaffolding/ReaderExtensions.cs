@@ -4,12 +4,12 @@ using System.Data;
 namespace Griffin.Data.Scaffolding;
 
 /// <summary>
-/// Extensions to handle DBNull.
+///     Extensions to handle DBNull.
 /// </summary>
 public static class ReaderExtensions
 {
     /// <summary>
-    /// Get a nullable integer.
+    ///     Get a nullable integer.
     /// </summary>
     /// <param name="reader">Reader to read from.</param>
     /// <param name="name">Column name.</param>
@@ -26,7 +26,7 @@ public static class ReaderExtensions
     }
 
     /// <summary>
-    /// Get a nullable string.
+    ///     Get a nullable string.
     /// </summary>
     /// <param name="reader">Reader to read from.</param>
     /// <param name="name">Column name.</param>

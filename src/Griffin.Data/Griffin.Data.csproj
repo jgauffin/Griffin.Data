@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Griffin.Data.xml</DocumentationFile>
 
-        <Version>2.0.0-rc21</Version>
-        <PackageReleaseNotes>Moved CrudOperations.</PackageReleaseNotes>
+        <Version>2.0.0-rc22</Version>
+        <PackageReleaseNotes>Everything seems to work fine.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>

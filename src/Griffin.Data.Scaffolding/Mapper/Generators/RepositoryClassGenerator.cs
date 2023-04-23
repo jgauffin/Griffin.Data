@@ -15,7 +15,8 @@ internal class RepositoryClassGenerator : GeneratorWithNamespace
 
     protected override void GenerateClass(TabbedStringBuilder sb, Table table, GeneratorContext context)
     {
-        sb.AppendLine($"public class {table.ClassName}Repository : CrudOperations<{table.ClassName}>, I{table.ClassName}Repository");
+        sb.AppendLine(
+            $"public class {table.ClassName}Repository : CrudOperations<{table.ClassName}>, I{table.ClassName}Repository");
         sb.AppendLineIndent("{");
 
         sb.AppendLine($"public {table.ClassName}Repository(Session session) : base(session)");
@@ -66,7 +67,7 @@ internal class RepositoryClassGenerator : GeneratorWithNamespace
         return $"{projectFolders.DataNamespace}.{table.RelativeNamespace}";
     }
 
-    private string ToCamelCase(string name)
+    private static string ToCamelCase(string name)
     {
         return char.ToLower(name[0]) + name[1..];
     }

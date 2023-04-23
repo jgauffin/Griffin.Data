@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mappings;
 using Griffin.Data.Queries;
+using Griffin.Data.Scaffolding;
 
 namespace Griffin.Data.Dialects;
 
@@ -48,6 +49,12 @@ public interface ISqlDialect
     /// </summary>
     /// <returns></returns>
     IDbConnection CreateConnection();
+
+    /// <summary>
+    ///     Used to create the correct schema reader implementation.
+    /// </summary>
+    /// <returns>Reader that can read the schema from the current DB engine.</returns>
+    ISchemaReader CreateSchemaReader();
 
     /// <summary>
     ///     Execute an INSERT statement.
