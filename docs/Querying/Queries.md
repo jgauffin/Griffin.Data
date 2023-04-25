@@ -1,7 +1,7 @@
 Queries
 =======
 
-Use queries to generate information from one or multiple tables, such as on the read side of CQRS.
+Use queries to generate aggregated information from one or multiple tables, as example for the read side of CQRS.
 
 Build the query classes manually, or use the recommended approach: The scaffolder in this library takes SQL query files and generates classes based on them.
 

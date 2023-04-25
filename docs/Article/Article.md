@@ -112,7 +112,23 @@ But the worst part is that most LINQ To SQL providers are pretty complex because
 
 Ask yourself, what do you get by adding another query language? Is the additional complexity worth it? The extra type safety that LINQ to Sql provides is only isolated to the database layer, which either way must be integration tested to ensure that all mappings are correct.
 
-In Griffin.Data, I've made an active choice not to support LINQ. Instead, you'll write SQL queries and get code generated based on those queries for you. The queries, and their result, are still type-safe but much more efficient and without any extra complexity. What you see is what you get
+I think that the bulk update feature in EF core is a perfect example:
+
+```csharp
+await context.Users
+             .Where(x => x.Id > 1000)
+             .ExecuteUpdateAsync(x => x.SetProperty(x => x.Category, x => "Customer"));
+```
+
+Instead of:
+
+```csharp
+await connection.Execute("UPDATE Users SET Category = 'Customer' WHERE Id > 1000");
+```
+
+In Griffin.Data, I've made an active choice not to support LINQ. Instead, you'll write SQL queries and get code generated based on those queries for you. The queries, and their result, are still type-safe but much more efficient and without any extra complexity. What you see is what you get.
+
+That being said, I do regognize that compilation errors do add some value, even though that all mappings need to be integration tested. That's why I'm working on a roslyn analyzer which will test all SQL statements against the mappings.
 
 ## Conclusion
 
@@ -607,7 +623,35 @@ Queries are designed as DTOs so that you should be able to use them through API 
 
 Now, it's time to get down to business. All examples below are using Griffin.Data directly to demonstrate how it works. If you use the scaffolder in your application, you'll probably use the generated repositories instead.
 
-Let's start with a simple use case. We want to modify a parent and add child.
+Before the above code is possible, we need to configure Griffin.Data. That's done in the following way:
+
+```csharp
+
+// Mapping registry keeps track of all table/class mappings.
+var mappingRegistry = new MappingRegistry();
+mappingRegistry.Scan(typeof(AccountMapping).Assembly);
+
+// A config from Microsoft.Extensions.Configuration
+var connectionString = config.GetConnectionString("Db");
+
+// The DB configuration.
+var config = new DbConfiguration(connectionString)
+{
+    MappingRegistry = mappingRegistry, 
+    Dialect = new SqlServerDialect(),
+    ChangeTrackerFactory = () => new SnapshotChangeTracking(mappingRegistry)
+};
+
+var session = new Session(config);
+```
+
+Everything is now configured.
+
+```csharp
+var entities = session.List<Account>(new { FirstName = 'G%' });
+```
+
+Let's start with a simple use case. We want to modify a parent entity and add child.
 
 Without change tracking, all changes have to be applied manually:
 
@@ -633,34 +677,6 @@ entity.Manager = new LinkedAccount(otherAccount);
 Session.SaveChanges();
 ```
 
-### Setting everything up
-
-```csharp
-
-// Mapping registry keeps track of all table/class mappings.
-var mappingRegistry = new MappingRegistry();
-mappingRegistry.Scan(typeof(AccountMapping).Assembly);
-
-// A config from Microsoft.Extensions.Configuration
-var connectionString = config.GetConnectionString("Db");
-
-// The DB configuration.
-var config = new DbConfiguration(connectionString)
-{
-    MappingRegistry = mappingRegistry, 
-    Dialect = new SqlServerDialect(),
-    ChangeTrackerFactory = () => new SnapshotChangeTracking(mappingRegistry)
-};
-
-var session = new Session(config);
-```
-
-
-Now, we are ready.
-
-```csharp
-var entities = session.List(new {FirstName = 'G%' });
-```
 
 ### Change tracking.
 
