@@ -18,6 +18,13 @@ var config = new DbConfiguration(connectionString)
 };
 var session = new Session(config, Array.Empty<IChangeTracker>());
 
+var result = await session.Query<MainTable>()
+    .Where(new { FirstName = "Jonas" })
+    .DoNotLoadChildren()
+    .Paging(2, 10)
+    .OrderByDescending(x => x.Age)
+    .List();
+
 var current = new MainTable
 {
     Name = "Arne",

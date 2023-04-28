@@ -23,7 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Engines", "Engines", "{E0A1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scaffolding", "Scaffolding", "{B2CF784B-C32E-4F35-9470-E4D08AB20002}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Data.Scaffolding.Tests", "Griffin.Data.Scaffolding.Tests\Griffin.Data.Scaffolding.Tests.csproj", "{E534BBF0-3E1C-497B-A45E-243F6E3E1B5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Griffin.Data.Scaffolding.Tests", "Griffin.Data.Scaffolding.Tests\Griffin.Data.Scaffolding.Tests.csproj", "{E534BBF0-3E1C-497B-A45E-243F6E3E1B5E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

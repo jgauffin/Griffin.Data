@@ -38,7 +38,7 @@ internal class IntegrationTestGenerator : IClassGenerator
         sb.AppendLineIndent(@"{");
         sb.AppendLineIndent(@"var config = new ConfigurationBuilder()");
         sb.AppendLine(@".SetBasePath(Directory.GetCurrentDirectory())");
-        sb.AppendLine(@".AddJsonFile(""config.json"", false)");
+        sb.AppendLine(@".AddJsonFile(""appsettings.json"", false)");
         sb.AppendLine(@".Build();");
         sb.DedentAppendLine();
         sb.AppendLine(@"var connectionString = config.GetConnectionString(""TestDb"");");

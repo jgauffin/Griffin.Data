@@ -11,6 +11,8 @@ namespace Griffin.Data.ChangeTracking.Services.Implementations;
 /// </summary>
 public class CopyService : ICopyService
 {
+    private static readonly Dictionary<Type, Func<object, object>> CachedFactories = new();
+
     /// <summary>
     ///     Callback invoked each time an entity have been copied.
     /// </summary>
@@ -42,7 +44,15 @@ public class CopyService : ICopyService
             throw new ArgumentNullException(nameof(source));
         }
 
-        var copy = Activator.CreateInstance(source.GetType(), true)!;
+        if (!CachedFactories.TryGetValue(source.GetType(), out var factory))
+        {
+            var factoryFactory = new CopyConstructorFactory();
+            factory = factoryFactory.CreateCopyConstructor(source.GetType());
+            CachedFactories[source.GetType()] = factory;
+        }
+
+
+        var copy = factory(source);
         createdInstances[source] = copy;
         Callback?.Invoke(parent, source, copy, depth);
 

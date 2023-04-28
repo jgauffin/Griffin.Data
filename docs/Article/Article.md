@@ -1,13 +1,19 @@
 Introduction
 ===========
 
-This article is about version 2.0 of my object/relation mapper and data mapper Griffin.Data, and is divided into three parts. First, this introduction will explain my reasoning for creating it, the second part is about the scaffolder, and the third part is about actual usage.
+This article is about version 2.0 of my object/relation mapper and data mapper Griffin.Data and is divided into parts. 
 
-Before we get into the library itself, let's discuss two things.
+* Part 1 - Why I created Griffin.Data.
+* Part 2 - Scaffolding and inspecting the generated files.
+* Part 3 - Adjusting the generated files.
+* Part 4 - Building an application service using the generated code.
+* Part 5 - Summary and links.
+
+Before we get into the library itself, let's discuss my goals.
 
 ## The importance of encapsulation
 
-First, let's talk about business entities, or domain entities as they are called in Domain Driven Design. Business entities are classes that ensure the logic is encapsulated and that changes are driven by behavior (invoking methods). 
+First, let's talk about business entities, or domain entities as they are called in Domain Driven Design. Business entities are classes that ensure the busuiness logic is encapsulated and that changes are driven by behavior (invoking methods). 
 
 This is a POCO (Plain Old CLR Object):
 
@@ -24,7 +30,7 @@ public class Account
 }
 ```
 
-It has no control over its state; any part of the application can modify its properties without validation. For instance, one method can change the date fields without remembering to change the state and vice versa. That would produce an invalid state, which will make many any logic that uses both fields to produce ambiguous behavior (i.e., can't tell what the result will be as the combination is unexpected). Finding that kind of discrepancy is easy initially but quite challenging when the application is five years old.
+It has no control over its state; any part of the application can modify its properties without validation. For instance, one method can change the date fields without remembering to change the state and vice versa. That would produce an invalid state, which will make many any logic that uses both fields to produce ambiguous behavior (i.e., can't tell what the result will be as the combination is unexpected). Finding that kind of discrepancy is easy initially but quite challenging when the application is a couple of years old.
 
 One way to remedy the above problem is to use encapsulation, which is one of the fundamental principles of OOP.
 
@@ -75,7 +81,9 @@ public class Account
 }
 ```
 
-The account class has no control over which accounts are added or not as linked. That is, any part of the application can add or remove accounts, whether valid or not. However, a simple change can correct that:
+The account class has no control over which accounts are added or not as linked. That is, any part of the application can add or remove accounts, whether valid or not. 
+
+A simple change can correct that:
 
 ```csharp
 public class Account
@@ -102,39 +110,31 @@ In that way, we still keep all the business logic within the same place which ma
 
 If you physically prevent something (by using private setters and read-only collections), you cannot produce spaghetti over time as easily ;)
 
-## The complexity of the data layer
+## Complexity
 
-Let's face it. SQL is easy to learn. There are fantastic tools to craft queries and ensure that they are efficient. If you are good at SQL, you can visualize a query's efficiency and which indexes you must create.
+Many ORMs are quite large and complex. EF Core is a huge beast that tries to solve all possible problems in the data layer. My personal opinion is that EF Core is like WebForms. It tries to solve problems that isn't really there which really results in layers of indirection and additional complexity in your application.
 
-On the other hand, LINQ To SQL is a layer of indirection. It tries to solve a problem that isn't there. It teaches you to write SQL in a new way, and it's more challenging to understand what the generated query will look like than reading an explicit query. Therefore, you must master two different query languages to write efficient database calls.
+With Griffin.Data I try to keep the runtime complexity as minimal as possible. __When something fails, it should be obvious why__; It should be easy to correct mistakes without spending a lot of time debugging.
 
-But the worst part is that most LINQ To SQL providers are pretty complex because only the most trivial queries are easily translated to SQL.
+The strive for minimal complexity also means that some design desicions are made. 
 
-Ask yourself, what do you get by adding another query language? Is the additional complexity worth it? The extra type safety that LINQ to Sql provides is only isolated to the database layer, which either way must be integration tested to ensure that all mappings are correct.
+Griffin.Data does not support LINQ and never will. Instead, you have to use SQL. But in most cases you don't have to when working directly with business entities. When it comes to present information to users, you write SQL queries, but those are scaffolded into classes. In that way you do get type safety without LINQ. I'm also working on a SQL query analyzer that will detect errors in your SQL statements at compile time (as an alternative to LINQ type safety).
 
-I think that the bulk update feature in EF core is a perfect example:
+## Errors
 
-```csharp
-await context.Users
-             .Where(x => x.Id > 1000)
-             .ExecuteUpdateAsync(x => x.SetProperty(x => x.Category, x => "Customer"));
-```
+Debugging the data layer can make event the most experiences developer highly frustrated. The data layer is infrastructure code. It doesn't solve the customers problem, right? It should just work.
 
-Instead of:
+Many ORMs provide vague error messages which makes it hard to tell what the root cause is. The more custom solutions you make, the harder it will be to debug it.
 
-```csharp
-await connection.Execute("UPDATE Users SET Category = 'Customer' WHERE Id > 1000");
-```
+In Griffin.Data I've spent time to make sure that all error messages are rich and should give you enough information to dignaose and solve problems quickly.
 
-In Griffin.Data, I've made an active choice not to support LINQ. Instead, you'll write SQL queries and get code generated based on those queries for you. The queries, and their result, are still type-safe but much more efficient and without any extra complexity. What you see is what you get.
-
-That being said, I do regognize that compilation errors do add some value, even though that all mappings need to be integration tested. That's why I'm working on a roslyn analyzer which will test all SQL statements against the mappings.
+Here are a few samples.
 
 ## Conclusion
 
 If you agree with the above sentiments, you'll like Griffin.Data. If you don't, EF Core or NHibernate might better fit you.
 
-# Enter Griffin.Data
+# Part 2 - Enter Griffin.Data
 
 Stop for a minute and reflect on what your data layer consists of.
 
@@ -449,7 +449,7 @@ public class PermissionRepository : CrudOperations<Permission>, IPermissionRepos
 }
 ```
 
-### Integration tests
+**Integration tests**
 
 Finally, we have the integration tests (i.e. tests for the data layer). They aim to ensure that the mappings work and that Griffin.Data fully supports your entities/tables.
 
@@ -536,7 +536,7 @@ WHERE tp.AccountId = @accountId
 ORDER by tt.Priority
 ```
 
-Save it in your dataproject with the same `SomeComplexQuery.query.sql`. The `.query.sql` part is essential so the scaffolder can pick it up.
+Save it in your dataproject with the name `SomeComplexQuery.query.sql`. The `.query.sql` part is essential so the scaffolder can pick it up.
 
 Then run the scaffolder:
 
@@ -587,6 +587,13 @@ public class ListMyTasksResultItem
 }
 ```
 
+**Query invoker** 
+
+```csharp
+
+```
+
+
 You can also instruct the scaffolder to generate code for paging and sorting like this:
 
 ```
@@ -619,39 +626,152 @@ var result = await _queryInvoker.Query(query);
 
 Queries are designed as DTOs so that you should be able to use them through API end points (with for instance JSON serialization).
 
-## Using the library
 
-Now, it's time to get down to business. All examples below are using Griffin.Data directly to demonstrate how it works. If you use the scaffolder in your application, you'll probably use the generated repositories instead.
 
-Before the above code is possible, we need to configure Griffin.Data. That's done in the following way:
+
+## Part 3 - Adjusting the generated files
+
+When we designed the database, we wanted task to be able to contain different types of information depending on the task type. As it's not possible for the scaffolder to understand that, we need to edit the generated class.
+
+The first thing to do is to define a base type. In this case we'll define a base interface.
 
 ```csharp
+public interface ITaskData
+{
+    int TaskId { get; }
+}
+```
 
-// Mapping registry keeps track of all table/class mappings.
-var mappingRegistry = new MappingRegistry();
-mappingRegistry.Scan(typeof(AccountMapping).Assembly);
+Next, we'll adjust the `GithubIssue` and `DocumentReview` classes so that they implement the interface:
 
+
+```csharp
+public class GithubIssue : ITaskData
+{
+    public GithubIssue(string name, int issueUrl)
+    {
+        Name = name;
+        IssueUrl = issueUrl;
+    }
+
+    // The foreign key will be set by Griffin.Data.
+    public int TaskId { get; private set; }
+
+    public string Name { get; private set; }
+    public int IssueUrl { get; private set; }
+}
+```
+
+Finally we add a `Data` property to the Task class and remove the lists.
+
+```csharp
+public class TodoTask
+{
+    public TodoTask(int todolistId, string name, TaskType taskType, TodoTaskState state, int priority, int createdById)
+    {
+        TodolistId = todolistId;
+        Name = name;
+        TaskType = taskType;
+        State = state;
+        Priority = priority;
+        CreatedById = createdById;
+        CreatedAtUtc = DateTime.UtcNow;
+    }
+
+    // [.. other properties ..]
+ 
+
+    // Let's keep the taskType as int,
+    // could have switched to enum.
+    public int TaskType { get; private set; }
+
+    // The tast
+    public ITaskData Data { get; set; }
+
+}
+
+```
+
+Now, we have to configure Griffin.Data so it understands how to create the correct child type.
+
+```csharp
+public class TodoTaskMapping : IEntityConfigurator<TodoTask>
+{
+    public void Configure(IClassMappingConfigurator<TodoTask> config)
+    {
+        // This line can be removed. 
+        // The convention uses plural of the class name as table name.
+        config.TableName("TodoTasks");
+
+        config.Key(x => x.Id).AutoIncrement();
+
+        // We want to have one child,
+        // and since it can come from either
+        // the table TodoTaskGithubIssues and the table
+        // TodoTaskDocumentReview.
+        config.HasOne(x=>x.Data)
+            .Discriminator(x => x.TaskType, SelectChildType)
+            .ForeignKey(x => x.TaskId)
+            .References(x => x.Id);
+
+        config.MapRemainingProperties();
+    }
+
+    private static Type SelectChildType(int taskType)
+    {
+        return taskType switch
+        {
+            // Note that "TodoTask" from the table name
+            // was automatically removed when the classes
+            // where scaffolded.
+            0 => typeof(DocumentReview),
+            1 => typeof(GithubIssue),
+            _ => throw new ArgumentOutOfRangeException(nameof(taskType), taskType, "Unknown task type.")
+        };
+    }
+}
+```
+
+That's all. Each `TodoTask` will now get the correct entity loaded from the correct child table.
+
+```csharp
+var task = _session.GetById<TodoTask>(1);
+if (task.Data is GithubIssue gi)
+{
+    Console.WriteLine($"Issue to complete: {gi.IssueUrl}.");
+}
+```
+
+# Part 4 - Building application services
+
+Before building an application service, we need to configure Griffin.Data.
+
+The below code scans the assembly that the class 'TodoTaskMapping' is located in, activates snapshot change tracking and uses MS SQL Server.
+
+```csharp
 // A config from Microsoft.Extensions.Configuration
 var connectionString = config.GetConnectionString("Db");
 
 // The DB configuration.
-var config = new DbConfiguration(connectionString)
-{
-    MappingRegistry = mappingRegistry, 
-    Dialect = new SqlServerDialect(),
-    ChangeTrackerFactory = () => new SnapshotChangeTracking(mappingRegistry)
-};
+var dbConfig = new DbConfiguration(configurationString)
+    .AddMappingAssembly(typeof(TodoTaskMapping).Assembly)
+    .UseSnapshotChangeTracking()
+    .UseSqlServer();
 
 var session = new Session(config);
 ```
 
-Everything is now configured.
+Now that everything is configured, let's try to fetch entities, for instance by searching for a user:
 
 ```csharp
-var entities = session.List<Account>(new { FirstName = 'G%' });
+var entities = session.List<Account>(new { UserName = 'G%' });
 ```
 
-Let's start with a simple use case. We want to modify a parent entity and add child.
+You can read more about all ways that you get retrieve entities in the [github wiki](https://github.com/jgauffin/Griffin.Data/blob/master/docs/Querying/Querying.md).
+
+
+If no errors where made
+
 
 Without change tracking, all changes have to be applied manually:
 
@@ -677,17 +797,11 @@ entity.Manager = new LinkedAccount(otherAccount);
 Session.SaveChanges();
 ```
 
+# Part 5 - Summary and links
 
-### Change tracking.
+I hope that you enjoyed this article and are eager to try Griffin.Data.
 
-This library can be used with our without change tracking. Change tracking is used to detect which entities that have been added/updated/removed.
+All code from this article is found in the "Demo" folder in github. Create the database and then run the demo to try everything out. My intention is to  make a complete TODO application to demonstrate how I think that Griffin.Data should be used (and a structure of an application).
 
-There are two more common approaches to change tracking. 
+Most features are documented in the [wiki](https://github.com/jgauffin/Griffin.Data/tree/master/docs) if you want to learn more. Feel free to create an github issue with the documentation is missing something.
 
-The first one is using a snapshot. That means that every time you fetch and entity, a copy of it is made. The copy is then compared to your modified entity to find all changes made. It requires no changes to your entities, but requires a bit more memory than proxiesa and the actual comparison can get complex within the library.
-
-The second approach is to wrap the real entity in proxy. So every change is made upon the proxy which logs the changes and apply them to the real object. The good thing is that it's pretty lightweight, but it requires that all properties and methods in your entities are virtual.
-
-Griffin.Data uses snapshots to track changes.
-
-### 

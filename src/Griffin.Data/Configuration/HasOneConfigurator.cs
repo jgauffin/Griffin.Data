@@ -33,7 +33,7 @@ public class HasOneConfigurator<TParentEntity, TChildEntity> : IHasOneConfigurat
     string IHasOneConfigurator.PropertyName => _propertyName;
 
     /// <inheritdoc />
-    public IHasOneMapping Build(IMappingRegistry mappingRegistry)
+    IHasOneMapping IHasOneConfigurator.Build(IMappingRegistry mappingRegistry)
     {
         if (_fk == null)
         {

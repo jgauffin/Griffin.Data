@@ -9,3 +9,4 @@ src/packages/*
 /.vs
 /src/.vs
 **/nupkg/*
+**/.vs/*

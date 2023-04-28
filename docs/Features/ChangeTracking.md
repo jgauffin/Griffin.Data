@@ -1,36 +1,69 @@
 Change tracking
 ===============
 
-The current implementation uses snapshots to detect changes. Snapshots mean the library internally creates a copy of each fetched entity and stores it in memory until `Session.SaveChanges()` is called. Once `Session.SaveChanges()`  are called, the library generates a diff between the snapshot (i.e. the copy of your entity) and the modified entity. The diff contains added/modified/removed entities. Those changes will be persisted (without explicit calls to Insert/Update/Delete). Entities without changes will be ignored (i.e. no database calls will be made for them).
+Change tracking means that the data library keeps track of all entitiesa that have been added, modified or removed. There are two more common approaches to change tracking. 
 
-As this implementation uses snapshots, the memory footprint of each `Session` is doubled, but in turn, you don't have to modify your entities in any way. Keep in mind that the intended purpose of the object/relation mapper in this library is to manage business entities (i.e. change the state of your application). Thus, the memory footprint is usually small for the write side of your application.
+The first one is using a snapshot. That means that every time you fetch an entity from the database, a copy of it is made. The copy is kept internally and is not used until you invoke `SaveChanges()`. Then the copy is then compared to your modified entity to find all made changes. The comparison is done throughout the object hierarchy and all changes are persisted by regular insert/update/delete SQL commands. Entities without changes are ignored (i.e. no database calls will be made for them).
 
- ## Configuration
+Change tracking requires no changes to your entities, but requires a bit more memory than proxiesa and the actual comparison can get complex within the library.
 
- Change tracking is disabled by default. Turn it on by adding `SnapshotChangeTracking` to your IoC container:
+The second approach is to wrap the real entity in proxy and then return the proxy from the library get methods. Every change is made upon the proxy, which logs the changes and then apply them to the real object. The good thing is that it's pretty lightweight, but it requires that all properties and methods in your entities are virtual.
 
- ```csharp
- services.AddScoped<IChangeTracker, SnapshotChangeTracking>();
- ```
+Griffin.Data uses snapshots to track changes.
 
- You can also add it directly to the `DbConfiguration`:
+## Configuration
 
- ```csharp
- var connectionString = config.GetConnectionString("Db");
+Change tracking is disabled by default. Turn it on by adding `SnapshotChangeTracking` to your IoC container:
 
- var config = new DbConfiguration(connectionString)
- {
-    SqlDialect = new SqlServerDialect();
- };
-config.ChangeTrackerFactory = () => new SnapshotChangeTracking(config.MappingRegistry);
- ```
- 
+```csharp
+services.AddScoped<IChangeTracker, SnapshotChangeTracking>();
+```
 
- ## Checking state
+You can also add it directly to the `DbConfiguration`:
 
-To check the state of an entity, invoke `changeTracker.GetState(yourEntity);`. 
+```csharp
+var connectionString = config.GetConnectionString("Db");
+
+var dbConfig = new DbConfiguration(configurationString)
+    .AddMappingAssembly(typeof(TodoTaskMapping).Assembly)
+    .UseSnapshotChangeTracking() // this line
+    .UseSqlServer();
+```
+
+## Checking state
+
+The change tracking is fully automated and there is no need to modify the state or manually apply changes.
+
+But sometimes you may want to check the state. That is done by invoking `changeTracker.GetState(yourEntity);`. Do note that the change tracker got one instance per session. To be able to access it you need to have registered it in the IoC container.
 
 Before checking state of child entities, call `changeTracker.Refresh(rootEntity)` as added/removed state won't be detected otherwise.
+
+## Change tracking for externally manage entities
+
+In some applications it makes sense to modify entities externally (like in a client application or in a web application). Change tracking is in that case not possible as the modification is not made in the tracked entities.
+
+You can handle that by doing the comparison manually. There is a class called `SingleEntityComparer` which compares a single entity (and all it's children).
+
+You can use it as following:
+
+```csharp
+var dbVersion = _session.GetById<SomeEntity>(externalCopy.Id);
+
+var service = new SingleEntityComparer();
+var result = service.Compare(dbVersion, externalCopy);
+```
+
+That comparison will give you a diff which tells you all the entities that have been changed.
+
+You can either apply it manually by traversing the result and call Insert/Update/Delete, or use the `ChangePersister` class.
+
+```csharp
+var persister = new ChangePersister(_mappingRegistry);
+await persister.Persist(_session, result);
+await session.SaveChanges();
+```
+
+Once done, all changes should have persited.
 
  ## Current limitations
 

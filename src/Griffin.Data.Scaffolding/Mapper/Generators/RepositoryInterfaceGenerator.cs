@@ -7,15 +7,30 @@ internal class RepositoryInterfaceGenerator : GeneratorWithNamespace
 {
     protected override void AddUsings(Table table, TabbedStringBuilder sb, GeneratorContext context)
     {
-        sb.AppendLine("using Griffin.Data.Domain;");
+        sb.AppendLine($"using {context.Folders.DomainFolder};");
     }
 
     protected override void GenerateClass(TabbedStringBuilder sb, Table table, GeneratorContext context)
     {
-        sb.AppendLine($"public interface I{table.ClassName}Repository : ICrudOperations<{table.ClassName}>");
+        sb.AppendLine($"public interface I{table.ClassName}Repository");
         sb.AppendLineIndent("{");
-        sb.Append($"Task<{table.ClassName}> GetById(");
 
+        GenerateGetById(sb, table);
+
+        sb.AppendLine();
+        sb.AppendLine($"Task Create({table.ClassName} entity);");
+        sb.AppendLine();
+        sb.AppendLine($"Task Update({table.ClassName} entity);");
+        sb.AppendLine();
+        sb.AppendLine($"Task Delete({table.ClassName} entity);");
+        sb.AppendLine();
+
+        sb.DedentAppendLine("}");
+    }
+
+    private void GenerateGetById(TabbedStringBuilder sb, Table table)
+    {
+        sb.Append($"Task<{table.ClassName}> GetById(");
         var pks = table.Columns.Where(x => x.IsPrimaryKey).ToList();
         for (var i = 0; i < pks.Count; i++)
         {
@@ -28,8 +43,6 @@ internal class RepositoryInterfaceGenerator : GeneratorWithNamespace
         }
 
         sb.AppendLine(");");
-
-        sb.DedentAppendLine("}");
     }
 
     protected override GeneratedFile GenerateFile(Table table, GeneratorContext context, string contents)
