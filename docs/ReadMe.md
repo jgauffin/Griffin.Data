@@ -11,7 +11,7 @@ There is also an [API guide]() available.
 * [ChangeTracking](Features/ChangeTracking.md) - How the change tracking works.
 * [Configuring entities](Configuration/ReadMe.md) - How to create mappings for your entities.
 * [CRUD](Crud/ReadMe.md) - How to create, update and delete entities.
-* [Quering](Quering/ReadMe.md) - How to get information from the database.
+* [Quering](Querying/ReadMe.md) - How to get information from the database.
 
 
 

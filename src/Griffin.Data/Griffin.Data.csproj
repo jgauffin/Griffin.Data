@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Griffin.Data.xml</DocumentationFile>
 
-        <Version>2.0.0-rc26</Version>
-        <PackageReleaseNotes>Used explicit underlying type when converting enums.</PackageReleaseNotes>
+        <Version>2.0.0-rc27</Version>
+        <PackageReleaseNotes>Removed tag from this package.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -17,7 +17,7 @@
         <Description>Lightweight ORM and Query mapper with change tracking, relationships (one to many + one to one).</Description>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <Copyright>Copyright 2023 © Jonas Gauffin. All rights reserved.</Copyright>
-        <PackageTags>data-mapper, orm, sqlserver, queries</PackageTags>
+        <PackageTags>data-mapper, orm, queries</PackageTags>
         <PackageProjectUrl>https://github.com/jgauffin/griffin.data</PackageProjectUrl>
     </PropertyGroup>
 
