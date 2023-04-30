@@ -37,6 +37,11 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping, IGotColumnT
         _setter = setter;
         CanWriteToDatabase = _getter != null;
         CanReadFromDatabase = _setter != null;
+        EnsureEnumDetector();
+    }
+
+    private void EnsureEnumDetector()
+    {
         var nullableType = Nullable.GetUnderlyingType(PropertyType);
         if (!PropertyType.IsEnum && nullableType?.IsEnum != true)
         {
@@ -252,7 +257,7 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping, IGotColumnT
             }
             catch (Exception ex)
             {
-                throw new InvalidCastException($"Cannot convert {typeof(TEntity)}.{PropertyName}: " + ex.Message);
+                throw new InvalidCastException($"{typeof(TEntity).Name}: Cannot convert {typeof(TEntity)}.{PropertyName}: " + ex.Message);
             }
         }
 
@@ -268,7 +273,14 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping, IGotColumnT
     /// <inheritdoc />
     public object ConvertToColumnValue(object value)
     {
-        return PropertyToColumnConverter != null ? PropertyToColumnConverter((TProperty)value) : value;
+        try
+        {
+            return PropertyToColumnConverter != null ? PropertyToColumnConverter((TProperty)value) : value;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidCastException($"{typeof(TEntity).Name}:Cannot convert {typeof(TEntity)}.{PropertyName}: " + ex.Message);
+        }
     }
 
     private void SelectEnumConverter(object value)

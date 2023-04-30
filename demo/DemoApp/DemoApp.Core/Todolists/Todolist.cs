@@ -7,11 +7,11 @@ public class Todolist
     private readonly List<Permission> _permissions = new();
     private readonly List<TodoTask> _todoTasks = new();
 
-    public Todolist(string name, int createdById, DateTime createdAtUtc)
+    public Todolist(string name, int createdById)
     {
         Name = name;
         CreatedById = createdById;
-        CreatedAtUtc = createdAtUtc;
+        CreatedAtUtc = DateTime.UtcNow;
     }
 
     public DateTime CreatedAtUtc { get; }

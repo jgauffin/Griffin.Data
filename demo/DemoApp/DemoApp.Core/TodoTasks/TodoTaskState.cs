@@ -1,6 +1,10 @@
-namespace DemoApp.Core.TodoTasks;
+﻿namespace DemoApp.Core.TodoTasks;
 
 public enum TodoTaskState : short
 {
-    NotSpecified
+    NotSpecified,
+    New,
+    Started,
+    Paused,
+    Completed
 }

@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Griffin.Data.xml</DocumentationFile>
 
-        <Version>2.0.0-rc23</Version>
-        <PackageReleaseNotes>CopyService can now handle non-default constructors.</PackageReleaseNotes>
+        <Version>2.0.0-rc24</Version>
+        <PackageReleaseNotes>Improved convert error messages.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>

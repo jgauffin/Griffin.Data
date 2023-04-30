@@ -1,4 +1,4 @@
-namespace DemoApp.Core.TodoTasks;
+﻿namespace DemoApp.Core.TodoTasks;
 
 public class TodoTask
 {
@@ -9,18 +9,16 @@ public class TodoTask
         int todolistId,
         string name,
         int taskType,
-        TodoTaskState state,
         int priority,
-        int createdById,
-        DateTime createdAtUtc)
+        int createdById)
     {
         TodolistId = todolistId;
         Name = name;
         TaskType = taskType;
-        State = state;
+        State = TodoTaskState.New;
         Priority = priority;
         CreatedById = createdById;
-        CreatedAtUtc = createdAtUtc;
+        CreatedAtUtc = DateTime.UtcNow;
     }
 
     public DateTime CreatedAtUtc { get; }

@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mappings.Properties;
+using Griffin.Data.Tests.Helpers;
 using Griffin.Data.Tests.Subjects;
 
 namespace Griffin.Data.Tests.Mappings.Properties;
@@ -86,6 +87,57 @@ public class PropertyMappingTests
 
         actual.Should().Be(5);
     }
+
+    [Fact]
+    public void Get_should_use_enum_converter_per_default_for_int()
+    {
+        AccountState state = AccountState.Admin;
+        var sut = new PropertyMapping<User, AccountState>("State", user => user.State, (x, y) => state = y);
+
+        var actual = sut.GetColumnValue(new User(){State = state });
+
+        actual.Should().Be((int)state);
+    }
+
+    [Fact]
+    public void Convert_should_use_enum_converter_per_default()
+    {
+        AccountState state = AccountState.Admin;
+        var sut = new PropertyMapping<User, AccountState>("State", user => user.State, (x, y) => state = y);
+
+        var actual = sut.ConvertToColumnValue(new User() { State = state });
+
+        actual.Should().Be((int)state);
+    }
+
+
+    [Fact]
+    public void Set_should_use_enum_converter_per_default_for_string()
+    {
+        var record = new FakeRecord(new Dictionary<string, object>() { { "State", "2" } });
+        AccountState state = AccountState.Disabled;
+        var sut = new PropertyMapping<User, AccountState>("State", user => user.State, (x, y) => state = y);
+        var entity = new User();
+
+        sut.MapRecord(record, entity);
+
+        state.Should().Be(AccountState.Admin);
+    }
+
+    [Fact]
+    public void Set_should_use_enum_converter_per_default_for_int()
+    {
+        var record = new FakeRecord(new Dictionary<string, object>() { { "State", 2 } });
+        AccountState state = AccountState.Disabled;
+        var sut = new PropertyMapping<User, AccountState>("State", user => user.State, (x, y) => state = y);
+        var entity = new User();
+
+        sut.MapRecord(record, entity);
+
+        state.Should().Be(AccountState.Admin);
+    }
+
+
 
     private string GetValue(User arg)
     {

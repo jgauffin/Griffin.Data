@@ -130,12 +130,9 @@ public class ClassMappingConfigurator<TEntity> : IMappingBuilder, IClassMappingC
     public void MapRemainingProperties()
     {
         const string methodName = nameof(GenerateProperty);
-        var method = GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
-        if (method == null)
-        {
-            throw new InvalidOperationException("Failed to get generate method from this.");
-        }
-
+        var method = GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance) ??
+                     throw new InvalidOperationException("Failed to get generate method from this.");
+        
         var props = typeof(TEntity).GetProperties();
         foreach (var prop in props)
         {
@@ -155,12 +152,10 @@ public class ClassMappingConfigurator<TEntity> : IMappingBuilder, IClassMappingC
             }
 
             var propMapping =
-                (IPropertyMapping?)method.MakeGenericMethod(prop.PropertyType).Invoke(this, new object[] { prop });
-            if (propMapping == null)
-            {
+                (IPropertyMapping?)method.MakeGenericMethod(prop.PropertyType).Invoke(this, new object[] { prop }) ??
                 throw new InvalidOperationException(
                     $"Failed to retrieve property mapping for {prop.Name} in type {typeof(TEntity)}");
-            }
+            
 
             _properties.Add(propMapping);
         }

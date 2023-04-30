@@ -58,7 +58,7 @@ public class TodolistRepositoryTests : IntegrationTest
 
     private Todolist CreateValidEntity()
     {
-        var entity = new Todolist("7469", 1920942589, DateTime.UtcNow);
+        var entity = new Todolist("7469", 1920942589);
         return entity;
     }
 }

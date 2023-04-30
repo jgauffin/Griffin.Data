@@ -1,4 +1,4 @@
-using DemoApp.Core.TodoTasks;
+﻿using DemoApp.Core.TodoTasks;
 using DemoApp.Data.TodoTasks;
 using FluentAssertions;
 using Griffin.Data.Mapper;
@@ -62,8 +62,7 @@ public class TodoTaskRepositoryTests : IntegrationTest
 
     private TodoTask CreateValidEntity()
     {
-        var entity = new TodoTask(627702192, "6407", 1213213029, TodoTaskState.NotSpecified, 115986461, 730976269,
-            DateTime.UtcNow);
+        var entity = new TodoTask(627702192, "6407", 1213213029, 115986461, 730976269);
         return entity;
     }
 }
