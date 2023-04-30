@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Griffin.Data" Version="2.0.0-rc23" />
+    <PackageReference Include="Griffin.Data" Version="2.0.0-rc24" />
     <PackageReference Include="Griffin.Data.SqlServer" Version="1.0.0-rc03" />
   </ItemGroup>
 

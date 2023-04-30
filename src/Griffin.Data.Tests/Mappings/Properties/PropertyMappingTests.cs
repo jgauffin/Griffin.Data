@@ -137,7 +137,18 @@ public class PropertyMappingTests
         state.Should().Be(AccountState.Admin);
     }
 
+    [Fact]
+    public void Set_should_explicit_enum_type()
+    {
+        var record = new FakeRecord(new Dictionary<string, object>() { { "State", (short)2 } });
+        var state = ExplicitState.Disabled;
+        var sut = new PropertyMapping<User, ExplicitState>("State", user => state, (x, y) => state = y);
+        var entity = new User();
 
+        sut.MapRecord(record, entity);
+
+        state.Should().Be(ExplicitState.Admin);
+    }
 
     private string GetValue(User arg)
     {

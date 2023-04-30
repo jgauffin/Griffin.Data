@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Griffin.Data.xml</DocumentationFile>
 
-        <Version>2.0.0-rc24</Version>
-        <PackageReleaseNotes>Improved convert error messages.</PackageReleaseNotes>
+        <Version>2.0.0-rc26</Version>
+        <PackageReleaseNotes>Used explicit underlying type when converting enums.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>

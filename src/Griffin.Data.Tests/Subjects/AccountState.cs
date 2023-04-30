@@ -6,3 +6,10 @@ public enum AccountState
     Active,
     Admin
 }
+
+public enum ExplicitState : short
+{
+    Disabled,
+    Active,
+    Admin
+}

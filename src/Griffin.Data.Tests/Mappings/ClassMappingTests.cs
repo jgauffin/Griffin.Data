@@ -119,4 +119,15 @@ public class ClassMappingTests
 
         actual.Should().Throw<MappingException>();
     }
+
+    [Fact]
+    public void MapRemainingProperties_should_map_enum()
+    {
+        var entity = new User() { State = AccountState.Admin };
+
+        var prop = _mapping.GetProperty("State");
+        var actual = prop.GetColumnValue(entity);
+
+        actual.Should().Be(2);
+    }
 }

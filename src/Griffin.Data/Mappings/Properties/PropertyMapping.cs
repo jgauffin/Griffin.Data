@@ -40,42 +40,6 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping, IGotColumnT
         EnsureEnumDetector();
     }
 
-    private void EnsureEnumDetector()
-    {
-        var nullableType = Nullable.GetUnderlyingType(PropertyType);
-        if (!PropertyType.IsEnum && nullableType?.IsEnum != true)
-        {
-            return;
-        }
-
-        PropertyToColumnConverter = x =>
-        {
-            if (x == null)
-            {
-                throw new MappingConfigurationException(_entityType,
-                    "A converter should not get invoked for null values.");
-            }
-
-            if (!_enumIsConfigured)
-            {
-                return (int)(object)x;
-            }
-
-            return PropertyToColumnConverter!(x);
-        };
-        ColumnToPropertyConverter = x =>
-        {
-            if (x == null)
-            {
-                throw new MappingConfigurationException(_entityType,
-                    "A converter should not get invoked for null values.");
-            }
-
-            SelectEnumConverter(x);
-            return ColumnToPropertyConverter!(x);
-        };
-    }
-
     /// <summary>
     ///     Specifies if this property can be used when reading from the database.
     /// </summary>
@@ -257,7 +221,7 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping, IGotColumnT
             }
             catch (Exception ex)
             {
-                throw new InvalidCastException($"{typeof(TEntity).Name}: Cannot convert {typeof(TEntity)}.{PropertyName}: " + ex.Message);
+                throw new InvalidCastException($"Cannot convert {typeof(TEntity).Name}.{PropertyName}: " + ex.Message);
             }
         }
 
@@ -279,34 +243,80 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping, IGotColumnT
         }
         catch (Exception ex)
         {
-            throw new InvalidCastException($"{typeof(TEntity).Name}:Cannot convert {typeof(TEntity)}.{PropertyName}: " + ex.Message);
+            throw new InvalidCastException($"Cannot convert {typeof(TEntity).Name}.{PropertyName}: " + ex.Message);
         }
+    }
+
+    private void EnsureEnumDetector()
+    {
+        var nullableType = Nullable.GetUnderlyingType(PropertyType);
+        if (!PropertyType.IsEnum && nullableType?.IsEnum != true)
+        {
+            return;
+        }
+
+        PropertyToColumnConverter = x =>
+        {
+            if (x == null)
+            {
+                throw new MappingConfigurationException(_entityType,
+                    "A converter should not get invoked for null values.");
+            }
+
+            if (!_enumIsConfigured)
+            {
+                return (int)(object)x;
+            }
+
+            return PropertyToColumnConverter!(x);
+        };
+        ColumnToPropertyConverter = x =>
+        {
+            if (x == null)
+            {
+                throw new MappingConfigurationException(_entityType,
+                    "A converter should not get invoked for null values.");
+            }
+
+            SelectEnumConverter(x);
+            return ColumnToPropertyConverter!(x);
+        };
     }
 
     private void SelectEnumConverter(object value)
     {
+        var underlyingType = Enum.GetUnderlyingType(typeof(TProperty));
+
+        // Underlying type is explicitly defined if it's different
+        // from int, which means that the developer have made
+        // and active choice, which we hope is the same as the column type.
+        //
+        // If it's now, an explicit mapping is required instead of MapRemainingProperties().
+        var columnType = underlyingType != typeof(int) ? underlyingType : value.GetType();
+
         _enumIsConfigured = true;
-        if (value is short)
+        if (columnType == typeof(short))
         {
             var converter = new GenericToEnumConverter<short, TProperty>();
             PropertyToColumnConverter = x => converter.PropertyToColumn(x!);
             ColumnToPropertyConverter = x => converter.ColumnToProperty((short)x);
         }
-        else if (value is byte)
+        else if (columnType == typeof(byte))
         {
             var converter = new GenericToEnumConverter<byte, TProperty>();
             PropertyToColumnConverter = x => converter.PropertyToColumn(x!);
             ColumnToPropertyConverter = x => converter.ColumnToProperty((byte)x);
         }
-        else if (value is string)
+        else if (columnType == typeof(string))
         {
             PropertyToColumnConverter = y => y?.ToString() ?? throw new MappingException(typeof(TEntity),
-                $"Failed to convert property value '{y}'. (null values are not supported by converters)");
+                $"Failed to convert property '{PropertyName}' value '{y}'. (null values are not supported by converters)");
             ColumnToPropertyConverter = y =>
             {
                 if (!Enum.TryParse(typeof(TProperty), (string)y, true, out var enumValue) || enumValue == null)
                 {
-                    throw new InvalidOperationException($"Failed to convert '{y}' to enum '{typeof(TProperty)}'");
+                    throw new InvalidOperationException(
+                        $"Failed to convert property '{PropertyName}' value '{y}' to enum '{typeof(TProperty).Name}'");
                 }
 
                 return (TProperty)enumValue;
