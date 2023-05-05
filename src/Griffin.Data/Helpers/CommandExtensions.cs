@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using Griffin.Data.Mappings;
+using Griffin.Data.Mapper.Mappings;
 
 namespace Griffin.Data.Helpers;
 

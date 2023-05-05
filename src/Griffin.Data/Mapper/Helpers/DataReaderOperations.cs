@@ -3,7 +3,7 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using Griffin.Data.Mappings;
+using Griffin.Data.Mapper.Mappings;
 
 namespace Griffin.Data.Mapper.Helpers;
 

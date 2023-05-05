@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using Griffin.Data.Helpers;
-using Griffin.Data.Mappings;
+using Griffin.Data.Mapper.Mappings;
 
 namespace Griffin.Data.ChangeTracking.Services.Implementations.v2;
 

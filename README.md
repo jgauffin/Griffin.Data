@@ -2,14 +2,29 @@ Griffin.Data
 ============
 
 <img src="https://ci.appveyor.com/api/projects/status/github/jgauffin/griffin.data?branch=master&svg=true" />
+<img src="https://img.shields.io/nuget/dt/griffin.data">
+<img src="https://img.shields.io/nuget/v/griffin.data">
+<img src="https://img.shields.io/tokei/lines/github/jgauffin/Griffin.Data">
+<img src="https://img.shields.io/github/license/jgauffin/Griffin.Data">
 
 Version 2.0 is a work in progress; most features are in place but still need to be completed.
 
-Lightweight object/relation mapper (ORM) and data mapper.
+## Why Griffin.Data?
 
-This library assumes that the write part of an application (changing state) is fundamentally different from the read part (presenting information from the user).
+1. With Griffin.Data, you can maintain a high degree of separation between your application and data layer, ensuring that your domain entities remain protected and free from unnecessary dependencies or complexities.
 
-## The write side
+2. Griffin.Data reduces the time and effort required to set up and configure data access. With this library, you can quickly and easily create a robust data layer that can handle complex queries and data operations without worrying about compatibility issues or complex configuration.
+
+3. This library provides detailed and easy-to-understand error messages, enabling you to quickly identify and address the root cause of any issues that arise. No need for time-consuming trial and error or extensive debugging efforts. 
+
+
+## What is it?
+
+Griffin.Data consists of a lightweight object/relation mapper (ORM) and data mapper.
+
+This library assumes that the write part of an application (changing state) is fundamentally different from the read part (presenting information to the user).
+
+### The write side
 
 The write site usually fetches one or more business entities (domain entities), modifies them, and persists in their changes. An ORM is perfect for this as all entities are well-defined, and each entity usually represents a single table in the database.
 
@@ -25,7 +40,7 @@ Highlights:
 * Child entity collections can be IList<T>, IReadOnlyList<T> or arrays.
 * Detailed exceptions to make debuggin a breaze.
 
-## The read side
+### The read side
 
 Presenting information to users usually requires a join of data from different tables or aggregated queries; there are as many queries as views shown for the user. Because of that, there is no simple way to produce classes and mappings as on the write side.
 
@@ -48,14 +63,14 @@ WHERE u.UserName LIKE @nameToFind
 Use scaffolding to generate classes:
 
 ```
-dotnet gd generate queries
+dotnet gd queries
 ```
 
 Execute queries in the following way:
 
 ```csharp
 var result = await Session.Query(new ListUsers { NameToFind = 'A%'});
-Console.WriteLine("Found " + result.Items.Count  + " users.");
+Console.WriteLine($"Found {result.Items.Count} users.");
 ```
 
 Highlights:

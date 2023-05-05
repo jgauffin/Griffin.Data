@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using Griffin.Data.Helpers;
-using Griffin.Data.Mappings;
-using Griffin.Data.Mappings.Relations;
+using Griffin.Data.Mapper.Mappings;
+using Griffin.Data.Mapper.Mappings.Relations;
 
 namespace Griffin.Data.Configuration;
 

@@ -3,7 +3,7 @@ using Griffin.Data;
 using Griffin.Data.ChangeTracking;
 using Griffin.Data.Configuration;
 using Griffin.Data.Mapper;
-using Griffin.Data.Mappings;
+using Griffin.Data.Mapper.Mappings;
 using Griffin.Data.SqlServer;
 using TestApp.Entities;
 

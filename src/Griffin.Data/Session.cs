@@ -9,14 +9,14 @@ using Griffin.Data.Configuration;
 using Griffin.Data.Dialects;
 using Griffin.Data.Helpers;
 using Griffin.Data.Mapper;
-using Griffin.Data.Mappings;
+using Griffin.Data.Mapper.Mappings;
 
 namespace Griffin.Data;
 
 /// <summary>
 ///     Unit of work for the DB.
 /// </summary>
-public sealed class Session : IDisposable
+public class Session : IDisposable
 {
     private readonly IChangeTracker? _changeTracker;
     private readonly IMappingRegistry _registry;

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Griffin.Data.ChangeTracking.Services;
 using Griffin.Data.ChangeTracking.Services.Implementations;
 using Griffin.Data.Mapper;
-using Griffin.Data.Mappings;
+using Griffin.Data.Mapper.Mappings;
 
 namespace Griffin.Data.ChangeTracking;
 

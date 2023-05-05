@@ -9,7 +9,7 @@ using Griffin.Data.Dialects;
 using Griffin.Data.Helpers;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mapper.Implementation;
-using Griffin.Data.Mappings;
+using Griffin.Data.Mapper.Mappings;
 using Griffin.Data.Queries;
 using Griffin.Data.Scaffolding;
 

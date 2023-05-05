@@ -1,5 +1,5 @@
 ﻿using Griffin.Data.Configuration;
-using Griffin.Data.Mappings;
+using Griffin.Data.Mapper.Mappings;
 using Griffin.Data.Tests.Subjects;
 
 namespace Griffin.Data.Tests.Mappings;

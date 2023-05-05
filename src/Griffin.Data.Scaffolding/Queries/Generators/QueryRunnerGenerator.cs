@@ -21,7 +21,7 @@ public class QueryRunnerGenerator : IQueryGenerator
         }
 
         sb.AppendLine(
-            $@"public class {meta.QueryName}Runner :  IQueryRunner<{meta.QueryName}, {meta.QueryName}Result>");
+            $@"public class {meta.QueryName}Runner :  IQueryHandler<{meta.QueryName}, {meta.QueryName}Result>");
         sb.AppendLineIndent("{");
         sb.AppendLine("private readonly Session _session;");
         sb.AppendLine($"public {meta.QueryName}Runner(Session session)");

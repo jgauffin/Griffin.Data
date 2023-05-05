@@ -1,4 +1,4 @@
-﻿using Griffin.Data.Mappings;
+﻿using Griffin.Data.Mapper.Mappings;
 
 namespace Griffin.Data.Configuration;
 

@@ -15,7 +15,7 @@ public class QueryScaffolder
 
     /// <summary>
     /// </summary>
-    /// <param name="connectionString"></param>
+    /// <param name="connection">Connection to collect meta data from.</param>
     /// <param name="directory">Directory recursively scan for query files.</param>
     /// <returns></returns>
     public async Task Generate(IDbConnection connection, string directory)
@@ -26,7 +26,12 @@ public class QueryScaffolder
         await GenerateClasses(metas);
     }
 
-    private static async Task GenerateClasses(List<QueryMeta> metas)
+    /// <summary>
+    /// Overwrite files when they already have been generated.
+    /// </summary>
+    public bool OverwriteFiles { get; set; }
+
+    private async Task GenerateClasses(List<QueryMeta> metas)
     {
         foreach (var meta in metas)
         {
@@ -34,10 +39,22 @@ public class QueryScaffolder
             {
                 var file = await generator.Generate(meta);
                 var fullPath = Path.Combine(meta.Directory, file.ClassName + ".cs");
-                if (!File.Exists(fullPath))
+                if (File.Exists(fullPath))
                 {
-                    await File.WriteAllTextAsync(fullPath, file.Contents);
+                    if (!OverwriteFiles)
+                    {
+                        continue;
+                    }
+
+                    // Don't overwrite if file is frozen.
+                    var contents = await File.ReadAllTextAsync(fullPath);
+                    if (contents.Contains("[Freeze]"))
+                    {
+                        continue;
+                    }
                 }
+
+                await File.WriteAllTextAsync(fullPath, file.Contents);
             }
         }
     }

@@ -1,6 +1,6 @@
 ﻿using System;
 using Griffin.Data.Converters;
-using Griffin.Data.Mappings.Properties;
+using Griffin.Data.Mapper.Mappings.Properties;
 
 namespace Griffin.Data.Configuration;
 

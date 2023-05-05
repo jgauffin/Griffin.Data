@@ -15,7 +15,6 @@ public class ScaffolderTest
     {
         var dialect = new SqlServerDialect();
         var s = new MapperScaffolder();
-        var connectionString = "";
 
         //var dir = @"C:\temp\DemoProject";
         await s.Generate(dialect, ConnectionString, Directory);

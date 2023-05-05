@@ -4,8 +4,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Griffin.Data.Helpers;
-using Griffin.Data.Mappings;
-using Griffin.Data.Mappings.Properties;
+using Griffin.Data.Mapper.Mappings;
+using Griffin.Data.Mapper.Mappings.Properties;
 
 namespace Griffin.Data.Configuration;
 

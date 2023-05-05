@@ -60,7 +60,7 @@ public class ClassGenerator : GeneratorWithNamespace
             }
             else
             {
-                sb.Append($"public {typeName} {column.PropertyName} {{ get; set; }}");
+                sb.Append($"public {typeName}? {column.PropertyName} {{ get; set; }}");
             }
 
             if (string.IsNullOrEmpty(column.DefaultValue))

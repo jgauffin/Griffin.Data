@@ -1,7 +1,7 @@
 Introduction
 ===========
 
-This article is about version 2.0 of my object/relation mapper and data mapper Griffin.Data and is divided into parts. 
+This article is about version 2.0 of my object/relation mapper and data mapper Griffin.Data. The article cannot cover everything, the purpose is only to demonstrate some of the features in Griffin.Data. To read more, visit the GitHub repository. There is plenty of documentation there.
 
 * Part 1 - Why I created Griffin.Data.
 * Part 2 - Scaffolding and inspecting the generated files.
@@ -9,7 +9,7 @@ This article is about version 2.0 of my object/relation mapper and data mapper G
 * Part 4 - Building an application service using the generated code.
 * Part 5 - Summary and links.
 
-Before we get into the library itself, let's discuss my goals.
+Before we get into the library itself, let's discuss my design goals with Griffin.Data.
 
 ## The importance of encapsulation
 
@@ -30,7 +30,7 @@ public class Account
 }
 ```
 
-It has no control over its state; any part of the application can modify its properties without validation. For instance, one method can change the date fields without remembering to change the state and vice versa. That would produce an invalid state, which will make many any logic that uses both fields to produce ambiguous behavior (i.e., can't tell what the result will be as the combination is unexpected). Finding that kind of discrepancy is easy initially but quite challenging when the application is a couple of years old.
+It has no control over its state; any part of the application can modify its properties without validation. For instance, one method can change the date properties without remembering to change the state property and vice versa. That would produce an invalid object state, which will make many any logic that uses both fields to produce ambiguous behavior (i.e., can't tell what the result will be as the combination is unexpected). Finding that kind of discrepancy is easy initially but quite challenging when the application is a couple of years old.
 
 One way to remedy the above problem is to use encapsulation, which is one of the fundamental principles of OOP.
 
@@ -70,7 +70,7 @@ public class Account
 
 That change (making most setters private) forces you to add behavior to your classes and ensures that the `account` logic is in one place, no matter how old your application becomes.
 
-That part also applies to collection properties. If you have an entity like this:
+That part also applies to collection properties. Example:
 
 ```csharp
 public class Account
@@ -81,7 +81,7 @@ public class Account
 }
 ```
 
-The account class has no control over which accounts are added or not as linked. That is, any part of the application can add or remove accounts, whether valid or not. 
+The account class has no control over its linked accounts. That is, any part of the application can add or remove accounts, whether valid or not. 
 
 A simple change can correct that:
 
@@ -112,7 +112,7 @@ If you physically prevent something (by using private setters and read-only coll
 
 ## Complexity
 
-Many ORMs are quite large and complex. EF Core is a huge beast that tries to solve all possible problems in the data layer. My personal opinion is that EF Core is like WebForms. It tries to solve problems that isn't really there which really results in layers of indirection and additional complexity in your application.
+Many ORMs are quite large and complex. EF Core is a huge beast that tries to solve all possible problems in the data layer. My personal opinion is that EF Core is like WebForms. It tries to solve problems that isn't really there which really results in layers of indirection and additional complexity in your application. If you don't agree, fine, I respect that. No point in discussing it ;)
 
 With Griffin.Data I try to keep the runtime complexity as minimal as possible. __When something fails, it should be obvious why__; It should be easy to correct mistakes without spending a lot of time debugging.
 
@@ -124,15 +124,17 @@ Griffin.Data does not support LINQ and never will. Instead, you have to use SQL.
 
 Debugging the data layer can make event the most experiences developer highly frustrated. The data layer is infrastructure code. It doesn't solve the customers problem, right? It should just work.
 
-Many ORMs provide vague error messages which makes it hard to tell what the root cause is. The more custom solutions you make, the harder it will be to debug it.
+Vague error messages is frustrating since they make it hard to tell what the root cause is. The more custom solutions you make, the harder it will be to debug it.
 
 In Griffin.Data I've spent time to make sure that all error messages are rich and should give you enough information to dignaose and solve problems quickly.
 
 Here are a few samples.
 
+
+
 ## Conclusion
 
-If you agree with the above sentiments, you'll like Griffin.Data. If you don't, EF Core or NHibernate might better fit you.
+If you agree with the above sentiments, you'll like Griffin.Data. If you don't, EF Core, Dapper or NHibernate might better fit you.
 
 # Part 2 - Enter Griffin.Data
 
@@ -287,25 +289,10 @@ namespace DemoProject.App.Todolists
     {
         Task<Permission> GetById(int id);
 
-        /// <summary>
-        ///     Create a new entity in the database.
-        /// </summary>
-        /// <param name="entity">Entity to create.</param>
-        /// <returns>Task</returns>
         Task Create([DisallowNull] Permission entity);
 
-        /// <summary>
-        ///     Delete an existing entity from the database.
-        /// </summary>
-        /// <param name="entity">Entity to delete.</param>
-        /// <returns>Task</returns>
         Task Delete([DisallowNull] Permission entity);
 
-        /// <summary>
-        ///     Update an existing entity in the database.
-        /// </summary>
-        /// <param name="entity">Entity to update.</param>
-        /// <returns>Task</returns>
         Task Update([DisallowNull] Permission entity);
     }
 }
@@ -322,6 +309,8 @@ namespace DemoProject.App.Todolists
 {
     public class Permission
     {
+        // All fields are NOT NULL = required = must be in the constructor
+        // to guarantee that the object has a valid state.
         public Permission(int todolistId, int accountId, bool canRead, bool canWrite, bool isAdmin)
         {
             TodolistId = todolistId;
@@ -442,12 +431,17 @@ public class PermissionRepository : CrudOperations<Permission>, IPermissionRepos
     {
         if (session == null) throw new ArgumentNullException(nameof(session));
     }
+
     public async Task<Permission> GetById(int id)
     {
         return await Session.First<Permission>(new {id});
     }
 }
 ```
+
+You can of course override the methods for custom behaviour (or just remove the base class inheritance).
+
+The `GetById` method can't be in the base class since an entity can have a composite key (i.e. more than one primary key columns).
 
 **Integration tests**
 
@@ -506,6 +500,10 @@ public class PermissionRepositoryTests : IntegrationTest
         actual.Should().BeNull();
     }
 
+    // This is typically the only method you have to modify in the generated test.
+    // It adds random values to all required properties. 
+    //
+    // To test optional properties, simply add them in this method.
     private Permission CreateValidEntity()
     {
         var entity = new Permission(1736271703, 1929237965, true, true, true);
@@ -515,7 +513,7 @@ public class PermissionRepositoryTests : IntegrationTest
 }
 ```
 
-The test classes are generated so there is a single point that you need to change to adjust for value restrictions, and that's the `CreateValidEntity` method.
+The tests are constructed so that no data is required in the database. All tests are also wrapped in a transaction (which is rolled back once the test completes). It's recommended that you configure a minimal transaction log ("Simple" in MSSQL).
 
 ## Scaffolding the read side (i.e. the presentation side)
 
@@ -591,6 +589,11 @@ public class ListMyTasksResultItem
 
 ```csharp
 
+
+
+                        HELLO!!!!!!!!!!!!!!!!
+
+
 ```
 
 
@@ -609,7 +612,7 @@ WHERE tp.AccountId = @accountId
 ORDER by tt.Priority
 ```
 
-The first to lines are SQL comments that tells the scaffolder to add sorting and paging.
+The first two lines are SQL comments that tells the scaffolder to add sorting and paging.
 
 ### Invoking queries
 
@@ -770,7 +773,14 @@ var entities = session.List<Account>(new { UserName = 'G%' });
 You can read more about all ways that you get retrieve entities in the [github wiki](https://github.com/jgauffin/Griffin.Data/blob/master/docs/Querying/Querying.md).
 
 
-If no errors where made
+If you can run the query without errors, we are ready to create a service.
+
+```
+public class TodoService
+{
+    
+}
+}
 
 
 Without change tracking, all changes have to be applied manually:

@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using Griffin.Data.Mappings.Relations;
+using Griffin.Data.Mapper.Mappings.Relations;
 using Griffin.Data.Tests.Subjects;
 
 namespace Griffin.Data.Tests.Mappings.Relations;

@@ -3,7 +3,7 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Reflection;
 using Griffin.Data.ChangeTracking;
-using Griffin.Data.Mappings;
+using Griffin.Data.Mapper.Mappings;
 using Griffin.Data.SqlServer;
 
 namespace Griffin.Data.Tests;

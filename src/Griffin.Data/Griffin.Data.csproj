@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Griffin.Data.xml</DocumentationFile>
 
-        <Version>2.0.0-rc27</Version>
-        <PackageReleaseNotes>Removed tag from this package.</PackageReleaseNotes>
+        <Version>2.0.0-rc28</Version>
+        <PackageReleaseNotes>Fixed bugs in change tracking and mapping configs.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -24,5 +24,9 @@
     <Target Name="CopyPackage" AfterTargets="Pack" Condition="$(Configuration)!='Release'">
         <Copy SourceFiles="$(OutputPath)\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="\src\nuget\" />
     </Target>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+    </ItemGroup>
 
 </Project>

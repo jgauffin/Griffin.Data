@@ -2,7 +2,7 @@
 using FluentAssertions;
 using Griffin.Data.Configuration;
 using Griffin.Data.Mapper;
-using Griffin.Data.Mappings;
+using Griffin.Data.Mapper.Mappings;
 using Griffin.Data.Tests.Helpers;
 using Griffin.Data.Tests.Subjects;
 

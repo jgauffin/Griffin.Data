@@ -70,23 +70,29 @@ public class ListActiveUsersResultItem
     public string UserName  { get; set; }
 }
 
-// The query runner (which executes the query and generates the result).
-public class ListUsersRunner : ListRunner<ListUsersResultItem>, IQueryRunner<ListUsers, ListUsersResult>
+// The query handler (which executes the query and generates the result).
+//
+// Since query handlers use ADO.NET directly, they are as fast as it gets.
+// (there are a few optimisations left to do, but it should be fast enough as is)
+public class ListUsersHandler : ListHandler<ListUsersResultItem>, IQueryHandler<ListUsers, ListUsersResult>
 {
-    public ListUsersRunner(Session session) : base(session)
+    public ListUsersHandler(QuerySession session) : base(session)
     {
     }
 
     public async Task<ListUsersResult> Execute(ListUsers query)
     {
         await using var command = Session.CreateCommand();
-        command.CommandText = @"select *
-                                 from Users";
+        command.CommandText = @"SELECT u.Id, UserName
+                                FROM Users u
+                                JOIN Accounts a ON (u.AccountId = a.Id)
+                                WHERE a.State = 1";
 
         command.AddParameter("name", query.NameToFind);
         return new ListUsersResult { Items = await MapRecords(command) };
     }
 
+    // This map method is as fast as ADO.NET gets.
     protected override void MapRecord(IDataRecord record, ListUsersResultItem item)
     {
         item.Id = record.GetInt32(0);
@@ -97,22 +103,13 @@ public class ListUsersRunner : ListRunner<ListUsersResultItem>, IQueryRunner<Lis
 
 The generated query uses regular ADO.NET to avoid mapping issues or inefficiencies. 
 
-## Invoke it
+## Update or regenerate queries
 
-Use the' Session' class to invoke the query to get a result.
+The scaffolder will not modify existing files. To get a query re-generated, delete it and invoke the scaffolder again.
 
-```csharp
-var result = await Session.Query(new ListActiveUsers());
-```
+You can also invoke `dotnet gd queries regenerate` which will overwrite all queries.
 
-## Update or regenerate
-
-To update it, modify it. The scaffolder will not do anything with existing files. 
-
-If more extensive changes are made, adjust the SQL file and then delete all classes to get it re-generated.
-
-
-# Using query parameters
+## Using query parameters
 
 Query parameters in the SQL script are automatically converted into query properties.
 
@@ -134,7 +131,7 @@ public class ListActiveUsers : IQuery<ListActiveUsersResult>
 }
 ```
 
-# Paging
+## Paging
 
 To use paging, simply add `--paging` to the first line of the SQL script.
 
@@ -168,7 +165,7 @@ public class ListActiveUsers : IQuery<ListActiveUsersResult>
 }
 ```
 
-# Sorting
+## Sorting
 
 To allow the query invoker to sort the result, add `--sorting` to the top of the query.
 
@@ -227,4 +224,63 @@ var query = new ListActiveUsers('jo%")
     .SortDescending("Name");
 
 var result = await Session.Query(query);
+```
+
+## Configuration
+
+Queries are run either by using an DI container or by using an extension method for `Session`.
+
+### Using IOC
+
+Using an IoC is our recommended approach. There is a `QuerySession` class which inherits the normal `Session` class. That allows us to use different database transaction isolation levels for queries and commands. That's a good thing since queries aren't typically as strict when it comes to data (as it's just presented to users). 
+
+You can for instance use "read committed" for queries while using "serializable" for the normal session. You can find details about isolations levels in the [microsoft docs](https://learn.microsoft.com/en-us/dotnet/api/system.data.isolationlevel).
+
+Register as follows:
+
+```csharp
+public void RegisterQueries(IServiceCollection services)
+{
+    services.AddQueryHandlerInvoker(IsolationLevel.ReadCommited);
+
+    // Repeat this line for all assemblies that contain IQueryHandler<,> implementations.
+    servives.AddQueryHandlers(typeof(SomeQueryHandler).Assembly);
+}
+````
+
+### Using Session
+
+If you want to use `Session.Query()` you need to instead register all assemblies in `SelfContainedQueryHandlerInvoker`:
+
+```csharp
+// Repeat per assembly that contains query handlers.
+SelfContainedQueryHandlerInvoker.ScanAssembly(typeof(MyQueryHandler).Assembly);
+```
+
+
+## Invoke queries
+
+When using DI:
+
+```csharp
+public class AccountController
+{
+    private readonly IQueryHandlerInvoker _invoker;
+
+    public AccountController(IQueryHandlerInvoker invoker)
+    {
+        _invoker = invoker ?? throw new ArgumentNullException(nameof(invoker));
+    }
+
+    public Task<IReadOnlyList<TrialAccountResult>> LockTrialAccounts()
+    {
+        return await _invoker.Execute(new FindTrialAccounts());
+    }
+}
+```
+
+When using the `Session` class:
+
+```csharp
+var result = await Session.Query(new ListActiveUsers());
 ```

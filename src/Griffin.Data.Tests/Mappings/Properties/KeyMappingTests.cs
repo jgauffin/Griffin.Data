@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using Griffin.Data.Mapper;
-using Griffin.Data.Mappings.Properties;
+using Griffin.Data.Mapper.Mappings.Properties;
 using Griffin.Data.Tests.Subjects;
 
 namespace Griffin.Data.Tests.Mappings.Properties;

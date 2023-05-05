@@ -3,7 +3,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using Griffin.Data.Helpers;
-using Griffin.Data.Mappings.Relations;
+using Griffin.Data.Mapper.Mappings.Relations;
 
 namespace Griffin.Data.Mapper;
 

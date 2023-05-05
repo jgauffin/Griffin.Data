@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Griffin.Data.Helpers;
-using Griffin.Data.Mappings;
-using Griffin.Data.Mappings.Relations;
+using Griffin.Data.Mapper.Mappings;
+using Griffin.Data.Mapper.Mappings.Relations;
 
 namespace Griffin.Data.Mapper.Helpers;
 

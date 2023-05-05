@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using Griffin.Data.Mapper;
-using Griffin.Data.Mappings.Properties;
+using Griffin.Data.Mapper.Mappings.Properties;
 using Griffin.Data.Tests.Helpers;
 using Griffin.Data.Tests.Subjects;
 
@@ -105,7 +105,7 @@ public class PropertyMappingTests
         AccountState state = AccountState.Admin;
         var sut = new PropertyMapping<User, AccountState>("State", user => user.State, (x, y) => state = y);
 
-        var actual = sut.ConvertToColumnValue(new User() { State = state });
+        var actual = sut.ConvertToColumnValue(state);
 
         actual.Should().Be((int)state);
     }

@@ -20,6 +20,8 @@ public class MapperScaffolder
         FindAnalyzers();
     }
 
+    public bool OverwriteFiles { get; set; }
+
     /// <summary>
     /// </summary>
     /// <param name="connectionString">Connection string.</param>
@@ -57,6 +59,22 @@ public class MapperScaffolder
             }
 
             var fullPath = Path.Combine(subDir, file.ClassName + ".cs");
+            if (File.Exists(fullPath))
+            {
+                if (!OverwriteFiles)
+                {
+                    continue;
+
+                }
+
+                // Don't overwrite if file is frozen.
+                var contents = await File.ReadAllTextAsync(fullPath);
+                if (contents.Contains("[Freeze]"))
+                {
+                    continue;
+                }
+            }
+
             await File.WriteAllTextAsync(fullPath, file.Contents);
         }
     }
