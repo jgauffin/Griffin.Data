@@ -19,7 +19,7 @@ internal class IntegrationTestGenerator : IClassGenerator
         sb.AppendLine(@"using System.Data.SqlClient;");
         sb.AppendLine(@"using Griffin.Data;");
         sb.AppendLine(@"using Griffin.Data.ChangeTracking;");
-        sb.AppendLine(@"using Griffin.Data.Mappings;");
+        sb.AppendLine(@"using Griffin.Data.Mapper.Mappings;");
         sb.AppendLine(@"using Microsoft.Extensions.Configuration;");
         sb.AppendLine($"using {context.Folders.DataFolder}.{table.RelativeNamespace}.Mappings;");
         sb.AppendLine();

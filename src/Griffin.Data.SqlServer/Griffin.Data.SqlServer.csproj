@@ -8,8 +8,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Griffin.Data.SqlServer.xml</DocumentationFile>
 
-        <Version>1.0.0-rc03</Version>
-        <PackageReleaseNotes>Small fixes.</PackageReleaseNotes>
+        <Version>1.0.0-rc04</Version>
+        <PackageReleaseNotes>Updated to latest package.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>
