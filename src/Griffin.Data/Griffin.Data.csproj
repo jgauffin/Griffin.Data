@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Griffin.Data.xml</DocumentationFile>
 
-        <Version>2.0.0-rc28</Version>
-        <PackageReleaseNotes>Fixed bugs in change tracking and mapping configs.</PackageReleaseNotes>
+        <Version>2.0.0-rc29</Version>
+        <PackageReleaseNotes>Fixed auto-enum conversions for non-int types.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>

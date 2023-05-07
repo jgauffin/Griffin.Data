@@ -3,7 +3,6 @@ using System.Data;
 using Griffin.Data.Configuration;
 using Griffin.Data.Converters;
 using Griffin.Data.Converters.Enums;
-using Griffin.Data.Mapper;
 
 namespace Griffin.Data.Mapper.Mappings.Properties;
 
@@ -21,9 +20,9 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping, IGotColumnT
 
     /// <summary>
     /// </summary>
-    /// <param name="propertyName"></param>
-    /// <param name="getter"></param>
-    /// <param name="setter"></param>
+    /// <param name="propertyName">Property that the mapping is for.</param>
+    /// <param name="getter">Get value from property (value should be converted to column type)</param>
+    /// <param name="setter">Set property value (using a column value)</param>
     public PropertyMapping(
         string propertyName,
         Func<TEntity, TProperty?>? getter,
@@ -255,6 +254,15 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping, IGotColumnT
             return;
         }
 
+        var underlyingType = Enum.GetUnderlyingType(typeof(TProperty));
+
+        // Active choice, let's use it directly.
+        if (underlyingType != typeof(int))
+        {
+            SelectEnumConverter(underlyingType);
+            return;
+        }
+
         PropertyToColumnConverter = x =>
         {
             if (x == null)
@@ -278,22 +286,13 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping, IGotColumnT
                     "A converter should not get invoked for null values.");
             }
 
-            SelectEnumConverter(x);
+            SelectEnumConverter(x.GetType());
             return ColumnToPropertyConverter!(x);
         };
     }
 
-    private void SelectEnumConverter(object value)
+    private void SelectEnumConverter(Type columnType)
     {
-        var underlyingType = Enum.GetUnderlyingType(typeof(TProperty));
-
-        // Underlying type is explicitly defined if it's different
-        // from int, which means that the developer have made
-        // and active choice, which we hope is the same as the column type.
-        //
-        // If it's now, an explicit mapping is required instead of MapRemainingProperties().
-        var columnType = underlyingType != typeof(int) ? underlyingType : value.GetType();
-
         _enumIsConfigured = true;
         if (columnType == typeof(short))
         {

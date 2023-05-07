@@ -138,6 +138,30 @@ public class PropertyMappingTests
     }
 
     [Fact]
+    public void Set_should_use_enum_converter_per_default_for_short()
+    {
+        var record = new FakeRecord(new Dictionary<string, object>() { { "State", (short)2 } });
+        ExplicitState state = ExplicitState.Disabled;
+        var sut = new PropertyMapping<User, ExplicitState>("State", user => ExplicitState.Active, (x, y) => state = y);
+        var entity = new User();
+         
+        sut.MapRecord(record, entity);
+
+        state.Should().Be(ExplicitState.Admin);
+    }
+
+    [Fact]
+    public void Set_should_use_enum_converter_per_default_for_short_from_property_to_record()
+    {
+        ExplicitState state = ExplicitState.Disabled;
+        var sut = new PropertyMapping<User, ExplicitState>("State", user => ExplicitState.Active, (x, y) => state = y);
+
+        var actual = sut.ConvertToColumnValue(ExplicitState.Active);
+
+        actual.Should().Be(1);
+    }
+
+    [Fact]
     public void Set_should_explicit_enum_type()
     {
         var record = new FakeRecord(new Dictionary<string, object>() { { "State", (short)2 } });
