@@ -1,59 +1,63 @@
-﻿using DemoApp.Core.Accounts;
-using DemoApp.Data.Accounts;
 using FluentAssertions;
 using Griffin.Data.Mapper;
+using Xunit;
+using DemoApp.Core.Accounts;
+using DemoApp.Data.Accounts;
 
-namespace DemoApp.Data.Tests.Accounts;
-
-public class AccountRepositoryTests : IntegrationTest
+namespace DemoApp.Data.Tests.Accounts
 {
-    private readonly AccountRepository _repository;
-
-    public AccountRepositoryTests()
+    public class AccountRepositoryTests : IntegrationTest
     {
-        _repository = new AccountRepository(Session);
-    }
+        private readonly AccountRepository _repository;
 
-    [Fact]
-    public async Task Should_be_able_to_delete_entity()
-    {
-        var entity = CreateValidEntity();
-        await Session.Insert(entity);
+        public AccountRepositoryTests()
+        {
+            _repository = new AccountRepository(Session);
+        }
 
-        await _repository.Delete(entity);
+        [Fact]
+        public async Task Should_be_able_to_insert_entity()
+        {
+            var entity = CreateValidEntity();
 
-        var actual = await Session.FirstOrDefault<Account>(new { entity.Id });
-        actual.Should().BeNull();
-    }
+            await _repository.Create(entity);
+            
+            entity.Id.Should().BeGreaterThan(1);
+        }
 
-    [Fact]
-    public async Task Should_be_able_to_insert_entity()
-    {
-        var entity = CreateValidEntity();
+        [Fact]
+        public async Task Should_be_able_to_update_entity()
+        {
+            var entity = CreateValidEntity();
+            await Session.Insert(entity);
+            
 
-        await _repository.Create(entity);
+            await _repository.Update(entity);
 
-        entity.Id.Should().BeGreaterThan(1);
-    }
+            var actual = await Session.FirstOrDefault<Account>(new {entity.Id});
+            actual.Should().NotBeNull();
+            actual.UserName.Should().Be(entity.UserName);
+            actual.Password.Should().Be(entity.Password);
+            actual.Salt.Should().Be(entity.Salt);
+        }
 
-    [Fact]
-    public async Task Should_be_able_to_update_entity()
-    {
-        var entity = CreateValidEntity();
-        await Session.Insert(entity);
+        [Fact]
+        public async Task Should_be_able_to_delete_entity()
+        {
+            var entity = CreateValidEntity();
+            await Session.Insert(entity);
+            
+            await _repository.Delete(entity);
 
-        await _repository.Update(entity);
+            var actual = await Session.FirstOrDefault<Account>(new {entity.Id});
+            actual.Should().BeNull();
+        }
 
-        var actual = await Session.FirstOrDefault<Account>(new { entity.Id });
-        actual.Should().NotBeNull();
-        actual.UserName.Should().Be(entity.UserName);
-        actual.Password.Should().Be(entity.Password);
-        actual.Salt.Should().Be(entity.Salt);
-    }
+        private Account CreateValidEntity()
+        {
+            var entity = new Account("3879", "7870", "8815");
+            return entity;
+        }
 
-    private Account CreateValidEntity()
-    {
-        var entity = new Account("4741", "9717", "8876");
-        return entity;
     }
 }

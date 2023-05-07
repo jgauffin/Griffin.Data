@@ -1,68 +1,78 @@
-﻿using DemoApp.Core.TodoTasks;
-using DemoApp.Data.TodoTasks;
+﻿using DemoApp.Core.Accounts;
+using DemoApp.Core.Todolists;
 using FluentAssertions;
 using Griffin.Data.Mapper;
+using Xunit;
+using DemoApp.Core.TodoTasks;
+using DemoApp.Data.TodoTasks;
 
-namespace DemoApp.Data.Tests.TodoTasks;
-
-public class TodoTaskRepositoryTests : IntegrationTest
+namespace DemoApp.Data.Tests.TodoTasks
 {
-    private readonly TodoTaskRepository _repository;
-
-    public TodoTaskRepositoryTests()
+    public class TodoTaskRepositoryTests : IntegrationTest
     {
-        _repository = new TodoTaskRepository(Session);
-    }
+        private readonly TodoTaskRepository _repository;
+        private Account _account = new Account("jgauffin", "123456", "sprinkled");
+        private Todolist _list = new Todolist("MyList", 1, DateTime.UtcNow);
 
-    [Fact]
-    public async Task Should_be_able_to_delete_entity()
-    {
-        var entity = CreateValidEntity();
-        await Session.Insert(entity);
+        public TodoTaskRepositoryTests()
+        {
+            Session.Insert(_account);
+            Session.Insert(_list);
+            _repository = new TodoTaskRepository(Session);
+        }
 
-        await _repository.Delete(entity);
+        [Fact]
+        public async Task Should_be_able_to_insert_entity()
+        {
+            var entity = CreateValidEntity();
 
-        var actual = await Session.FirstOrDefault<TodoTask>(new { entity.Id });
-        actual.Should().BeNull();
-    }
+            await _repository.Create(entity);
+            
+            entity.Id.Should().BeGreaterThan(1);
+        }
 
-    [Fact]
-    public async Task Should_be_able_to_insert_entity()
-    {
-        var entity = CreateValidEntity();
+        [Fact]
+        public async Task Should_be_able_to_update_entity()
+        {
+            var entity = CreateValidEntity();
+            await Session.Insert(entity);
+            
+            entity.UpdatedById = 1769508983;
+            entity.UpdatedAtUtc = DateTime.UtcNow;
 
-        await _repository.Create(entity);
+            await _repository.Update(entity);
 
-        entity.Id.Should().BeGreaterThan(1);
-    }
+            var actual = await Session.FirstOrDefault<TodoTask>(new {entity.Id});
+            actual.Should().NotBeNull();
+            actual.TodolistId.Should().Be(entity.TodolistId);
+            actual.Name.Should().Be(entity.Name);
+            actual.TaskType.Should().Be(entity.TaskType);
+            actual.State.Should().Be(entity.State);
+            actual.Priority.Should().Be(entity.Priority);
+            actual.CreatedById.Should().Be(entity.CreatedById);
+            actual.CreatedAtUtc.Should().Be(entity.CreatedAtUtc);
+            actual.UpdatedById.Should().Be(entity.UpdatedById);
+            actual.UpdatedAtUtc.Should().Be(entity.UpdatedAtUtc);
+        }
 
-    [Fact]
-    public async Task Should_be_able_to_update_entity()
-    {
-        var entity = CreateValidEntity();
-        await Session.Insert(entity);
+        [Fact]
+        public async Task Should_be_able_to_delete_entity()
+        {
+            var entity = CreateValidEntity();
+            await Session.Insert(entity);
+            
+            await _repository.Delete(entity);
 
-        entity.UpdatedById = 651771417;
-        entity.UpdatedAtUtc = DateTime.UtcNow;
+            var actual = await Session.FirstOrDefault<TodoTask>(new {entity.Id});
+            actual.Should().BeNull();
+        }
 
-        await _repository.Update(entity);
+        private TodoTask CreateValidEntity()
+        {
+            
+            var entity = new TodoTask(_list.Id, "3673", 52131014, TodoTaskState.NotSpecified, 1220926417, _account.Id, DateTime.UtcNow);
+            return entity;
+        }
 
-        var actual = await Session.FirstOrDefault<TodoTask>(new { entity.Id });
-        actual.Should().NotBeNull();
-        actual.TodolistId.Should().Be(entity.TodolistId);
-        actual.Name.Should().Be(entity.Name);
-        actual.TaskType.Should().Be(entity.TaskType);
-        actual.State.Should().Be(entity.State);
-        actual.Priority.Should().Be(entity.Priority);
-        actual.CreatedById.Should().Be(entity.CreatedById);
-        actual.CreatedAtUtc.Should().Be(entity.CreatedAtUtc);
-        actual.UpdatedById.Should().Be(entity.UpdatedById);
-        actual.UpdatedAtUtc.Should().Be(entity.UpdatedAtUtc);
-    }
-
-    private TodoTask CreateValidEntity()
-    {
-        var entity = new TodoTask(627702192, "6407", 1213213029, 115986461, 730976269);
-        return entity;
     }
 }

@@ -1,11 +1,16 @@
-﻿namespace DemoApp.Core.Todolists;
+using DemoApp.Core;
 
-public interface ITodolistRepository
+namespace DemoApp.Core.Todolists
 {
-    Task Create(Todolist entity);
+    public interface ITodolistRepository
+    {
+        Task<Todolist> GetById(int id);
 
-    Task Delete(Todolist entity);
-    Task<Todolist> GetById(int id);
+        Task Create(Todolist entity);
 
-    Task Update(Todolist entity);
+        Task Update(Todolist entity);
+
+        Task Delete(Todolist entity);
+
+    }
 }

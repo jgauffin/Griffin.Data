@@ -1,11 +1,16 @@
-﻿namespace DemoApp.Core.Todolists;
+using DemoApp.Core;
 
-public interface IPermissionRepository
+namespace DemoApp.Core.Todolists
 {
-    Task Create(Permission entity);
+    public interface IPermissionRepository
+    {
+        Task<Permission> GetById(int id);
 
-    Task Delete(Permission entity);
-    Task<Permission> GetById(int id);
+        Task Create(Permission entity);
 
-    Task Update(Permission entity);
+        Task Update(Permission entity);
+
+        Task Delete(Permission entity);
+
+    }
 }

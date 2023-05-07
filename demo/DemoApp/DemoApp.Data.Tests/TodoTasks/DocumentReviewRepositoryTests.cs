@@ -1,72 +1,62 @@
-﻿using DemoApp.Core.Accounts;
-using DemoApp.Core.Todolists;
-using DemoApp.Core.TodoTasks;
-using DemoApp.Data.TodoTasks;
 using FluentAssertions;
 using Griffin.Data.Mapper;
+using Xunit;
+using DemoApp.Core.TodoTasks;
+using DemoApp.Data.TodoTasks;
 
-namespace DemoApp.Data.Tests.TodoTasks;
-
-public class DocumentReviewRepositoryTests : IntegrationTest
+namespace DemoApp.Data.Tests.TodoTasks
 {
-    private readonly DocumentReviewRepository _repository;
-    private TodoTask _task = null!;
-
-    public DocumentReviewRepositoryTests()
+    public class DocumentReviewRepositoryTests : IntegrationTest
     {
-        _repository = new DocumentReviewRepository(Session);
-        SetupTestData().Wait();
-    }
+        private readonly DocumentReviewRepository _repository;
 
-    private async Task SetupTestData()
-    {
-        var account = new Account("jgauffin", "123456", "139339");
-        await Session.Insert(account);
-        var todoList = new Todolist("My list", account.Id);
-        await Session.Insert(todoList);
-        _task = new TodoTask(todoList.Id, "Some task", 0, 5, account.Id);
-        await Session.Insert(_task);
-    }
+        public DocumentReviewRepositoryTests()
+        {
+            _repository = new DocumentReviewRepository(Session);
+        }
 
-    [Fact]
-    public async Task Should_be_able_to_delete_entity()
-    {
-        var entity = CreateValidEntity();
-        await Session.Insert(entity);
+        [Fact]
+        public async Task Should_be_able_to_insert_entity()
+        {
+            var entity = CreateValidEntity();
 
-        await _repository.Delete(entity);
+            await _repository.Create(entity);
+            
+        }
 
-        var actual = await Session.FirstOrDefault<DocumentReview>(new { entity.TaskId });
-        actual.Should().BeNull();
-    }
+        [Fact]
+        public async Task Should_be_able_to_update_entity()
+        {
+            var entity = CreateValidEntity();
+            await Session.Insert(entity);
+            
+            entity.Comment = "1904";
 
-    [Fact]
-    public async Task Should_be_able_to_insert_entity()
-    {
-        var entity = CreateValidEntity();
+            await _repository.Update(entity);
 
-        await _repository.Create(entity);
-    }
+            var actual = await Session.FirstOrDefault<DocumentReview>(new {entity.TaskId});
+            actual.Should().NotBeNull();
+            actual.DocumentUrl.Should().Be(entity.DocumentUrl);
+            actual.Comment.Should().Be(entity.Comment);
+        }
 
-    [Fact]
-    public async Task Should_be_able_to_update_entity()
-    {
-        var entity = CreateValidEntity();
-        await Session.Insert(entity);
+        [Fact]
+        public async Task Should_be_able_to_delete_entity()
+        {
+            var entity = CreateValidEntity();
+            await Session.Insert(entity);
+            
+            await _repository.Delete(entity);
 
-        entity.Comment = "8112";
+            var actual = await Session.FirstOrDefault<DocumentReview>(new {entity.TaskId});
+            actual.Should().BeNull();
+        }
 
-        await _repository.Update(entity);
+        private DocumentReview CreateValidEntity()
+        {
+            var entity = new DocumentReview(1762790285, "7653");
+            return entity;
+        }
 
-        var actual = await Session.FirstOrDefault<DocumentReview>(new { entity.TaskId });
-        actual.Should().NotBeNull();
-        actual.DocumentUrl.Should().Be(entity.DocumentUrl);
-        actual.Comment.Should().Be(entity.Comment);
-    }
-
-    private DocumentReview CreateValidEntity()
-    {
-        var entity = new DocumentReview(_task.Id, "https://github.com/somename/somerepos/issues/5");
-        return entity;
     }
 }

@@ -1,11 +1,16 @@
-﻿namespace DemoApp.Core.Accounts;
+using DemoApp.Core;
 
-public interface IAccountRepository
+namespace DemoApp.Core.Accounts
 {
-    Task Create(Account entity);
+    public interface IAccountRepository
+    {
+        Task<Account> GetById(int id);
 
-    Task Delete(Account entity);
-    Task<Account> GetById(int id);
+        Task Create(Account entity);
 
-    Task Update(Account entity);
+        Task Update(Account entity);
+
+        Task Delete(Account entity);
+
+    }
 }

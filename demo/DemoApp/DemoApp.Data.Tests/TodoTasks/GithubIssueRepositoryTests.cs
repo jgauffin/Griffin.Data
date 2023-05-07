@@ -1,56 +1,61 @@
-using DemoApp.Core.TodoTasks;
-using DemoApp.Data.TodoTasks;
 using FluentAssertions;
 using Griffin.Data.Mapper;
+using Xunit;
+using DemoApp.Core.TodoTasks;
+using DemoApp.Data.TodoTasks;
 
-namespace DemoApp.Data.Tests.TodoTasks;
-
-public class GithubIssueRepositoryTests : IntegrationTest
+namespace DemoApp.Data.Tests.TodoTasks
 {
-    private readonly GithubIssueRepository _repository;
-
-    public GithubIssueRepositoryTests()
+    public class GithubIssueRepositoryTests : IntegrationTest
     {
-        _repository = new GithubIssueRepository(Session);
-    }
+        private readonly GithubIssueRepository _repository;
 
-    [Fact]
-    public async Task Should_be_able_to_delete_entity()
-    {
-        var entity = CreateValidEntity();
-        await Session.Insert(entity);
+        public GithubIssueRepositoryTests()
+        {
+            _repository = new GithubIssueRepository(Session);
+        }
 
-        await _repository.Delete(entity);
+        [Fact]
+        public async Task Should_be_able_to_insert_entity()
+        {
+            var entity = CreateValidEntity();
 
-        var actual = await Session.FirstOrDefault<GithubIssue>(new { entity.TaskId });
-        actual.Should().BeNull();
-    }
+            await _repository.Create(entity);
+            
+        }
 
-    [Fact]
-    public async Task Should_be_able_to_insert_entity()
-    {
-        var entity = CreateValidEntity();
+        [Fact]
+        public async Task Should_be_able_to_update_entity()
+        {
+            var entity = CreateValidEntity();
+            await Session.Insert(entity);
+            
 
-        await _repository.Create(entity);
-    }
+            await _repository.Update(entity);
 
-    [Fact]
-    public async Task Should_be_able_to_update_entity()
-    {
-        var entity = CreateValidEntity();
-        await Session.Insert(entity);
+            var actual = await Session.FirstOrDefault<GithubIssue>(new {entity.TaskId});
+            actual.Should().NotBeNull();
+            actual.Name.Should().Be(entity.Name);
+            actual.IssueUrl.Should().Be(entity.IssueUrl);
+        }
 
-        await _repository.Update(entity);
+        [Fact]
+        public async Task Should_be_able_to_delete_entity()
+        {
+            var entity = CreateValidEntity();
+            await Session.Insert(entity);
+            
+            await _repository.Delete(entity);
 
-        var actual = await Session.FirstOrDefault<GithubIssue>(new { entity.TaskId });
-        actual.Should().NotBeNull();
-        actual.Name.Should().Be(entity.Name);
-        actual.IssueUrl.Should().Be(entity.IssueUrl);
-    }
+            var actual = await Session.FirstOrDefault<GithubIssue>(new {entity.TaskId});
+            actual.Should().BeNull();
+        }
 
-    private GithubIssue CreateValidEntity()
-    {
-        var entity = new GithubIssue(733131975, "1956", 1269523530);
-        return entity;
+        private GithubIssue CreateValidEntity()
+        {
+            var entity = new GithubIssue(1650235913, "2658", 815666346);
+            return entity;
+        }
+
     }
 }

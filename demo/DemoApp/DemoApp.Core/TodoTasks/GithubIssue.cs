@@ -1,16 +1,18 @@
-namespace DemoApp.Core.TodoTasks;
-
-public class GithubIssue
+﻿
+namespace DemoApp.Core.TodoTasks
 {
-    public GithubIssue(int taskId, string name, int issueUrl)
+    public class GithubIssue: ITaskData
     {
-        TaskId = taskId;
-        Name = name;
-        IssueUrl = issueUrl;
+        public GithubIssue(int taskId, string name, int issueUrl)
+        {
+            TaskId = taskId;
+            Name = name;
+            IssueUrl = issueUrl;
+        }
+
+        public int TaskId { get; private set; }
+        public string Name { get; private set; }
+        public int IssueUrl { get; private set; }
+
     }
-
-    public int IssueUrl { get; }
-    public string Name { get; }
-
-    public int TaskId { get; }
 }

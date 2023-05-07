@@ -1,22 +1,19 @@
-using DemoApp.Core.TodoTasks;
 using Griffin.Data;
-using Griffin.Data.Domain;
 using Griffin.Data.Mapper;
+using Griffin.Data.Domain;
+using DemoApp.Core.TodoTasks;
 
-namespace DemoApp.Data.TodoTasks;
-
-public class TodoTaskRepository : CrudOperations<TodoTask>, ITodoTaskRepository
+namespace DemoApp.Data.TodoTasks
 {
-    public TodoTaskRepository(Session session) : base(session)
+    public class TodoTaskRepository : CrudOperations<TodoTask>, ITodoTaskRepository
     {
-        if (session == null)
+        public TodoTaskRepository(Session session) : base(session)
         {
-            throw new ArgumentNullException(nameof(session));
+            if (session == null) throw new ArgumentNullException(nameof(session));
         }
-    }
-
-    public async Task<TodoTask> GetById(int id)
-    {
-        return await Session.First<TodoTask>(new { id });
+        public async Task<TodoTask> GetById(int id)
+        {
+            return await Session.First<TodoTask>(new {id});
+        }
     }
 }

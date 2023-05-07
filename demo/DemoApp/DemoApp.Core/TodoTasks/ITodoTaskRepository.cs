@@ -1,11 +1,16 @@
-namespace DemoApp.Core.TodoTasks;
+using DemoApp.Core;
 
-public interface ITodoTaskRepository
+namespace DemoApp.Core.TodoTasks
 {
-    Task Create(TodoTask entity);
+    public interface ITodoTaskRepository
+    {
+        Task<TodoTask> GetById(int id);
 
-    Task Delete(TodoTask entity);
-    Task<TodoTask> GetById(int id);
+        Task Create(TodoTask entity);
 
-    Task Update(TodoTask entity);
+        Task Update(TodoTask entity);
+
+        Task Delete(TodoTask entity);
+
+    }
 }

@@ -1,26 +1,23 @@
-﻿namespace DemoApp.Core.Todolists;
 
-public class Permission
+namespace DemoApp.Core.Todolists
 {
-    public Permission(
-        int todolistId,
-        int accountId,
-        bool canRead,
-        bool canWrite,
-        bool isAdmin)
+    public class Permission
     {
-        TodolistId = todolistId;
-        AccountId = accountId;
-        CanRead = canRead;
-        CanWrite = canWrite;
-        IsAdmin = isAdmin;
+        public Permission(int todolistId, int accountId, bool canRead, bool canWrite, bool isAdmin)
+        {
+            TodolistId = todolistId;
+            AccountId = accountId;
+            CanRead = canRead;
+            CanWrite = canWrite;
+            IsAdmin = isAdmin;
+        }
+
+        public int Id { get; private set; }
+        public int TodolistId { get; private set; }
+        public int AccountId { get; private set; }
+        public bool CanRead { get; private set; }
+        public bool CanWrite { get; private set; }
+        public bool IsAdmin { get; private set; }
+
     }
-
-    public int AccountId { get; }
-    public bool CanRead { get; }
-    public bool CanWrite { get; }
-
-    public int Id { get; private set; }
-    public bool IsAdmin { get; }
-    public int TodolistId { get; }
 }

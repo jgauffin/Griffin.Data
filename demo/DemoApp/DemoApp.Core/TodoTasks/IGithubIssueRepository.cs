@@ -1,11 +1,16 @@
-﻿namespace DemoApp.Core.TodoTasks;
+using DemoApp.Core;
 
-public interface IGithubIssueRepository
+namespace DemoApp.Core.TodoTasks
 {
-    Task Create(GithubIssue entity);
+    public interface IGithubIssueRepository
+    {
+        Task<GithubIssue> GetById(int taskId);
 
-    Task Delete(GithubIssue entity);
-    Task<GithubIssue> GetById(int taskId);
+        Task Create(GithubIssue entity);
 
-    Task Update(GithubIssue entity);
+        Task Update(GithubIssue entity);
+
+        Task Delete(GithubIssue entity);
+
+    }
 }

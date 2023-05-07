@@ -1,15 +1,17 @@
-﻿namespace DemoApp.Core.TodoTasks;
-
-public class DocumentReview
+﻿
+namespace DemoApp.Core.TodoTasks
 {
-    public DocumentReview(int taskId, string documentUrl)
+    public class DocumentReview : ITaskData
     {
-        TaskId = taskId;
-        DocumentUrl = documentUrl;
+        public DocumentReview(int taskId, string documentUrl)
+        {
+            TaskId = taskId;
+            DocumentUrl = documentUrl;
+        }
+
+        public int TaskId { get; private set; }
+        public string DocumentUrl { get; private set; }
+        public string? Comment { get; set; }
+
     }
-
-    public string Comment { get; set; }
-    public string DocumentUrl { get; }
-
-    public int TaskId { get; }
 }

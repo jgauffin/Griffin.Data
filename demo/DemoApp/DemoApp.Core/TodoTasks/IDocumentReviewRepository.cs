@@ -1,11 +1,16 @@
-namespace DemoApp.Core.TodoTasks;
+using DemoApp.Core;
 
-public interface IDocumentReviewRepository
+namespace DemoApp.Core.TodoTasks
 {
-    Task Create(DocumentReview entity);
+    public interface IDocumentReviewRepository
+    {
+        Task<DocumentReview> GetById(int taskId);
 
-    Task Delete(DocumentReview entity);
-    Task<DocumentReview> GetById(int taskId);
+        Task Create(DocumentReview entity);
 
-    Task Update(DocumentReview entity);
+        Task Update(DocumentReview entity);
+
+        Task Delete(DocumentReview entity);
+
+    }
 }

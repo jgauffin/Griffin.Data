@@ -1,22 +1,19 @@
-using DemoApp.Core.TodoTasks;
 using Griffin.Data;
-using Griffin.Data.Domain;
 using Griffin.Data.Mapper;
+using Griffin.Data.Domain;
+using DemoApp.Core.TodoTasks;
 
-namespace DemoApp.Data.TodoTasks;
-
-public class DocumentReviewRepository : CrudOperations<DocumentReview>, IDocumentReviewRepository
+namespace DemoApp.Data.TodoTasks
 {
-    public DocumentReviewRepository(Session session) : base(session)
+    public class DocumentReviewRepository : CrudOperations<DocumentReview>, IDocumentReviewRepository
     {
-        if (session == null)
+        public DocumentReviewRepository(Session session) : base(session)
         {
-            throw new ArgumentNullException(nameof(session));
+            if (session == null) throw new ArgumentNullException(nameof(session));
         }
-    }
-
-    public async Task<DocumentReview> GetById(int taskId)
-    {
-        return await Session.First<DocumentReview>(new { taskId });
+        public async Task<DocumentReview> GetById(int taskId)
+        {
+            return await Session.First<DocumentReview>(new {taskId});
+        }
     }
 }

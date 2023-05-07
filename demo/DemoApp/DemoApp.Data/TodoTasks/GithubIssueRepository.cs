@@ -1,22 +1,19 @@
-using DemoApp.Core.TodoTasks;
 using Griffin.Data;
-using Griffin.Data.Domain;
 using Griffin.Data.Mapper;
+using Griffin.Data.Domain;
+using DemoApp.Core.TodoTasks;
 
-namespace DemoApp.Data.TodoTasks;
-
-public class GithubIssueRepository : CrudOperations<GithubIssue>, IGithubIssueRepository
+namespace DemoApp.Data.TodoTasks
 {
-    public GithubIssueRepository(Session session) : base(session)
+    public class GithubIssueRepository : CrudOperations<GithubIssue>, IGithubIssueRepository
     {
-        if (session == null)
+        public GithubIssueRepository(Session session) : base(session)
         {
-            throw new ArgumentNullException(nameof(session));
+            if (session == null) throw new ArgumentNullException(nameof(session));
         }
-    }
-
-    public async Task<GithubIssue> GetById(int taskId)
-    {
-        return await Session.First<GithubIssue>(new { taskId });
+        public async Task<GithubIssue> GetById(int taskId)
+        {
+            return await Session.First<GithubIssue>(new {taskId});
+        }
     }
 }

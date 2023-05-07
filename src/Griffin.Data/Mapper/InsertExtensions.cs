@@ -32,8 +32,11 @@ public static class InsertExtensions
         }
 
         var mapping = session.GetMapping(entity.GetType());
-        await using var command = session.CreateCommand();
-        await session.InsertEntity(mapping, entity, command, extraColumns);
+        await using (var command = session.CreateCommand())
+        {
+            await session.InsertEntity(mapping, entity, command, extraColumns);
+        }
+
         await session.InsertOneRelationShip(entity, mapping);
         await session.InsertManyRelationShip(entity, mapping);
     }

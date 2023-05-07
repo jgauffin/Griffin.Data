@@ -1,22 +1,19 @@
-using DemoApp.Core.Todolists;
 using Griffin.Data;
-using Griffin.Data.Domain;
 using Griffin.Data.Mapper;
+using Griffin.Data.Domain;
+using DemoApp.Core.Todolists;
 
-namespace DemoApp.Data.Todolists;
-
-public class PermissionRepository : CrudOperations<Permission>, IPermissionRepository
+namespace DemoApp.Data.Todolists
 {
-    public PermissionRepository(Session session) : base(session)
+    public class PermissionRepository : CrudOperations<Permission>, IPermissionRepository
     {
-        if (session == null)
+        public PermissionRepository(Session session) : base(session)
         {
-            throw new ArgumentNullException(nameof(session));
+            if (session == null) throw new ArgumentNullException(nameof(session));
         }
-    }
-
-    public async Task<Permission> GetById(int id)
-    {
-        return await Session.First<Permission>(new { id });
+        public async Task<Permission> GetById(int id)
+        {
+            return await Session.First<Permission>(new {id});
+        }
     }
 }

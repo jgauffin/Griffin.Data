@@ -1,43 +1,33 @@
-﻿namespace DemoApp.Core.TodoTasks;
-
-public class TodoTask
+﻿
+namespace DemoApp.Core.TodoTasks
 {
-    private readonly List<DocumentReview> _documentReviews = new();
-    private readonly List<GithubIssue> _githubIssues = new();
-
-    public TodoTask(
-        int todolistId,
-        string name,
-        int taskType,
-        int priority,
-        int createdById)
+    public class TodoTask
     {
-        TodolistId = todolistId;
-        Name = name;
-        TaskType = taskType;
-        State = TodoTaskState.New;
-        Priority = priority;
-        CreatedById = createdById;
-        CreatedAtUtc = DateTime.UtcNow;
+        private readonly List<GithubIssue> _githubIssues = new();
+        private readonly List<DocumentReview> _documentReviews = new();
+
+        public TodoTask(int todolistId, string name, int taskType, TodoTaskState state, int priority, int createdById, DateTime createdAtUtc)
+        {
+            TodolistId = todolistId;
+            Name = name;
+            TaskType = taskType;
+            State = state;
+            Priority = priority;
+            CreatedById = createdById;
+            CreatedAtUtc = createdAtUtc;
+        }
+
+        public int Id { get; private set; }
+        public int TodolistId { get; private set; }
+        public string Name { get; private set; }
+        public int TaskType { get; private set; }
+        public TodoTaskState State { get; private set; }
+        public int Priority { get; private set; }
+        public int CreatedById { get; private set; }
+        public DateTime CreatedAtUtc { get; private set; }
+        public int? UpdatedById { get; set; }
+        public DateTime? UpdatedAtUtc { get; set; }
+        public ITaskData Data { get; set; }
+
     }
-
-    public DateTime CreatedAtUtc { get; }
-
-    public int CreatedById { get; }
-    // public GithubIssue GithubIssue { get; set; }
-
-    public IReadOnlyList<DocumentReview> DocumentReviews => _documentReviews;
-
-    public IReadOnlyList<GithubIssue> GithubIssues => _githubIssues;
-
-    public int Id { get; private set; }
-    public string Name { get; }
-    public int Priority { get; }
-    public TodoTaskState State { get; }
-    public int TaskType { get; }
-    public int TodolistId { get; }
-    public DateTime UpdatedAtUtc { get; set; }
-
-    public int UpdatedById { get; set; }
-    // public DocumentReview DocumentReview { get; set; }
 }
