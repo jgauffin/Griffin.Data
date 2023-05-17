@@ -5,10 +5,10 @@
         <Nullable>enable</Nullable>
         <LangVersion>default</LangVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Griffin.Data.xml</DocumentationFile>
+        <DocumentationFile>bin\$(Configuration)\Griffin.Data.xml</DocumentationFile>
 
-        <Version>2.0.0-rc30</Version>
-        <PackageReleaseNotes>Dispose main command when inserting before inserting children to avoid MARS.</PackageReleaseNotes>
+        <Version>2.0.0-rc32</Version>
+        <PackageReleaseNotes>Removed MARS requirement from tree loading.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>

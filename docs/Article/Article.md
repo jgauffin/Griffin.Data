@@ -1,13 +1,20 @@
 Introduction
 ===========
 
-This article is about version 2.0 of my object/relation mapper and data mapper Griffin.Data. The article cannot cover everything, the purpose is only to demonstrate some of the features in Griffin.Data. To read more, visit the GitHub repository. There is plenty of documentation there.
+I've written many versions of this article. But it always got too large and I've therefore had to shorten it several times to not bore you my fellow developers. 
+
+That also means that I can't demonstrate all features of Griffin.Data, but are instead focusing on describing the scaffolder and the code it generates since that will give you a general idea of that Griffin.Data can do.
+
+There are links in the end of the article if you want to learn more.
+
+This article is about version 2.0 of my object/relation mapper and data mapper Griffin.Data. I wrote version 1.0 ten years ago. This is a complete rewrite with the stuff I've learned along the way. The article contains the following parts.
 
 * Part 1 - Why I created Griffin.Data.
-* Part 2 - Scaffolding and inspecting the generated files.
+* Part 2 - Hello Griffin.Data.
 * Part 3 - Adjusting the generated files.
-* Part 4 - Building an application service using the generated code.
-* Part 5 - Summary and links.
+* Part 4 - Using the code.
+* Part 5 - Migrations - Keep the DB schema up to date.
+* Part 6 - Summary and links.
 
 Before we get into the library itself, let's discuss my design goals with Griffin.Data.
 
@@ -130,13 +137,66 @@ In Griffin.Data I've spent time to make sure that all error messages are rich an
 
 Here are a few samples.
 
+### Failed insert
+
+```
+System.IO.InvalidDataException
+The INSERT statement conflicted with the FOREIGN KEY constraint "FK_TodolistPermissions_Todolists". The conflict occurred in database "DemoApp", table "dbo.Todolists", column 'Id'.
+The statement has been terminated.
+  EntityType: DemoApp.Core.Todolists.Permission
+  SQL: 'INSERT INTO TodolistPermissions (TodolistId, AccountId, CanRead, CanWrite, IsAdmin) VALUES(@TodolistId, @AccountId, @CanRead, @CanWrite, @IsAdmin);;SELECT cast(SCOPE_IDENTITY() as int);'
+  Parameters: TodolistId=1435125467, AccountId=65959170, CanRead=True, CanWrite=True, IsAdmin=True
+```
+Things added to the exception:
+
+* Shows the error (as all libraries)
+* The type of entity that failed
+* The failed SQL statement
+* All SQL parameters
+
+### Mapping configuration error
+
+A mapping was incorrectly configured.
+
+
+### Query error
+
+A SQL query failed.
+
+```csharp
+// typo
+var id = await Session.FirstOrDefault<Todolist>(new { Idd = 3 });
+``` 
+
+Exception: 
+
+```
+System.IO.InvalidDataException: Invalid column name 'Idd'.
+  EntityType: DemoApp.Core.Todolists.Todolist
+  SQL: 'SELECT TOP(1) * FROM Todolists WHERE  Idd=@Idd'
+  Parameters: Idd=3
+```
+
+
+### Casting error (between a column type and a property type)
+
+Column/Property types differ and the converter was not configured correctly.
+
+When in a constructor parameter:
+
+```
+Expression of type 'System.Int32' cannot be used for constructor parameter of type 'System.String' (Parameter 'arguments[0]')
+  EntityType: DemoApp.Core.Todolists.Todolist
+  SQL: 'SELECT TOP(1) * FROM Todolists WHERE  Id=@Id'
+  Parameters: Id=23
+```
 
 
 ## Conclusion
 
 If you agree with the above sentiments, you'll like Griffin.Data. If you don't, EF Core, Dapper or NHibernate might better fit you.
 
-# Part 2 - Enter Griffin.Data
+# Part 2 - Hello Griffin.Data
 
 Stop for a minute and reflect on what your data layer consists of.
 
@@ -181,6 +241,7 @@ create table Todolists
     UpdatedAtUtc datetime
 );
 
+-- The "Todolist" prefix will be used in the generation. Check it out further down ;)
 create table TodolistPermissions
 (
     Id int identity not null primary key,
@@ -206,7 +267,7 @@ create table TodoTasks
     UpdatedAtUtc datetime
 );
 
-
+-- The prefix "TodoTask" will do some magic later. Just saying.
 create table TodoTaskGithubIssues
 (
     TaskId int not null primary key constraint FK_TaskGithubIssues_TodoTasks foreign key references TodoTasks(Id),
@@ -228,9 +289,11 @@ create table TodoTaskDocumentReviews
 Scaffolding is the process of generating code from a set of rules. Scaffolding is in no way required when using Griffin.Data, but it helps you to get to a starting point in your application quickly.
 The idea with this scaffolder is that you take time to design a good database schema and ensure that it as efficient as required by your application requirements.
 
-You can run the scaffolder multiple times (and choose to overwrite existing files).
+It's important to say that scaffolding will always never be 100% as there are as many programming style and library combinations that you can never generate something that works for all. It's also impossible for a code generator to understand the intent of each created database table.
 
-Now that we have a simple data model let's scaffold it to get some code.
+Therefore, scaffolding should be seen as boilerplate code. It's there to make your job easier, but you will still have to modify the code. I've put great effort into generating much, and useful, code as possible. So that your job adjusting the code will be painless. With that said, if your coding style differs a lot from mine, it might hurt.
+
+Now, let's get started. Since we have a simple data model we're ready to scaffold it to get some code.
 
 Start by installing the scaffolder through PowerShell or a command prompt.
 
@@ -244,7 +307,7 @@ For this article, I've created a solution with the following structure:
 
 ![](project_structure.png)
 
-To get everything working, Griffin.Data needs to be installed in the Data and Data.Test projects.
+To get everything working, Griffin.Data needs to be installed in the Data and Data.Test projects. But it won't pollute your business layer, which is important to keep it isolated and easily tested.
 
 Install the `Griffin.Data.SqlServer` nuget package in those projects.
 
@@ -285,15 +348,15 @@ using Griffin.Data.Domain;
 
 namespace DemoProject.App.Todolists
 {
-    public interface IPermissionRepository : ICrudOperations<Permission>
+    public interface IPermissionRepository
     {
         Task<Permission> GetById(int id);
 
-        Task Create([DisallowNull] Permission entity);
+        Task Create(Permission entity);
 
-        Task Delete([DisallowNull] Permission entity);
+        Task Delete(Permission entity);
 
-        Task Update([DisallowNull] Permission entity);
+        Task Update(Permission entity);
     }
 }
 ```
@@ -309,8 +372,8 @@ namespace DemoProject.App.Todolists
 {
     public class Permission
     {
-        // All fields are NOT NULL = required = must be in the constructor
-        // to guarantee that the object has a valid state.
+        // All fields that are NOT NULL are considered to be required,
+        // must therefore be in the constructor to guarantee that the object has a valid state.
         public Permission(int todolistId, int accountId, bool canRead, bool canWrite, bool isAdmin)
         {
             TodolistId = todolistId;
@@ -362,8 +425,6 @@ public class PermissionMapping : IEntityConfigurator<Permission>
 ```
 
 Now, since the table and column are identical, the following could have worked:
-
-
 
 ```csharp
 public class PermissionMapping : IEntityConfigurator<Permission>
@@ -630,9 +691,7 @@ var result = await _queryInvoker.Query(query);
 Queries are designed as DTOs so that you should be able to use them through API end points (with for instance JSON serialization).
 
 
-
-
-## Part 3 - Adjusting the generated files
+# Part 3 - Adjusting the generated files
 
 When we designed the database, we wanted task to be able to contain different types of information depending on the task type. As it's not possible for the scaffolder to understand that, we need to edit the generated class.
 
@@ -724,7 +783,7 @@ public class TodoTaskMapping : IEntityConfigurator<TodoTask>
     {
         return taskType switch
         {
-            // Note that "TodoTask" from the table name
+            // Note that "TodoTask" prefix from the table name
             // was automatically removed when the classes
             // where scaffolded.
             0 => typeof(DocumentReview),
@@ -735,7 +794,7 @@ public class TodoTaskMapping : IEntityConfigurator<TodoTask>
 }
 ```
 
-That's all. Each `TodoTask` will now get the correct entity loaded from the correct child table.
+That is all. Each `TodoTask` will now get the correct entity loaded from the correct child table.
 
 ```csharp
 var task = _session.GetById<TodoTask>(1);
@@ -745,11 +804,11 @@ if (task.Data is GithubIssue gi)
 }
 ```
 
-# Part 4 - Building application services
+# Part 4 - Using the code
 
-Before building an application service, we need to configure Griffin.Data.
+Before we can do anything, we need to configure Griffin.Data.
 
-The below code scans the assembly that the class 'TodoTaskMapping' is located in, activates snapshot change tracking and uses MS SQL Server.
+The below code scans the assembly that the class 'TodoTaskMapping' is located in, activates snapshot change tracking and uses Microsoft SQL Server.
 
 ```csharp
 // A config from Microsoft.Extensions.Configuration
@@ -761,6 +820,7 @@ var dbConfig = new DbConfiguration(configurationString)
     .UseSnapshotChangeTracking()
     .UseSqlServer();
 
+// Opens a connection
 var session = new Session(config);
 ```
 
@@ -773,15 +833,7 @@ var entities = session.List<Account>(new { UserName = 'G%' });
 You can read more about all ways that you get retrieve entities in the [github wiki](https://github.com/jgauffin/Griffin.Data/blob/master/docs/Querying/Querying.md).
 
 
-If you can run the query without errors, we are ready to create a service.
-
-```
-public class TodoService
-{
-    
-}
-}
-
+## CRUD
 
 Without change tracking, all changes have to be applied manually:
 
@@ -807,11 +859,57 @@ entity.Manager = new LinkedAccount(otherAccount);
 Session.SaveChanges();
 ```
 
-# Part 5 - Summary and links
+# Part 5 - Migrations
 
-I hope that you enjoyed this article and are eager to try Griffin.Data.
+Migrations are the art of version manage your database by writing mysterios SQL queries that are applied in a chronological order by using some magic and instructions.
 
-All code from this article is found in the "Demo" folder in github. Create the database and then run the demo to try everything out. My intention is to  make a complete TODO application to demonstrate how I think that Griffin.Data should be used (and a structure of an application).
+The migration feature in Griffin.Data supports seperate migratrations by defining categories. Let's for instance say that your application have different plugins where each plugin has its own release cycle. Managing that in a single migration can be problematic. You can read more about it in the [docs](https://github.com/jgauffin/Griffin.Data/tree/master/docs/Features/Migrations.md).
 
-Most features are documented in the [wiki](https://github.com/jgauffin/Griffin.Data/tree/master/docs) if you want to learn more. Feel free to create an github issue with the documentation is missing something.
+To start with, these migrations uses a sequence number to determine which order the scripts should be executed in. It's only that sequence number that determines the order.
+
+## Naming convention
+
+Scripts must follow the following naming convention `Category_vX_some_description.sql`.
+
+* "Category" can be anything. If you only have one type of migrations you can name it something like "DbScripts" or "Migrations"
+* X is a numeric sequence number. No need to pad it.
+* "Some_description" can be anything. It's just so that you have an idea of what the script contain.
+
+Example script name: `DbScripts_v1_Create_database.sql`.
+
+All scripts must be compiled as embedded resources.
+
+The scripts themselves typically contains DDL statements (like "CREATE TABLE") but can also contain DML (like "UPDATE") to modify existing data.
+
+Once you have created scripts you need to run them.
+
+```
+IDbConnection OpenConnection()
+{
+    var con = new SqlConnection(connectionString);
+    con.Open();
+    return con;
+};
+
+// Standard migrations
+var migrations = new MigrationRunner(OpenConnection, "DbScripts");
+migrations.Run();
+```
+
+The above code looks in all loaded assemblies after the migration scripts (which are prefixed with `DbScripts_`).
+
+## Part 6 - Summary and links
+
+I hope that you enjoyed this article and are eager to try Griffin.Data. Do note that Griffin.Data is stil a release candidate. It will be so for a week or two. Feel free to wish features and changes before the API is fixed :)
+
+All code from this article is found in the "Demo" folder at github. Create the database and then run the demo to try everything out. My intention is to make a complete TODO application to demonstrate how I think that Griffin.Data should be used (and a structure of an application).
+
+### Links
+
+* [Github](https://github.com/jgauffin/Griffin.Data)
+* [Wiki](https://github.com/jgauffin/Griffin.Data/tree/master/docs)
+* [API documentation]()
+* [Demo project]()
+
+Most features are documented in the  if you want to learn more. Feel free to create an github issue with the documentation is missing something.
 

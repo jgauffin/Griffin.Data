@@ -1,4 +1,4 @@
-﻿namespace Griffin.Data.Tests;
+﻿namespace Griffin.Data.IntegrationTests;
 
 public class TestDataBuilder
 {

@@ -83,9 +83,13 @@ internal static class SessionExtensions
             reader.Map(entity, mapping);
             return entity;
         }
+        catch (GriffinException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            throw command.CreateDetailedException(ex, typeof(TEntity));
+            throw new MapperException("Failed to find entity that should exist.", command, mapping.EntityType, ex);
         }
     }
 
@@ -104,9 +108,13 @@ internal static class SessionExtensions
             reader.Map(entity, mapping);
             return entity;
         }
+        catch (GriffinException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            throw command.CreateDetailedException(ex, mapping.EntityType);
+            throw new MapperException("Failed to find entity.", command, mapping.EntityType, ex);
         }
     }
 
@@ -126,9 +134,13 @@ internal static class SessionExtensions
             reader.Map(entity, mapping);
             return entity;
         }
+        catch (GriffinException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            throw command.CreateDetailedException(ex, mapping.EntityType);
+            throw new MapperException("Failed to find entity that should exist.", command, mapping.EntityType, ex);
         }
     }
 
@@ -147,9 +159,13 @@ internal static class SessionExtensions
             reader.Map(entity, mapping);
             return entity;
         }
+        catch (GriffinException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            throw command.CreateDetailedException(ex, typeof(TEntity));
+            throw new MapperException("Failed to get entity.", command, mapping.EntityType, ex);
         }
     }
 
@@ -171,9 +187,13 @@ internal static class SessionExtensions
             reader.Map(entity, mapping);
             return entity;
         }
+        catch (GriffinException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            throw command.CreateDetailedException(ex, mapping.EntityType);
+            throw new MapperException("Failed to get entity.", command, mapping.EntityType, ex);
         }
     }
 

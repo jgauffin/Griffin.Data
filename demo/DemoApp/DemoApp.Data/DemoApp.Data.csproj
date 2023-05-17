@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Griffin.Data" Version="2.0.0-rc29" />
-    <PackageReference Include="Griffin.Data.SqlServer" Version="1.0.0-rc04" />
+    <PackageReference Include="Griffin.Data" Version="2.0.0-rc34" />
+    <PackageReference Include="Griffin.Data.SqlServer" Version="1.0.0-rc06" />
   </ItemGroup>
 
   <ItemGroup>

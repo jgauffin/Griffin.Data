@@ -1,17 +1,23 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Griffin.Data.Mapper;
-using Xunit;
 using DemoApp.Core.Todolists;
 using DemoApp.Data.Todolists;
+using DemoApp.Core.Accounts;
 
 namespace DemoApp.Data.Tests.Todolists
 {
     public class PermissionRepositoryTests : IntegrationTest
     {
         private readonly PermissionRepository _repository;
+        private Account _account = new Account("jgauffin", "123456", "sprinkled");
+        private Todolist _list;
 
         public PermissionRepositoryTests()
         {
+            Session.Insert(_account).Wait();
+            //_list = new Todolist("MyList", _account.Id, DateTime.UtcNow);
+            _list = new Todolist(_account.Id, DateTime.UtcNow);
+            Session.Insert(_list).Wait();
             _repository = new PermissionRepository(Session);
         }
 
@@ -57,7 +63,7 @@ namespace DemoApp.Data.Tests.Todolists
 
         private Permission CreateValidEntity()
         {
-            var entity = new Permission(1435125467, 65959170, true, true, true);
+            var entity = new Permission(_list.Id, _account.Id, true, true, true);
             return entity;
         }
 

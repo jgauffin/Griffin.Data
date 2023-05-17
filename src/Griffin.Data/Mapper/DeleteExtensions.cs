@@ -3,6 +3,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using Griffin.Data.Helpers;
+using Griffin.Data.Mapper.Mappings;
 using Griffin.Data.Mapper.Mappings.Relations;
 
 namespace Griffin.Data.Mapper;
@@ -52,9 +53,7 @@ public static class DeleteExtensions
         }
         catch (DbException ex)
         {
-            var our = command.CreateDetailedException(ex, entity.GetType());
-            our.Data["Entity"] = entity;
-            throw our;
+            throw new MapperException("Failed to DELETE entity", command, entity, ex);
         }
     }
 
@@ -106,7 +105,7 @@ public static class DeleteExtensions
         }
         catch (DbException ex)
         {
-            var our = command.CreateDetailedException(ex, mapping.EntityType);
+            var our = new MapperException("Failed to DELETE entity", command, typeof(T), ex);
             our.Data["Key"] = key;
             throw our;
         }
@@ -170,9 +169,7 @@ public static class DeleteExtensions
         }
         catch (DbException ex)
         {
-            var our = command.CreateDetailedException(ex, mapping.EntityType);
-            our.Data["Entity"] = entity;
-            throw our;
+            throw new MapperException("Failed to DELETE entity.", command, entity, ex);
         }
     }
 
@@ -251,8 +248,10 @@ public static class DeleteExtensions
         }
         catch (DbException ex)
         {
-            var our = command.CreateDetailedException(ex, hasMany.ChildEntityType);
-            our.Data["ParentEntity"] = parentEntity;
+            var our= new MapperException("Failed to DELETE child entities using FK from parent.", command, hasMany.ChildEntityType, ex)
+            {
+                Data = { ["ParentEntity"] = parentEntity }
+            };
             throw our;
         }
     }

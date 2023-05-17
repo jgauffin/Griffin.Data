@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shfbBuild product="Sandcastle Help File Builder and Tools" version="2023.3.4.0" projectFile="D:\src\jgauffin\Griffin.Data\src\Griffin.Data.shfbproj" started="2023-05-12 08:28:45">
+<buildStep step="Initializing">
+The Sandcastle tools are located in &#39;C:\Program Files (x86)\EWSoftware\Sandcastle Help File Builder&#39;
+Locating components in the following folder(s):
+    D:\src\jgauffin\Griffin.Data\src
+    C:\ProgramData\EWSoftware\Sandcastle Help File Builder\Components and Plug-Ins
+    C:\Program Files (x86)\EWSoftware\Sandcastle Help File Builder\Components
+Using framework reflection data for &#39;Cross-platform (.NET Core/.NET Standard)&#39; located in &#39;C:\Program Files (x86)\EWSoftware\Sandcastle Help File Builder\Data\.NETFramework&#39;
+Using presentation style &#39;VS2013&#39; located in &#39;C:\Program Files (x86)\EWSoftware\Sandcastle Help File Builder\Components\VS2013&#39;
+Searching for HTML Help 1 compiler...
+    Last step completed in 00:00:00,7335
+</buildStep>
+<buildStep step="Failed">
+
+SHFB: Error BE0037: Could not find the path to the HTML Help 1 compiler.  Is the HTML Help Workshop installed?  See the error number topic in the help file for details.
+
+   at SandcastleBuilder.Utils.BuildEngine.BuildProcess.FindHtmlHelpCompiler()
+   at SandcastleBuilder.Utils.BuildEngine.BuildProcess.Build()
+
+</buildStep>
+</shfbBuild>

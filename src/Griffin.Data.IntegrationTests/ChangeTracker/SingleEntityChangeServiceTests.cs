@@ -1,9 +1,8 @@
-﻿using FluentAssertions;
-using Griffin.Data.ChangeTracking.Services.Implementations;
+﻿using Griffin.Data.ChangeTracking.Services.Implementations;
 using Griffin.Data.Mapper;
 using Griffin.Data.Tests.Entities;
 
-namespace Griffin.Data.Tests.ChangeTracker;
+namespace Griffin.Data.IntegrationTests.ChangeTracker;
 
 public class SingleEntityChangeServiceTests : IntegrationTests
 {

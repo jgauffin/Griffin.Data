@@ -1,9 +1,12 @@
-﻿using System.Reflection;
+﻿using System.Data;
+using System.Data.SqlClient;
+using System.Reflection;
 using Griffin.Data;
 using Griffin.Data.ChangeTracking;
 using Griffin.Data.Configuration;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mapper.Mappings;
+using Griffin.Data.Migrations;
 using Griffin.Data.SqlServer;
 using TestApp.Entities;
 
@@ -11,6 +14,17 @@ var mappingRegistry = new MappingRegistry();
 mappingRegistry.Scan(Assembly.GetExecutingAssembly());
 
 var connectionString = "Data Source=.;Initial Catalog=GriffinData;Integrated Security=True";
+
+IDbConnection OpenConnection()
+{
+    var con = new SqlConnection(connectionString);
+    con.Open();
+    return con;
+};
+
+var migrations = new MigrationRunner(OpenConnection, "Migrations");
+migrations.Run();
+
 
 var config = new DbConfiguration(connectionString)
 {

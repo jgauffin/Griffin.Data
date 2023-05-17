@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using Griffin.Data.Configuration;
-using Griffin.Data.Mapper;
 using Griffin.Data.Mapper.Mappings.Properties;
 
 namespace Griffin.Data.Mapper.Mappings.Relations;

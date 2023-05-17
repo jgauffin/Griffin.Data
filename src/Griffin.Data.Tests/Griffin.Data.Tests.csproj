@@ -25,8 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Griffin.Data.IntegrationTests\Griffin.Data.IntegrationTests.csproj" />
     <ProjectReference Include="..\Griffin.Data.Scaffolding\Griffin.Data.Scaffolding.csproj" />
-    <ProjectReference Include="..\Griffin.Data.SqlServer\Griffin.Data.SqlServer.csproj" />
     <ProjectReference Include="..\Griffin.Data\Griffin.Data.csproj" />
   </ItemGroup>
 

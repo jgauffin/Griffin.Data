@@ -33,7 +33,7 @@ internal static class QueryExtensions
             }
             catch (DbException ex)
             {
-                throw cmd.CreateDetailedException(ex, entityType);
+                throw new MapperException($"Could not fetch entities of type {entityType.Name}.", cmd, entityType, ex);
             }
         }
 
@@ -61,7 +61,8 @@ internal static class QueryExtensions
             }
             catch (DbException ex)
             {
-                throw cmd.CreateDetailedException(ex, typeof(TEntity));
+                var entityType = typeof(TEntity);
+                throw new MapperException($"Could not fetch entities of type {entityType.Name}.", cmd, entityType, ex);
             }
         }
 
@@ -91,7 +92,8 @@ internal static class QueryExtensions
             }
             catch (DbException ex)
             {
-                throw cmd.CreateDetailedException(ex, typeof(TEntity));
+                var entityType = typeof(TEntity);
+                throw new MapperException($"Could not fetch entities of type {entityType.Name}.", cmd, entityType, ex);
             }
         }
 

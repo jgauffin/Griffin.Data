@@ -6,9 +6,10 @@
         <Nullable>enable</Nullable>
         <LangVersion>default</LangVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Griffin.Data.SqlServer.xml</DocumentationFile>
+        <DocumentationFile>bin\$(Configuration)\Griffin.Data.SqlServer.xml</DocumentationFile>
 
-        <Version>1.0.0-rc04</Version>
+        <Version>1.0.0-rc06</Version>
+        <!--<Version>1.0.0-rc05</Version> next -->
         <PackageReleaseNotes>Updated to latest package.</PackageReleaseNotes>
     </PropertyGroup>
 
@@ -27,8 +28,12 @@
         <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
     </ItemGroup>
 
+
     <ItemGroup>
-        <ProjectReference Include="..\Griffin.Data\Griffin.Data.csproj" />
+      <ProjectReference Include="..\Griffin.Data\Griffin.Data.csproj" />
     </ItemGroup>
 
+    <Target Name="CopyPackage" AfterTargets="Pack" Condition="$(Configuration)!='Release'">
+        <Copy SourceFiles="$(OutputPath)\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="\src\nuget\" />
+    </Target>
 </Project>

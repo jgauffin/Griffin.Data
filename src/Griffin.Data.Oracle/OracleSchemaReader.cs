@@ -33,25 +33,27 @@ internal class OracleSchemaReader : ISchemaReader
             throw new InvalidOperationException("The Oracle reader expected an OracleConnection.");
         }
 
-        var cmd = con.CreateCommand();
-        cmd.CommandText = TableSql;
-        cmd.GetType().GetProperty("BindByName")!.SetValue(cmd, true, null);
-
-        //pull the TableCollection in a reader
-        await using (cmd)
+        await using (var cmd = con.CreateCommand())
         {
-            await using var rdr = await cmd.ExecuteReaderAsync();
-            while (await rdr.ReadAsync())
-            {
-                var name = (string)rdr["TABLE_NAME"];
-                var tbl = new Table(name)
-                {
-                    SchemaName = rdr["TABLE_SCHEMA"].ToString(),
-                    IsView = string.Equals(rdr["TABLE_TYPE"].ToString(), "View",
-                        StringComparison.OrdinalIgnoreCase)
-                };
+            cmd.CommandText = TableSql;
+            cmd.GetType().GetProperty("BindByName")!.SetValue(cmd, true, null);
 
-                result.Add(tbl);
+            //pull the TableCollection in a reader
+            await using (cmd)
+            {
+                await using var rdr = await cmd.ExecuteReaderAsync();
+                while (await rdr.ReadAsync())
+                {
+                    var name = (string)rdr["TABLE_NAME"];
+                    var tbl = new Table(name)
+                    {
+                        SchemaName = rdr["TABLE_SCHEMA"].ToString(),
+                        IsView = string.Equals(rdr["TABLE_TYPE"].ToString(), "View",
+                            StringComparison.OrdinalIgnoreCase)
+                    };
+
+                    result.Add(tbl);
+                }
             }
         }
 

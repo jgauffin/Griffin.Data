@@ -142,7 +142,18 @@ internal class RepositoryTestGenerator : GeneratorWithNamespace
                 continue;
             }
 
-            sb.AppendLine($"actual.{column.PropertyName}.Should().Be(entity.{column.PropertyName});");
+            switch (column.PropertyType)
+            {
+                case "bool":
+                    sb.AppendLine($"actual.{column.PropertyName}.Should().BeTrue()");
+                    break;
+                case "DateTime":
+                    sb.AppendLine($"actual.{column.PropertyName}.Should().BeCloseTo(entity.{column.PropertyName}, TimeSpan.FromMilliseconds(100));");
+                    break;
+                default:
+                    sb.AppendLine($"actual.{column.PropertyName}.Should().Be(entity.{column.PropertyName});");
+                    break;
+            }
         }
 
         sb.DedentAppendLine("}");

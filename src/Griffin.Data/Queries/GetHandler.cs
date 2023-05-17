@@ -2,7 +2,7 @@
 using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
-using Griffin.Data.Helpers;
+using Griffin.Data.Mapper;
 
 namespace Griffin.Data.Queries;
 
@@ -47,9 +47,13 @@ public abstract class GetHandler<TResult>
 
             return item;
         }
+        catch (GriffinException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            throw command.CreateDetailedException(ex);
+            throw new MapperException($"Failed to fetch record of type {typeof(TResult)}.", command, typeof(TResult), ex);
         }
     }
 

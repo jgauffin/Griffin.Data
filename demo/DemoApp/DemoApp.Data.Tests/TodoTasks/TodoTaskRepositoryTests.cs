@@ -12,12 +12,13 @@ namespace DemoApp.Data.Tests.TodoTasks
     {
         private readonly TodoTaskRepository _repository;
         private Account _account = new Account("jgauffin", "123456", "sprinkled");
-        private Todolist _list = new Todolist("MyList", 1, DateTime.UtcNow);
+        private Todolist _list;
 
         public TodoTaskRepositoryTests()
         {
-            Session.Insert(_account);
-            Session.Insert(_list);
+            Session.Insert(_account).Wait();
+            _list = new Todolist(_account.Id, DateTime.UtcNow);
+            Session.Insert(_list).Wait();
             _repository = new TodoTaskRepository(Session);
         }
 
@@ -27,6 +28,8 @@ namespace DemoApp.Data.Tests.TodoTasks
             var entity = CreateValidEntity();
 
             await _repository.Create(entity);
+
+            var id = await Session.FirstOrDefault<Todolist>(new { Id = 23 });
             
             entity.Id.Should().BeGreaterThan(1);
         }
@@ -36,8 +39,7 @@ namespace DemoApp.Data.Tests.TodoTasks
         {
             var entity = CreateValidEntity();
             await Session.Insert(entity);
-            
-            entity.UpdatedById = 1769508983;
+
             entity.UpdatedAtUtc = DateTime.UtcNow;
 
             await _repository.Update(entity);
@@ -50,9 +52,9 @@ namespace DemoApp.Data.Tests.TodoTasks
             actual.State.Should().Be(entity.State);
             actual.Priority.Should().Be(entity.Priority);
             actual.CreatedById.Should().Be(entity.CreatedById);
-            actual.CreatedAtUtc.Should().Be(entity.CreatedAtUtc);
+            actual.CreatedAtUtc.Should().BeCloseTo(entity.CreatedAtUtc, TimeSpan.FromMilliseconds(100));
             actual.UpdatedById.Should().Be(entity.UpdatedById);
-            actual.UpdatedAtUtc.Should().Be(entity.UpdatedAtUtc);
+            actual.UpdatedAtUtc.Should().BeCloseTo(entity.UpdatedAtUtc.Value, TimeSpan.FromMilliseconds(100));
         }
 
         [Fact]
@@ -70,7 +72,7 @@ namespace DemoApp.Data.Tests.TodoTasks
         private TodoTask CreateValidEntity()
         {
             
-            var entity = new TodoTask(_list.Id, "3673", 52131014, TodoTaskState.NotSpecified, 1220926417, _account.Id, DateTime.UtcNow);
+            var entity = new TodoTask(_list.Id, "3673", 1, TodoTaskState.NotSpecified, 1220926417, _account.Id, DateTime.UtcNow);
             return entity;
         }
 

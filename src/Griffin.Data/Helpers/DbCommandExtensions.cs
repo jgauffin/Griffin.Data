@@ -61,8 +61,12 @@ public static class DbCommandExtensions
     /// <param name="command">Command that failed.</param>
     /// <param name="ex">Inner exception</param>
     /// <returns>More detailed exception.</returns>
-    public static InvalidDataException CreateDetailedException(this IDbCommand command, Exception ex)
+    public static InvalidDataException CreateDetailedException2(this IDbCommand command, Exception ex)
     {
+        if (ex is GriffinException ex2)
+        {
+
+        }
         var ps = command.Parameters.Cast<IDataParameter>().Select(x => $"{x.ParameterName}={x.Value}");
         var e = new InvalidDataException(
             $"{ex.Message}\r\n  SQL: '{command.CommandText}'\r\n  Parameters: {string.Join(", ", ps)}", ex);
@@ -76,7 +80,7 @@ public static class DbCommandExtensions
     /// <param name="ex">Inner exception</param>
     /// <param name="entityType">Type of entity that the command was for.</param>
     /// <returns>More detailed exception.</returns>
-    public static InvalidDataException CreateDetailedException(this IDbCommand command, Exception ex, Type entityType)
+    public static InvalidDataException CreateDetailedException2(this IDbCommand command, Exception ex, Type entityType)
     {
         var ps = command.Parameters.Cast<IDataParameter>().Select(x => $"{x.ParameterName}={x.Value}");
         var e = new InvalidDataException(
@@ -93,7 +97,7 @@ public static class DbCommandExtensions
     /// <param name="parentType">Parent entity type.</param>
     /// <param name="entityType">Child entity type</param>
     /// <returns>More detailed exception.</returns>
-    public static InvalidDataException CreateDetailedException(
+    public static InvalidDataException CreateDetailedException2(
         this IDbCommand command,
         Exception ex,
         Type parentType,

@@ -33,25 +33,27 @@ internal class PostGreSqlSchemaReader : ISchemaReader
             throw new InvalidOperationException("The PostgreSql reader expected a NpgsqlConnection.");
         }
 
-        var cmd = con.CreateCommand();
-        cmd.CommandText = TableSql;
-
-        //pull the TableCollection in a reader
-        await using (cmd)
+        await using (var cmd = con.CreateCommand())
         {
-            await using var rdr = await cmd.ExecuteReaderAsync();
-            while (await rdr.ReadAsync())
-            {
-                var name = rdr["table_name"].ToString()!;
-                var tbl = new Table(name)
-                {
-                    SchemaName = rdr["table_schema"].ToString(),
-                    IsView = string.Equals(rdr["table_type"].ToString(), "View",
-                        StringComparison.OrdinalIgnoreCase)
-                };
+            cmd.CommandText = TableSql;
 
-                result.Add(tbl);
-                context.Add(tbl);
+            //pull the TableCollection in a reader
+            await using (cmd)
+            {
+                await using var rdr = await cmd.ExecuteReaderAsync();
+                while (await rdr.ReadAsync())
+                {
+                    var name = rdr["table_name"].ToString()!;
+                    var tbl = new Table(name)
+                    {
+                        SchemaName = rdr["table_schema"].ToString(),
+                        IsView = string.Equals(rdr["table_type"].ToString(), "View",
+                            StringComparison.OrdinalIgnoreCase)
+                    };
+
+                    result.Add(tbl);
+                    context.Add(tbl);
+                }
             }
         }
 

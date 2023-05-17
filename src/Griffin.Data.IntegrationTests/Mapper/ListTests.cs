@@ -1,8 +1,7 @@
-﻿using FluentAssertions;
-using Griffin.Data.Mapper;
+﻿using Griffin.Data.Mapper;
 using Griffin.Data.Tests.Subjects;
 
-namespace Griffin.Data.Tests.Mapper;
+namespace Griffin.Data.IntegrationTests.Mapper;
 
 public class ListTests : IntegrationTests
 {

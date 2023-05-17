@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Griffin.Data.Helpers;
+using Griffin.Data.Mapper;
 
 namespace Griffin.Data.Queries;
 
@@ -35,9 +37,14 @@ public static class QueryExtensions
 
             return collection;
         }
+        catch (GriffinException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            throw command.CreateDetailedException(ex);
+            throw new MapperException($"Failed to create query result of items type {typeof(TResultItem)}.",
+                command, typeof(TResultItem), ex);
         }
     }
 }

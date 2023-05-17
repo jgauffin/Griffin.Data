@@ -58,7 +58,7 @@ public class HasManyConfigurator<TParentEntity, TChildEntity> : IHasManyConfigur
                 "A HasMany property must have a getter or a backing field with the same name ('Users' => '_users').");
         }
 
-        var mapping = new HasManyMapping<TParentEntity, TChildEntity>(fk, getter, setter)
+        var mapping = new HasManyMapping<TParentEntity, TChildEntity>(_propertyInfo.Name, fk, getter, setter)
         {
             SubsetColumn = _subsetColumn
         };

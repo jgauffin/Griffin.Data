@@ -15,20 +15,26 @@ public class HasManyMapping<TParent, TChild> : RelationShipBase<TParent, TChild>
 {
     private readonly Func<TParent, object?> _getter;
     private readonly Action<TParent, object> _setter;
+    private string _propertyName;
 
     /// <summary>
     /// </summary>
+    /// <param name="propertyName"></param>
     /// <param name="fk">Foreign key mapping.</param>
     /// <param name="getter">Function to get the collection property value.</param>
     /// <param name="setter">Action to set the collection property value.</param>
     public HasManyMapping(
+        string propertyName,
         ForeignKeyMapping<TParent, TChild> fk,
         Func<TParent, object?> getter,
         Action<TParent, object> setter) : base(fk, typeof(TChild))
     {
+        _propertyName = propertyName;
         _getter = getter ?? throw new ArgumentNullException(nameof(getter));
         _setter = setter ?? throw new ArgumentNullException(nameof(setter));
     }
+
+    string IHasManyMapping.PropertyName => _propertyName;
 
     /// <summary>
     ///     Column used to limit returned rows for the child table.

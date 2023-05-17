@@ -6,7 +6,6 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Griffin.Data.Dialects;
-using Griffin.Data.Helpers;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mapper.Implementation;
 using Griffin.Data.Mapper.Mappings;
@@ -65,9 +64,7 @@ public class SqlServerDialect : ISqlDialect
             }
             catch (Exception ex)
             {
-                var our = command.CreateDetailedException(ex, entity.GetType());
-                our.Data["Entity"] = entity;
-                throw our;
+                throw new MapperException("Failed to INSERT entity.", command, entity, ex);
             }
 
             return;
@@ -79,16 +76,14 @@ public class SqlServerDialect : ISqlDialect
             var result = await ((DbCommand)command).ExecuteScalarAsync();
             if (result == null)
             {
-                throw new MappingException(entity, "Could not get identity value after insert.");
+                throw new MapperException("Could not get identity value after insert.", command, entity);
             }
 
             auto.SetPropertyValue(entity, result);
         }
         catch (DbException ex)
         {
-            var our = command.CreateDetailedException(ex, entity.GetType());
-            our.Data["Entity"] = entity;
-            throw our;
+            throw new MapperException("Failed to INSERT entity.", command, entity, ex);
         }
     }
 
@@ -155,9 +150,7 @@ public class SqlServerDialect : ISqlDialect
         }
         catch (DbException ex)
         {
-            var our = command.CreateDetailedException(ex, entity.GetType());
-            our.Data["Entity"] = entity;
-            throw our;
+            throw new MapperException("Failed to UPDATE entity.", command, entity, ex);
         }
     }
 

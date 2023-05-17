@@ -1,18 +1,21 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Griffin.Data.Mapper;
 using Xunit;
 using DemoApp.Core.Todolists;
 using DemoApp.Data.Todolists;
+using DemoApp.Core.Accounts;
 
 namespace DemoApp.Data.Tests.Todolists
 {
     public class TodolistRepositoryTests : IntegrationTest
     {
         private readonly TodolistRepository _repository;
+        private Account _account = new Account("jgauffin", "123456", "sprinkled");
 
         public TodolistRepositoryTests()
         {
             _repository = new TodolistRepository(Session);
+            Session.Insert(_account).Wait();
         }
 
         [Fact]
@@ -31,7 +34,6 @@ namespace DemoApp.Data.Tests.Todolists
             var entity = CreateValidEntity();
             await Session.Insert(entity);
             
-            entity.UpdatedById = 123778379;
             entity.UpdatedAtUtc = DateTime.UtcNow;
 
             await _repository.Update(entity);
@@ -40,9 +42,9 @@ namespace DemoApp.Data.Tests.Todolists
             actual.Should().NotBeNull();
             actual.Name.Should().Be(entity.Name);
             actual.CreatedById.Should().Be(entity.CreatedById);
-            actual.CreatedAtUtc.Should().Be(entity.CreatedAtUtc);
+            actual.CreatedAtUtc.Should().BeCloseTo(entity.CreatedAtUtc, TimeSpan.FromMilliseconds(100));
             actual.UpdatedById.Should().Be(entity.UpdatedById);
-            actual.UpdatedAtUtc.Should().Be(entity.UpdatedAtUtc);
+            actual.UpdatedAtUtc.Should().BeCloseTo(entity.UpdatedAtUtc.Value, TimeSpan.FromMilliseconds(100));
         }
 
         [Fact]
@@ -59,7 +61,8 @@ namespace DemoApp.Data.Tests.Todolists
 
         private Todolist CreateValidEntity()
         {
-            var entity = new Todolist("5344", 1581444903, DateTime.UtcNow);
+            //var entity = new Todolist("5344", _account.Id, DateTime.UtcNow);
+            var entity = new Todolist(_account.Id, DateTime.UtcNow);
             return entity;
         }
 

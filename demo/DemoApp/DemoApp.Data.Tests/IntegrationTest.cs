@@ -33,9 +33,9 @@ namespace DemoApp.Data.Tests
             var registry = new MappingRegistry();
             registry.Scan(typeof(AccountMapping).Assembly);
 
-            var changeTracking = new SnapshotChangeTracking(registry);
+            //var changeTracking = new SnapshotChangeTracking(registry);
 
-            Session = new Session(connection.BeginTransaction(), registry, dialect, changeTracking);
+            Session = new Session(connection.BeginTransaction(), registry, dialect, null);
         }
 
         protected Session Session { get; }

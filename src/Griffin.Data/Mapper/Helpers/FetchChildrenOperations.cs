@@ -117,7 +117,7 @@ internal static class FetchChildrenOperations
                 if (parentId == null)
                 {
                     throw new MappingException(parent,
-                        $"Failed to get referenced column for child {hasManyMapping.ChildEntityType.Name} using FK {hasManyMapping.ForeignKeyColumnName}. Cannot load child entities.");
+                        $"Failed to get referenced column in parent {parentType.Name} for child {hasManyMapping.ChildEntityType.Name} using FK {hasManyMapping.ForeignKeyColumnName}. Cannot load child entities.");
                 }
 
                 var col = hasManyMapping.CreateCollection();
@@ -142,15 +142,19 @@ internal static class FetchChildrenOperations
                         if (fk == null)
                         {
                             throw new MappingException(x,
-                                "Failed to lookup parent using foreign key, cannot attach child.");
+                                $"Failed to lookup parent {parentType.Name} for child {hasManyMapping.ChildEntityType} using foreign key for {hasManyMapping.PropertyName}, cannot attach child.");
                         }
 
                         childCollections[fk].Add(x);
                     });
                 }
+                catch (GriffinException)
+                {
+                    throw;
+                }
                 catch (Exception ex)
                 {
-                    throw cmd.CreateDetailedException(ex, parentType, hasManyMapping.ChildEntityType);
+                    throw new MapperException($"Failed to get children of type {hasManyMapping.ChildEntityType} for parent type {parentType}.", cmd, hasManyMapping.ChildEntityType, ex);
                 }
             }
 
@@ -173,7 +177,7 @@ internal static class FetchChildrenOperations
                 if (parentId == null)
                 {
                     throw new MappingException(parent,
-                        $"Failed to get referenced column for child {hasOneMapping.ChildEntityType.Name} using FK {hasOneMapping.ForeignKeyColumnName}. Cannot load child entities.");
+                        $"Failed to get referenced column in parent {parentType.Name} for child {hasOneMapping.ChildEntityType.Name} using FK {hasOneMapping.ForeignKeyColumnName}. Cannot load child entities.");
                 }
 
                 parentIndex[parentId] = parent;
@@ -207,9 +211,15 @@ internal static class FetchChildrenOperations
 
                 await session.GetChildrenForMany(hasOneMapping.ChildEntityType, allChildrenToGetChildrenFor);
             }
+            catch (GriffinException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
-                throw cmd.CreateDetailedException(ex, parentType, hasOneMapping.ChildEntityType);
+                throw new MapperException(
+                    $"Could not load child of type {hasOneMapping.ChildEntityType.Name} for parent type {parentType}.",
+                    cmd, hasOneMapping.ChildEntityType, ex);
             }
         }
     }
@@ -240,7 +250,7 @@ internal static class FetchChildrenOperations
             if (fk == null)
             {
                 throw new MappingException(parent,
-                    $"Failed to get referenced column for child {hasOneMapping.ChildEntityType.Name} using FK {hasOneMapping.ForeignKeyColumnName}. Cannot load child entities.");
+                    $"Failed to get referenced column in parent {parentType.Name} for child {hasOneMapping.ChildEntityType.Name} using FK {hasOneMapping.ForeignKeyColumnName}. Cannot load child entities.");
             }
 
             parentType = parent.GetType();
@@ -291,9 +301,15 @@ internal static class FetchChildrenOperations
 
                 await session.GetChildrenForMany(kvp.Key, allChildrenToGetChildrenFor);
             }
+            catch (GriffinException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
-                throw cmd.CreateDetailedException(ex, parentType, kvp.Key);
+                throw new MapperException(
+                    $"Could not load children of type {hasOneMapping.ChildEntityType.Name} for parent type {parentType} using configured discriminator.",
+                    cmd, hasOneMapping.ChildEntityType, ex);
             }
         }
     }

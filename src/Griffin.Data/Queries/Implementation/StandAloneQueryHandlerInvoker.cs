@@ -68,6 +68,10 @@ public class StandAloneQueryHandlerInvoker : IQueryHandlerInvoker
             var method = _innerMethod.MakeGenericMethod(query.GetType(), typeof(TQueryResult));
             return await (Task<TQueryResult>)method.Invoke(this, new[] { instance, query })!;
         }
+        catch (GriffinException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             var parameters = query.ToDictionary();

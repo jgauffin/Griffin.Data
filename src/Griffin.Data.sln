@@ -25,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scaffolding", "Scaffolding"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Griffin.Data.Scaffolding.Tests", "Griffin.Data.Scaffolding.Tests\Griffin.Data.Scaffolding.Tests.csproj", "{E534BBF0-3E1C-497B-A45E-243F6E3E1B5E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Griffin.Data.IntegrationTests", "Griffin.Data.IntegrationTests\Griffin.Data.IntegrationTests.csproj", "{1AAD5C95-6646-4A32-87FF-859F8B830A1E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{E534BBF0-3E1C-497B-A45E-243F6E3E1B5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E534BBF0-3E1C-497B-A45E-243F6E3E1B5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E534BBF0-3E1C-497B-A45E-243F6E3E1B5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1AAD5C95-6646-4A32-87FF-859F8B830A1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AAD5C95-6646-4A32-87FF-859F8B830A1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1AAD5C95-6646-4A32-87FF-859F8B830A1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1AAD5C95-6646-4A32-87FF-859F8B830A1E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

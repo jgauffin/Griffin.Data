@@ -5,7 +5,7 @@ namespace Griffin.Data.Configuration;
 /// <summary>
 ///     Something was not configured correctly.
 /// </summary>
-public class MappingConfigurationException : Exception
+public class MappingConfigurationException : GriffinException
 {
     /// <summary>
     /// </summary>

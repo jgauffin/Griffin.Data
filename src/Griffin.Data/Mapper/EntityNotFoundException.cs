@@ -16,7 +16,7 @@ namespace Griffin.Data.Mapper;
 ///         bug somewhere in your code).
 ///     </para>
 /// </remarks>
-public class EntityNotFoundException : Exception
+public class EntityNotFoundException : GriffinException
 {
     private readonly string _constraintsStr;
 

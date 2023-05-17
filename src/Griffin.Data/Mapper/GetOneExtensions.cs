@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Data.Common;
 using System.Threading.Tasks;
-using Griffin.Data.Helpers;
 using Griffin.Data.Mapper.Helpers;
 
 namespace Griffin.Data.Mapper;
@@ -30,7 +29,7 @@ public static class GetOneExtensions
         }
         catch (DbException ex)
         {
-            var our = cmd.CreateDetailedException(ex, typeof(TEntity));
+            var our = new MapperException("Failed to check if entity exists.", cmd, typeof(TEntity), ex);
             our.Data["Constraints"] = constraints;
             throw our;
         }
@@ -135,7 +134,7 @@ public static class GetOneExtensions
 
         if (entityType == typeof(object))
         {
-            throw new ArgumentException("Entity type cannot be 'object'.");
+            throw new ArgumentException("Entity type cannot be 'object'. Query: " + options);
         }
 
         options.PageSize = 1;

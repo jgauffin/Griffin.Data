@@ -5,7 +5,7 @@ namespace Griffin.Data.Mapper.Mappings;
 /// <summary>
 ///     A mapping is missing.
 /// </summary>
-public class MissingMappingException : Exception
+public class MissingMappingException : GriffinException
 {
     private readonly string _scannedAssemblies;
 

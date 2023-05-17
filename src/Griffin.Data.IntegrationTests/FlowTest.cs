@@ -1,7 +1,7 @@
 ﻿using Griffin.Data.Mapper;
 using Griffin.Data.Tests.Entities;
 
-namespace Griffin.Data.Tests;
+namespace Griffin.Data.IntegrationTests;
 
 public class FlowTest : IntegrationTests
 {

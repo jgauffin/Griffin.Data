@@ -4,7 +4,7 @@ using Griffin.Data.ChangeTracking.Services.Implementations.v2;
 using Griffin.Data.Mapper;
 using Griffin.Data.Tests.Entities;
 
-namespace Griffin.Data.Tests.ChangeTracker;
+namespace Griffin.Data.IntegrationTests.ChangeTracker;
 
 public class SingleEntityComparerTests : IntegrationTests
 {

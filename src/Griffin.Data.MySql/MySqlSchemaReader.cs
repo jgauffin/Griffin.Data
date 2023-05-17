@@ -25,25 +25,27 @@ internal class MySqlSchemaReader : ISchemaReader
             throw new InvalidOperationException("The MySQL reader expected a MysqlConnection.");
         }
 
-        var cmd = mySqlConnection.CreateCommand();
-        cmd.CommandText = TableSql;
-
-        //pull the TableCollection in a reader
-        await using (cmd)
+        await using (var cmd = mySqlConnection.CreateCommand())
         {
-            await using var rdr = await cmd.ExecuteReaderAsync();
-            while (await rdr.ReadAsync())
-            {
-                var tableName = rdr["TABLE_NAME"].ToString()!;
-                var tbl = new Table(tableName)
-                {
-                    SchemaName = rdr["TABLE_SCHEMA"].ToString(),
-                    IsView =
-                        string.Equals(rdr["TABLE_TYPE"].ToString(), "View", StringComparison.OrdinalIgnoreCase)
-                };
+            cmd.CommandText = TableSql;
 
-                context.Add(tbl);
-                tables.Add(tbl);
+            //pull the TableCollection in a reader
+            await using (cmd)
+            {
+                await using var rdr = await cmd.ExecuteReaderAsync();
+                while (await rdr.ReadAsync())
+                {
+                    var tableName = rdr["TABLE_NAME"].ToString()!;
+                    var tbl = new Table(tableName)
+                    {
+                        SchemaName = rdr["TABLE_SCHEMA"].ToString(),
+                        IsView =
+                            string.Equals(rdr["TABLE_TYPE"].ToString(), "View", StringComparison.OrdinalIgnoreCase)
+                    };
+
+                    context.Add(tbl);
+                    tables.Add(tbl);
+                }
             }
         }
 

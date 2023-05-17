@@ -1,5 +1,5 @@
 ﻿namespace Griffin.Data.Tests.Domain;
 
-public class CrudOperationsTests : IntegrationTests
+public class CrudOperationsTests : IntegrationTests.IntegrationTests
 {
 }

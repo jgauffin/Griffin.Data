@@ -6,7 +6,7 @@ using Griffin.Data.ChangeTracking;
 using Griffin.Data.Mapper.Mappings;
 using Griffin.Data.SqlServer;
 
-namespace Griffin.Data.Tests;
+namespace Griffin.Data.IntegrationTests;
 
 public abstract class IntegrationTests : IDisposable
 {

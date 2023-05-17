@@ -1,11 +1,11 @@
 ﻿using System;
 
-namespace Griffin.Data.Mapper;
+namespace Griffin.Data.Mapper.Mappings;
 
 /// <summary>
 ///     Could not use the mapping as expected.
 /// </summary>
-public class MappingException : Exception
+public class MappingException : GriffinException
 {
     /// <summary>
     /// </summary>
@@ -46,5 +46,5 @@ public class MappingException : Exception
     public Type EntityType { get; }
 
     /// <inheritdoc />
-    public override string Message => $"{EntityType.Name}: {base.Message}";
+    public override string Message => $"{EntityType.Name}: {base.Message}\r\n{Entity}";
 }

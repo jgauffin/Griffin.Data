@@ -1,9 +1,9 @@
 ﻿using FluentAssertions;
 using Griffin.Data.ChangeTracking.Services.Implementations;
 using Griffin.Data.Configuration;
-using Griffin.Data.Tests.ChangeTracker.Implementations.Subjects;
+using Griffin.Data.IntegrationTests.ChangeTracker.Implementations.Subjects;
 
-namespace Griffin.Data.Tests.ChangeTracker.Implementations
+namespace Griffin.Data.IntegrationTests.ChangeTracker.Implementations
 {
     public class CopyServiceTests
     {
