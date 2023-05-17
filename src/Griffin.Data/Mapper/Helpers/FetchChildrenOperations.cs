@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using Griffin.Data.Helpers;
 using Griffin.Data.Mapper.Mappings;
 using Griffin.Data.Mapper.Mappings.Relations;
 
@@ -187,14 +186,13 @@ internal static class FetchChildrenOperations
 
             var childMapping = session.GetMapping(hasOneMapping.ChildEntityType);
 
-            await using var cmd = session.CreateQueryCommand(hasOneMapping.ChildEntityType, options);
-            try
+            var allChildrenToGetChildrenFor = (IList)Activator.CreateInstance
+                (typeof(List<>).MakeGenericType(hasOneMapping.ChildEntityType))!;
+            await using (var cmd = session.CreateQueryCommand(hasOneMapping.ChildEntityType, options))
             {
-                var allChildrenToGetChildrenFor = (IList)Activator.CreateInstance
-                    (typeof(List<>).MakeGenericType(hasOneMapping.ChildEntityType))!;
-
-                await using (var reader = await cmd.ExecuteReaderAsync())
+                try
                 {
+                    await using var reader = await cmd.ExecuteReaderAsync();
                     await reader.MapAll(childMapping, x =>
                     {
                         allChildrenToGetChildrenFor.Add(x!);
@@ -208,19 +206,19 @@ internal static class FetchChildrenOperations
                         hasOneMapping.SetPropertyValue(parentIndex[fkValue], x);
                     });
                 }
+                catch (GriffinException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    throw new MapperException(
+                        $"Could not load child of type {hasOneMapping.ChildEntityType.Name} for parent type {parentType}.",
+                        cmd, hasOneMapping.ChildEntityType, ex);
+                }
+            }
 
-                await session.GetChildrenForMany(hasOneMapping.ChildEntityType, allChildrenToGetChildrenFor);
-            }
-            catch (GriffinException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw new MapperException(
-                    $"Could not load child of type {hasOneMapping.ChildEntityType.Name} for parent type {parentType}.",
-                    cmd, hasOneMapping.ChildEntityType, ex);
-            }
+            await session.GetChildrenForMany(hasOneMapping.ChildEntityType, allChildrenToGetChildrenFor);
         }
     }
 
@@ -282,35 +280,38 @@ internal static class FetchChildrenOperations
             var allChildrenToGetChildrenFor = (IList)Activator.CreateInstance
                 (typeof(List<>).MakeGenericType(kvp.Key))!;
 
-            await using var cmd = session.CreateQueryCommand(kvp.Key, options);
-            try
+            await using (var cmd = session.CreateQueryCommand(kvp.Key, options))
             {
-                await using var reader = await cmd.ExecuteReaderAsync();
-                await reader.MapAll(childMapping, x =>
+                try
                 {
-                    allChildrenToGetChildrenFor.Add(x);
-                    var fkValue = hasOneMapping.GetForeignKeyValue(x);
-                    if (fkValue == null)
+                    await using var reader = await cmd.ExecuteReaderAsync();
+                    await reader.MapAll(childMapping, x =>
                     {
-                        throw new MappingException(x,
-                            "Failed to lookup parent using foreign key, cannot attach child.");
-                    }
+                        allChildrenToGetChildrenFor.Add(x);
+                        var fkValue = hasOneMapping.GetForeignKeyValue(x);
+                        if (fkValue == null)
+                        {
+                            throw new MappingException(x,
+                                "Failed to lookup parent using foreign key, cannot attach child.");
+                        }
 
-                    hasOneMapping.SetPropertyValue(parentIndex[fkValue], x);
-                });
+                        hasOneMapping.SetPropertyValue(parentIndex[fkValue], x);
+                    });
 
-                await session.GetChildrenForMany(kvp.Key, allChildrenToGetChildrenFor);
+                }
+                catch (GriffinException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    throw new MapperException(
+                        $"Could not load children of type {hasOneMapping.ChildEntityType.Name} for parent type {parentType} using configured discriminator.",
+                        cmd, hasOneMapping.ChildEntityType, ex);
+                }
             }
-            catch (GriffinException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw new MapperException(
-                    $"Could not load children of type {hasOneMapping.ChildEntityType.Name} for parent type {parentType} using configured discriminator.",
-                    cmd, hasOneMapping.ChildEntityType, ex);
-            }
+
+            await session.GetChildrenForMany(kvp.Key, allChildrenToGetChildrenFor);
         }
     }
 }
