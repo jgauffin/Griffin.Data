@@ -10,3 +10,4 @@ src/packages/*
 /src/.vs
 **/nupkg/*
 **/.vs/*
+/docs/Api
