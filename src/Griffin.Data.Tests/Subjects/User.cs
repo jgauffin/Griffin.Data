@@ -8,5 +8,9 @@ public class User
     public string FirstName { get; set; } = "";
     public int Id { get; set; }
     public AccountState State { get; set; } = AccountState.Disabled;
+    public AccountState? NullableState { get; set; } = AccountState.Disabled;
+
+    public ExplicitState? NullableExplicit { get; set; } = ExplicitState.Admin;
+
     public IReadOnlyList<string> Titles { get; } = new List<string>();
 }

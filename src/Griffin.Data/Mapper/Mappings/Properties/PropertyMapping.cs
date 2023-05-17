@@ -254,7 +254,7 @@ public class PropertyMapping<TEntity, TProperty> : IPropertyMapping, IGotColumnT
             return;
         }
 
-        var underlyingType = Enum.GetUnderlyingType(typeof(TProperty));
+        var underlyingType = Enum.GetUnderlyingType(nullableType ?? typeof(TProperty));
 
         // Active choice, let's use it directly.
         if (underlyingType != typeof(int))
