@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Griffin.Data.xml</DocumentationFile>
 
-        <Version>2.0.0-rc30</Version>
-        <PackageReleaseNotes>Dispose main command when inserting before inserting children to avoid MARS.</PackageReleaseNotes>
+        <Version>2.0.0-rc31</Version>
+        <PackageReleaseNotes>Added support for nullable enums.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>

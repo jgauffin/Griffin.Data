@@ -100,6 +100,28 @@ public class PropertyMappingTests
     }
 
     [Fact]
+    public void Get_should_use_enum_converter_per_default_for_nullable_int()
+    {
+        AccountState? state = AccountState.Admin;
+        var sut = new PropertyMapping<User, AccountState?>("State", user => user.NullableState, (x, y) => state = y);
+
+        var actual = sut.GetColumnValue(new User() { NullableState = state });
+
+        actual.Should().Be((int)state);
+    }
+
+    [Fact]
+    public void Get_should_use_enum_converter_per_default_for_nullable_custom_primitive_type()
+    {
+        ExplicitState? state = ExplicitState.Admin;
+        var sut = new PropertyMapping<User, ExplicitState?>("State", user => user.NullableExplicit, (x, y) => state = y);
+
+        var actual = sut.GetColumnValue(new User() { NullableExplicit = state });
+
+        actual.Should().Be((short)state);
+    }
+
+    [Fact]
     public void Convert_should_use_enum_converter_per_default()
     {
         AccountState state = AccountState.Admin;
