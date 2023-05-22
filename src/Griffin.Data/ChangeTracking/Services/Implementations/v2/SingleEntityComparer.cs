@@ -22,6 +22,11 @@ public class SingleEntityComparer
     }
 
     /// <summary>
+    /// Can determine if a property should be used when comparing copies of an entity.
+    /// </summary>
+    public Action<FilterContext>? Filter { get; set; }
+
+    /// <summary>
     ///     Compare entities.
     /// </summary>
     /// <param name="snapshot"></param>
@@ -103,7 +108,7 @@ public class SingleEntityComparer
 
         return result;
     }
-
+    
     /// <summary>
     ///     Compare two entities (children are not compared).
     /// </summary>
@@ -116,6 +121,16 @@ public class SingleEntityComparer
         {
             var snapShotValue = prop.GetValue(snapshot);
             var currentValue = prop.GetValue(current);
+            if (Filter != null)
+            {
+                var ctx = new FilterContext(currentValue, snapshot, prop.PropertyName);
+                Filter(ctx);
+                if (!ctx.CanCompare)
+                {
+                    continue;
+                }
+            }
+
             if (snapShotValue == null && currentValue == null)
             {
                 continue;

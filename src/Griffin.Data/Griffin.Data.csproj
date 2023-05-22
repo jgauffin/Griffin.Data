@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\Griffin.Data.xml</DocumentationFile>
 
-        <Version>2.0.0-rc33</Version>
-        <PackageReleaseNotes>Removed MARS requirement from tree loading - part 2.</PackageReleaseNotes>
+        <Version>2.0.0-rc34</Version>
+        <PackageReleaseNotes>SingleEntityComparer can now ignore properties.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>
