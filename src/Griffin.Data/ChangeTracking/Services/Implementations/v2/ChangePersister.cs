@@ -46,38 +46,71 @@ public class ChangePersister
         var itemsToInsert = items.Where(x => x.State == ChangeState.Added).OrderBy(x => x.Depth);
         foreach (var item in itemsToInsert)
         {
-            if (item.TrackedItem.Parent != null)
-            {
-                var parent = item.TrackedItem.Parent.Entity;
-                var child = item.TrackedItem.Entity;
-                var mapping = _mappingRegistry.Get(parent.GetType());
-                var relation = mapping.GetRelation(child.GetType());
-                if (relation != null)
-                {
-                    var parentId = relation.GetReferencedId(parent);
-                    if (parentId == null)
-                    {
-                        throw new MappingException(parent,
-                            "Failed to find referenced id for " + child);
-                    }
-
-                    relation.SetForeignKey(child, parentId);
-                }
-            }
-
+            AssignForeignKeyIfDefined(item);
             await session.Insert(item.TrackedItem.Entity);
         }
 
         var itemsToRemove = items.Where(x => x.State == ChangeState.Removed).OrderByDescending(x => x.Depth);
         foreach (var item in itemsToRemove)
         {
+            if (UpdateForeignKeysInDeletes)
+            {
+                AssignForeignKeyIfDefined(item);
+            }
+            
             await session.Delete(item.TrackedItem.Entity);
         }
 
         var itemsToUpdate = items.Where(x => x.State == ChangeState.Modified);
         foreach (var item in itemsToUpdate)
         {
+            if (UpdateForeignKeysInUpdates)
+            {
+                AssignForeignKeyIfDefined(item);
+            }
+            
             await session.Update(item.TrackedItem.Entity);
+        }
+    }
+
+    /// <summary>
+    /// Assign foreign keys in UPDATE statements.
+    /// </summary>
+    /// <remarks>
+    ///<para>
+    ///Will assign the FK value from the parent entity when updates are made. This is normally not required, but useful when FKs are not part of DTOs in external  APIs.
+    /// </para>
+    /// </remarks>
+    public bool UpdateForeignKeysInUpdates { get; set; }
+    /// <summary>
+    /// Assign foreign keys in DELETE statements.
+    /// </summary>
+    /// <remarks>
+    ///<para>
+    ///Will assign the FK value from the parent entity when deletes are made. This is normally not required, but useful when FKs are not part of DTOs in external  APIs.
+    /// </para>
+    /// </remarks>
+    public bool UpdateForeignKeysInDeletes { get; set; }
+
+    private void AssignForeignKeyIfDefined(CompareResultItem item)
+    {
+        if (item.TrackedItem.Parent != null)
+        {
+            var parent = item.TrackedItem.Parent.Entity;
+            var child = item.TrackedItem.Entity;
+            var mapping = _mappingRegistry.Get(parent.GetType());
+            var relation = mapping.GetRelation(child.GetType());
+            if (relation != null)
+            {
+                var parentId = relation.GetReferencedId(parent);
+                if (parentId == null)
+                {
+                    throw new MappingException(parent,
+                        "Failed to find referenced id for " + child);
+                }
+
+                relation.SetForeignKey(child, parentId);
+            }
         }
     }
 }

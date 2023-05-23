@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\Griffin.Data.xml</DocumentationFile>
 
-        <Version>2.0.0-rc35</Version>
-        <PackageReleaseNotes>SingleEntityComparer will now set null as parent for root.</PackageReleaseNotes>
+        <Version>2.0.0-rc36</Version>
+        <PackageReleaseNotes>FKs can now be updated when using the change tracker for externally managed entities.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>

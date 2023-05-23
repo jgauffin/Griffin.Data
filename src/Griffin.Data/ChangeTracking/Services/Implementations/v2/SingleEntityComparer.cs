@@ -117,6 +117,11 @@ public class SingleEntityComparer
     private bool EntityEquals(object snapshot, object current)
     {
         var mapping = _mappingRegistry.Get(snapshot.GetType());
+
+        foreach (var child in mapping.Children)
+        {
+            
+        }
         foreach (var prop in mapping.Properties)
         {
             var snapShotValue = prop.GetValue(snapshot);
