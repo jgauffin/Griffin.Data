@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\Griffin.Data.xml</DocumentationFile>
 
-        <Version>2.0.0-rc34</Version>
-        <PackageReleaseNotes>SingleEntityComparer can now ignore properties.</PackageReleaseNotes>
+        <Version>2.0.0-rc35</Version>
+        <PackageReleaseNotes>SingleEntityComparer will now set null as parent for root.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>

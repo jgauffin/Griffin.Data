@@ -10,12 +10,12 @@ namespace Griffin.Data.ChangeTracking.Services.Implementations.v2;
 /// <summary>
 ///     Generates a list of entities with meta data.
 /// </summary>
-internal class EntityTraverser2
+internal class SingleEntityTraverser
 {
     private readonly IMappingRegistry _mappingRegistry;
     private List<TrackedEntity2> _trackedEntities = new();
 
-    public EntityTraverser2(IMappingRegistry mappingRegistry)
+    public SingleEntityTraverser(IMappingRegistry mappingRegistry)
     {
         _mappingRegistry = mappingRegistry ?? throw new ArgumentNullException(nameof(mappingRegistry));
     }
@@ -36,11 +36,13 @@ internal class EntityTraverser2
 
         var key = _mappingRegistry.GenerateKey(source);
         var root = new TrackedEntity2(key, source, 0);
-        Traverse(root, source, new List<object>());
+        _trackedEntities.Add(root);
+        TraverseFields(source, new List<object>(), root);
         return _trackedEntities;
     }
 
-    private void Traverse(TrackedEntity2 parent, object source, IList<object> traversedEntities)
+
+    private void TraverseChild(TrackedEntity2 parent, object source, IList<object> traversedEntities)
     {
         if (source == null)
         {
@@ -59,6 +61,11 @@ internal class EntityTraverser2
         parent.AddChild(entity);
         _trackedEntities.Add(entity);
 
+        TraverseFields(source, traversedEntities, entity);
+    }
+
+    private void TraverseFields(object source, IList<object> traversedEntities, TrackedEntity2 entity)
+    {
         var fields = source.GetType()
             .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         foreach (var field in fields)
@@ -85,7 +92,7 @@ internal class EntityTraverser2
             }
             else
             {
-                Traverse(entity, value, traversedEntities);
+                TraverseChild(entity, value, traversedEntities);
             }
         }
     }
@@ -112,7 +119,7 @@ internal class EntityTraverser2
 
         foreach (var source in list)
         {
-            Traverse(parent, source, traversedEntities);
+            TraverseChild(parent, source, traversedEntities);
         }
     }
 }

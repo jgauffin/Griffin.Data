@@ -3,7 +3,7 @@ using Griffin.Data.Scaffolding.Mapper;
 using Griffin.Data.Scaffolding.Queries;
 using Griffin.Data.SqlServer;
 
-namespace Griffin.Data.Tests;
+namespace Griffin.Data.IntegrationTests;
 
 public class ScaffolderTest
 {

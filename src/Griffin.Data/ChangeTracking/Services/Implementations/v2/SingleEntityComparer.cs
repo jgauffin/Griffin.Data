@@ -36,7 +36,7 @@ public class SingleEntityComparer
     {
         // Start by generating a structure (flat list with hierarchical entities).
         // to allow us to traverse them and generate a change report.
-        var traverser = new EntityTraverser2(_mappingRegistry);
+        var traverser = new SingleEntityTraverser(_mappingRegistry);
         var snapshots = traverser.Traverse(snapshot).OrderBy(x => x.Depth);
         var currents = traverser.Traverse(current).OrderBy(x => x.Depth).ToList();
 
@@ -108,7 +108,7 @@ public class SingleEntityComparer
 
         return result;
     }
-    
+
     /// <summary>
     ///     Compare two entities (children are not compared).
     /// </summary>

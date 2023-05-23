@@ -1,4 +1,4 @@
-﻿namespace Griffin.Data.IntegrationTests.ChangeTracker.Implementations.Subjects
+﻿namespace Griffin.Data.Tests.ChangeTracker.Implementations.Subjects
 {
     internal class NotMatchingConstructor
     {
