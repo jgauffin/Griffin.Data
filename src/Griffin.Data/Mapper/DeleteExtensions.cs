@@ -11,6 +11,11 @@ namespace Griffin.Data.Mapper;
 /// <summary>
 ///     Methods to delete entities.
 /// </summary>
+/// <remarks>
+///     <para>
+///         All child entities are deleted in reverse order so that foreign keys are removed first.
+///     </para>
+/// </remarks>
 public static class DeleteExtensions
 {
     /// <summary>
@@ -34,15 +39,7 @@ public static class DeleteExtensions
 
         var mapping = session.GetMapping(entity.GetType());
 
-        foreach (var childMapping in mapping.Children)
-        {
-            await session.DeleteChildren(entity, childMapping);
-        }
-
-        foreach (var childMapping in mapping.Collections)
-        {
-            await session.DeleteCollection(entity, childMapping);
-        }
+        await DeleteChildren(session, entity, mapping);
 
         await using var command = session.CreateCommand();
         try
@@ -85,12 +82,12 @@ public static class DeleteExtensions
 
         var keyProperty = mapping.Keys[0];
 
-        foreach (var childMapping in mapping.Children)
+        foreach (var childMapping in mapping.Children.Reverse())
         {
             await session.DeleteChildren(mapping, childMapping);
         }
 
-        foreach (var childMapping in mapping.Collections)
+        foreach (var childMapping in mapping.Collections.Reverse())
         {
             await session.DeleteCollection(mapping, childMapping);
         }
@@ -105,9 +102,24 @@ public static class DeleteExtensions
         }
         catch (DbException ex)
         {
-            var our = new MapperException("Failed to DELETE entity", command, typeof(T), ex);
-            our.Data["Key"] = key;
+            var our = new MapperException("Failed to DELETE entity", command, typeof(T), ex)
+            {
+                Data = { ["Key"] = key }
+            };
             throw our;
+        }
+    }
+
+    private static async Task DeleteChildren(Session session, object entity, ClassMapping mapping)
+    {
+        foreach (var childMapping in mapping.Children.Reverse())
+        {
+            await session.DeleteChildren(entity, childMapping);
+        }
+
+        foreach (var childMapping in mapping.Collections.Reverse())
+        {
+            await session.DeleteCollection(entity, childMapping);
         }
     }
 
@@ -145,15 +157,7 @@ public static class DeleteExtensions
                 return;
             }
 
-            foreach (var child in mapping.Children)
-            {
-                await session.DeleteChildren(instance, child);
-            }
-
-            foreach (var collection in mapping.Collections)
-            {
-                await session.DeleteCollection(instance, collection);
-            }
+            await DeleteChildren(session, entity, mapping);
         }
 
         await using var command = session.CreateCommand();
@@ -211,7 +215,7 @@ public static class DeleteExtensions
         {
             await hasMany.Visit(collection, async element =>
             {
-                foreach (var child in mapping.Children)
+                foreach (var child in mapping.Children.Reverse())
                 {
                     var value = child.GetColumnValue(element);
                     if (value == null)
@@ -223,7 +227,7 @@ public static class DeleteExtensions
                     await session.DeleteChildren(element, child);
                 }
 
-                foreach (var childHasMany in mapping.Collections)
+                foreach (var childHasMany in mapping.Collections.Reverse())
                 {
                     var value = childHasMany.GetCollection(element);
                     if (value == null)
@@ -248,10 +252,8 @@ public static class DeleteExtensions
         }
         catch (DbException ex)
         {
-            var our= new MapperException("Failed to DELETE child entities using FK from parent.", command, hasMany.ChildEntityType, ex)
-            {
-                Data = { ["ParentEntity"] = parentEntity }
-            };
+            var our = new MapperException("Failed to DELETE child entities using FK from parent.", command,
+                hasMany.ChildEntityType, ex) { Data = { ["ParentEntity"] = parentEntity } };
             throw our;
         }
     }
