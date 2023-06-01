@@ -40,7 +40,16 @@ public class SingleEntityComparer
         var snapshots = traverser.Traverse(snapshot).OrderBy(x => x.Depth);
         var currents = traverser.Traverse(current).OrderBy(x => x.Depth).ToList();
 
-        var existingCurrents = currents.Where(x => x.Key != null).ToDictionary(x => x.Key!, x => x);
+        Dictionary<string, TrackedEntity2> existingCurrents = new Dictionary<string, TrackedEntity2>();
+        foreach (var entity2 in currents.Where(x => x.Key != null))
+        {
+            if (!existingCurrents.TryAdd(entity2.Key!, entity2))
+            {
+                // TODO: Make sure that they are the same entity
+                // For now, we just ignore the duplicate.
+                continue;
+            }
+        }
 
         var toCompare =
             new List<(TrackedEntity2 snapshot, TrackedEntity2 current)>();
@@ -120,7 +129,7 @@ public class SingleEntityComparer
 
         foreach (var child in mapping.Children)
         {
-            
+
         }
         foreach (var prop in mapping.Properties)
         {

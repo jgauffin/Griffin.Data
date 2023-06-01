@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\Griffin.Data.xml</DocumentationFile>
 
-        <Version>2.0.0-rc37</Version>
-        <PackageReleaseNotes>Delete child entities in reverse order so that FKs are maintained.</PackageReleaseNotes>
+        <Version>2.0.0-rc38</Version>
+        <PackageReleaseNotes>Apply subset column when using change tracking.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>

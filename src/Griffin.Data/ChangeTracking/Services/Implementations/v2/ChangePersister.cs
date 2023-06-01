@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Griffin.Data.Mapper;
 using Griffin.Data.Mapper.Mappings;
+using Griffin.Data.Mapper.Mappings.Relations;
 
 namespace Griffin.Data.ChangeTracking.Services.Implementations.v2;
 
@@ -47,7 +48,8 @@ public class ChangePersister
         foreach (var item in itemsToInsert)
         {
             AssignForeignKeyIfDefined(item);
-            await session.Insert(item.TrackedItem.Entity);
+            var subsetColumn = GetSubsetColumn(item);
+            await session.Insert(item.TrackedItem.Entity, subsetColumn);
         }
 
         var itemsToRemove = items.Where(x => x.State == ChangeState.Removed).OrderByDescending(x => x.Depth);
@@ -57,7 +59,7 @@ public class ChangePersister
             {
                 AssignForeignKeyIfDefined(item);
             }
-            
+
             await session.Delete(item.TrackedItem.Entity);
         }
 
@@ -68,8 +70,9 @@ public class ChangePersister
             {
                 AssignForeignKeyIfDefined(item);
             }
-            
-            await session.Update(item.TrackedItem.Entity);
+
+            var subsetColumn = GetSubsetColumn(item);
+            await session.Update(item.TrackedItem.Entity, subsetColumn);
         }
     }
 
@@ -112,5 +115,24 @@ public class ChangePersister
                 relation.SetForeignKey(child, parentId);
             }
         }
+    }
+
+    private IDictionary<string, object>? GetSubsetColumn(CompareResultItem item)
+    {
+        if (item.TrackedItem.Parent == null)
+        {
+            return null;
+        }
+
+        var parent = item.TrackedItem.Parent.Entity;
+        var child = item.TrackedItem.Entity;
+        var mapping = _mappingRegistry.Get(parent.GetType());
+        var relation = mapping.GetRelation(child.GetType());
+        if (relation is IHasOneMapping one && one.SubsetColumn != null)
+        {
+            return new Dictionary<string, object>() { { one.SubsetColumn.Value.Key, one.SubsetColumn.Value.Value } };
+        }
+
+        return null;
     }
 }
