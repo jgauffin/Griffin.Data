@@ -124,13 +124,20 @@ public class ClassMapping
         }
 
         var constructor = result.Value.Item1;
-        var constructorArguments = new List<UnaryExpression>();
+        var constructorArguments = new List<Expression>();
         foreach (var mapping in result.Value.Item2)
         {
             var columnNameConstant = Expression.Constant(mapping.ColumnName, typeof(string));
+            var value = Expression.Variable(typeof(object));
+
             var indexerAccessor = Expression.Property(param, property, columnNameConstant);
 
-            UnaryExpression converted;
+            var dbNullRemoved = Expression.IfThenElse(
+                Expression.Equal(indexerAccessor, Expression.Constant(DBNull.Value)),
+                Expression.Assign(value, Expression.Constant(null)),
+                Expression.Assign(value, indexerAccessor));
+
+            Expression converted;
             var converter = mapping.GetType().GetProperty("ColumnToPropertyConverter",
                 BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)?.GetValue(mapping);
             if (converter != null)
@@ -146,7 +153,33 @@ public class ClassMapping
                 converted = Expression.Convert(indexerAccessor, mapping.PropertyType);
             }
 
-            constructorArguments.Add(converted);
+            var exceptionMethod = GetType().GetMethod(nameof(ThrowConstructArgumentException),
+                BindingFlags.NonPublic | BindingFlags.Instance)!.MakeGenericMethod(mapping.PropertyType);
+            
+            
+            var exception = Expression.Variable(typeof(Exception), "exception");
+            //var catchAll = Expression.Catch(
+            //    exception,
+            //    Expression.Block(
+            //        Expression.Call(
+            //            Expression.Constant(this), 
+            //            exceptionMethod,
+            //            exception,
+            //            Expression.Constant(mapping),
+            //            Expression.Constant(record))));
+            var catchAll = Expression.Catch(
+                exception,
+                    Expression.Call(
+                        Expression.Constant(this),
+                        exceptionMethod,
+                        exception,
+                        Expression.Constant(mapping),
+                        Expression.Constant(record)));
+
+            var block = Expression.Block(dbNullRemoved, converted);
+            Expression triedExpr = Expression.TryCatch(converted, catchAll);
+
+            constructorArguments.Add(triedExpr);//converted, och ändrade från UnaryExpression to Expression för listan.
         }
 
         var constructorExpression = Expression.New(constructor, constructorArguments);
@@ -155,11 +188,43 @@ public class ClassMapping
         {
             return _itemFactory(record);
         }
+        catch (GriffinException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             throw new MappingConfigurationException(EntityType,
                 "Failed to create an instance of entity using non-default constructor.", ex);
         }
+    }
+
+    private TProperty ThrowConstructArgumentException<TProperty>(Exception exception, IFieldMapping mapping, IDataRecord record)
+    {
+        var values = "";
+        for (int i = 0; i < record.FieldCount; i++)
+        {
+            var value = record.GetValue(i);
+            if (value is null or DBNull)
+            {
+                values += $"{record.GetName(i)}: null, ";
+            }
+            else
+            {
+                values += $"{record.GetName(i)}: {value}, ";
+            }
+            
+        }
+
+        if (values.Length > 2)
+        {
+            values = values.Remove(values.Length - 2, 2);
+        }
+        
+        var failingValue = record[mapping.ColumnName];
+        var ex = new MappingException(EntityType,
+            $"Property {mapping.PropertyName} cannot be cast from '{(failingValue?.GetType().Name ?? "null")}' to {mapping.PropertyType}.\r\nAll fields: {values}\r\nInner error: " + exception.Message);
+        throw ex;
     }
 
     /// <summary>

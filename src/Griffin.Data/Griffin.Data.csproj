@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\Griffin.Data.xml</DocumentationFile>
 
-        <Version>2.0.0-rc38</Version>
-        <PackageReleaseNotes>Apply subset column when using change tracking.</PackageReleaseNotes>
+        <Version>2.0.0-rc39</Version>
+        <PackageReleaseNotes>Better error for non-default constructors that are missing fields in the data record.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>

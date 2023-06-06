@@ -4,11 +4,20 @@ namespace Griffin.Data.Tests.Helpers;
 
 public class FakeRecord : IDataRecord
 {
-    private readonly IDictionary<string, object> _values;
-
-    public FakeRecord(IDictionary<string, object> values)
+    private readonly IDictionary<string, object> _dict;
+    private readonly string[] _names;
+    private readonly object[] _values;
+    public FakeRecord(IDictionary<string, object> dict)
     {
-        _values = values;
+        _dict = dict;
+        var index = 0;
+        _names = new string[dict.Count];
+        _values = new object[dict.Count];
+        foreach (var kvp in dict)
+        {
+            _names[index] = kvp.Key;
+            _values[index++] = kvp.Value;
+        }
     }
 
     public bool GetBoolean(int i)
@@ -103,7 +112,7 @@ public class FakeRecord : IDataRecord
 
     public string GetName(int i)
     {
-        throw new NotImplementedException();
+        return _names[i];
     }
 
     public int GetOrdinal(string name)
@@ -118,7 +127,7 @@ public class FakeRecord : IDataRecord
 
     public object GetValue(int i)
     {
-        throw new NotImplementedException();
+        return _values[i];
     }
 
     public int GetValues(object[] values)
@@ -131,9 +140,9 @@ public class FakeRecord : IDataRecord
         throw new NotImplementedException();
     }
 
-    public int FieldCount { get; }
+    public int FieldCount => _dict.Count;
 
     public object this[int i] => throw new NotImplementedException();
 
-    public object this[string name] => _values[name];
+    public object this[string name] => _dict[name];
 }

@@ -48,6 +48,20 @@ public class ClassMappingTests
     }
 
     [Fact]
+    public void Should_auto_convert_dbNull_for_constructor_parameters()
+    {
+        var reg = new MappingRegistry();
+        reg.Scan(Assembly.GetExecutingAssembly());
+        var mapping = reg.Get<ClassWithConstructor>();
+        var record = new FakeRecord(new Dictionary<string, object> { { "Id", DBNull.Value }, { "Name", "Jonas" } });
+
+        var actual = () => mapping.CreateInstance(record);
+
+
+        actual.Should().Throw<MappingException>().Which.Message.Should().Contain("Id cannot be cast from 'DBNull'");
+    }
+
+    [Fact]
     public void Should_be_able_to_create_instance_using_non_default_constructor_and_converter()
     {
         var reg = new MappingRegistry();
