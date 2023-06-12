@@ -5,6 +5,7 @@ using Log = Griffin.Data.Tests.Entities.Log;
 
 namespace Griffin.Data.IntegrationTests.Mapper;
 
+//TODO: Delete a row with two properties of the same type that are different with the help of a subset column
 public class DeleteTests : IntegrationTests
 {
     [Fact]

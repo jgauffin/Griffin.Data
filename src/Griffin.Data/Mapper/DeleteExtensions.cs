@@ -168,6 +168,12 @@ public static class DeleteExtensions
         command.CommandText =
             $"DELETE FROM {mapping.TableName} WHERE {hasOne.ForeignKeyColumnName} = @{hasOne.ForeignKeyColumnName}";
 
+        if (hasOne.SubsetColumn != null)
+        {
+            command.CommandText += $" AND {hasOne.SubsetColumn.Value.Key}=@subsetValue";
+            command.AddParameter("subsetValue", hasOne.SubsetColumn.Value.Value);
+        }
+
         var fkValue = hasOne.GetReferencedId(parentEntity);
         command.AddParameter(hasOne.ForeignKeyColumnName, fkValue);
         Log.Crud(command);
@@ -212,7 +218,7 @@ public static class DeleteExtensions
         {
             throw new ArgumentNullException(nameof(hasMany));
         }
-
+        
         var mapping = session.GetMapping(hasMany.ChildEntityType);
         var collection = hasMany.GetCollection(parentEntity);
 
@@ -248,6 +254,12 @@ public static class DeleteExtensions
         await using var command = session.CreateCommand();
         command.CommandText =
             $"DELETE FROM {mapping.TableName} WHERE {hasMany.ForeignKeyColumnName} = @{hasMany.ForeignKeyColumnName}";
+
+        if (hasMany.SubsetColumn != null)
+        {
+            command.CommandText += $" AND {hasMany.SubsetColumn.Value.Key}=@subsetValue";
+            command.AddParameter("subsetValue", hasMany.SubsetColumn.Value.Value);
+        }
 
         var fkValue = hasMany.GetReferencedId(parentEntity);
         command.AddParameter(hasMany.ForeignKeyColumnName, fkValue);
