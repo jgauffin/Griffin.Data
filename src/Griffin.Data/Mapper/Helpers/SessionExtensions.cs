@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Griffin.Data.Helpers;
+using Griffin.Data.Logging;
 using Griffin.Data.Mapper.Mappings;
 
 namespace Griffin.Data.Mapper.Helpers;
@@ -63,6 +64,7 @@ internal static class SessionExtensions
         }
 
         session.Dialect.ApplyQueryOptions(mapping, cmd, options);
+        Log.Query(cmd);
         return cmd;
     }
 

@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Griffin.Data.Helpers;
+using Griffin.Data.Logging;
 using Griffin.Data.Mapper.Mappings;
 
 namespace Griffin.Data.Mapper;
@@ -150,6 +151,7 @@ public static class InsertExtensions
         values = values.Remove(values.Length - 2, 2);
 
         command.CommandText = $"INSERT INTO {mapping.TableName} ({columns}) VALUES({values});";
+        Log.Crud(command);
         await session.Dialect.Insert(mapping, entity, command);
     }
 

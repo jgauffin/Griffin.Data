@@ -2,5 +2,6 @@
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=3befb3c7_002Dff1f_002D4be9_002Da2bc_002Df39dbd6af958/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="Should_be_able_to_create_instance_using_non_default_constructor_and_converter" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
     &lt;TestId&gt;xUnit::7D5928DE-675A-47D4-BBAA-C2B828F731A2::net6.0::Griffin.Data.Tests.Mappings.ClassMappingTests&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::1AAD5C95-6646-4A32-87FF-859F8B830A1E::net6.0::Griffin.Data.IntegrationTests.Mapper.DeleteTests.Should_be_able_to_delete_main_with_children&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

@@ -1,5 +1,7 @@
-﻿using Griffin.Data.Mapper;
+﻿using Griffin.Data.Logging;
+using Griffin.Data.Mapper;
 using Griffin.Data.Tests.Entities;
+using Log = Griffin.Data.Tests.Entities.Log;
 
 namespace Griffin.Data.IntegrationTests.Mapper;
 

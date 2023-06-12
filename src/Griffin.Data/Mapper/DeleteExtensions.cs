@@ -3,6 +3,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using Griffin.Data.Helpers;
+using Griffin.Data.Logging;
 using Griffin.Data.Mapper.Mappings;
 using Griffin.Data.Mapper.Mappings.Relations;
 
@@ -46,6 +47,7 @@ public static class DeleteExtensions
         {
             command.CommandText = $"DELETE FROM {mapping.TableName}";
             command.ApplyKeyWhere(mapping, entity);
+            Log.Crud(command);
             await command.ExecuteNonQueryAsync();
         }
         catch (DbException ex)
@@ -84,18 +86,20 @@ public static class DeleteExtensions
 
         foreach (var childMapping in mapping.Children.Reverse())
         {
-            await session.DeleteChildren(mapping, childMapping);
+            await session.DeleteHasOneChildren(mapping, childMapping);
         }
 
         foreach (var childMapping in mapping.Collections.Reverse())
         {
-            await session.DeleteCollection(mapping, childMapping);
+            await session.DeleteHasManyChildren(mapping, childMapping);
         }
 
         await using var command = session.CreateCommand();
         command.CommandText =
             $"DELETE FROM {mapping.TableName} WHERE {keyProperty.ColumnName} = @{keyProperty.PropertyName}";
         command.AddParameter(keyProperty.PropertyName, key);
+        Log.Crud(command);
+
         try
         {
             await command.ExecuteNonQueryAsync();
@@ -114,16 +118,16 @@ public static class DeleteExtensions
     {
         foreach (var childMapping in mapping.Children.Reverse())
         {
-            await session.DeleteChildren(entity, childMapping);
+            await session.DeleteHasOneChildren(entity, childMapping);
         }
 
         foreach (var childMapping in mapping.Collections.Reverse())
         {
-            await session.DeleteCollection(entity, childMapping);
+            await session.DeleteHasManyChildren(entity, childMapping);
         }
     }
 
-    private static async Task DeleteChildren(this Session session, object parentEntity, IHasOneMapping hasOne)
+    private static async Task DeleteHasOneChildren(this Session session, object parentEntity, IHasOneMapping hasOne)
     {
         if (session == null)
         {
@@ -166,6 +170,7 @@ public static class DeleteExtensions
 
         var fkValue = hasOne.GetReferencedId(parentEntity);
         command.AddParameter(hasOne.ForeignKeyColumnName, fkValue);
+        Log.Crud(command);
 
         try
         {
@@ -191,7 +196,7 @@ public static class DeleteExtensions
     ///         be deleted first.
     ///     </para>
     /// </remarks>
-    private static async Task DeleteCollection(this Session session, object parentEntity, IHasManyMapping hasMany)
+    private static async Task DeleteHasManyChildren(this Session session, object parentEntity, IHasManyMapping hasMany)
     {
         if (session == null)
         {
@@ -224,7 +229,7 @@ public static class DeleteExtensions
                     }
 
                     // Action
-                    await session.DeleteChildren(element, child);
+                    await session.DeleteHasOneChildren(element, child);
                 }
 
                 foreach (var childHasMany in mapping.Collections.Reverse())
@@ -235,7 +240,7 @@ public static class DeleteExtensions
                         continue;
                     }
 
-                    await session.DeleteCollection(value, childHasMany);
+                    await session.DeleteHasManyChildren(value, childHasMany);
                 }
             });
         }
@@ -246,6 +251,7 @@ public static class DeleteExtensions
 
         var fkValue = hasMany.GetReferencedId(parentEntity);
         command.AddParameter(hasMany.ForeignKeyColumnName, fkValue);
+        Log.Crud(command);
         try
         {
             await command.ExecuteNonQueryAsync();

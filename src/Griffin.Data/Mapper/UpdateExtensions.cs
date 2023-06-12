@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading.Tasks;
 using Griffin.Data.Helpers;
+using Griffin.Data.Logging;
 using Griffin.Data.Mapper.Mappings;
 
 namespace Griffin.Data.Mapper;
@@ -109,6 +110,7 @@ public static class UpdateExtensions
         where = where.Remove(where.Length - 2, 2);
 
         command.CommandText = $"UPDATE {mapping.TableName} SET {columns} WHERE {where};";
+        Log.Crud(command);
         await session.Dialect.Update(mapping, entity, command);
     }
 }
