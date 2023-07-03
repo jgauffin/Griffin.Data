@@ -71,6 +71,35 @@ public static class InsertExtensions
         }
     }
 
+    /// <summary>
+    ///     Insert an entity (will not insert child entities).
+    /// </summary>
+    /// <param name="session">Session to perform INSERT operation in.</param>
+    /// <param name="entity">Entity to insert.</param>
+    /// <param name="extraColumns">Additional columns that exist in the DB but not in the entity.</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    internal static async Task InsertEntity(
+        this Session session,
+        object entity,
+        IDictionary<string, object>? extraColumns = null)
+    {
+        if (session == null)
+        {
+            throw new ArgumentNullException(nameof(session));
+        }
+
+        if (entity == null)
+        {
+            throw new ArgumentNullException(nameof(entity));
+        }
+
+        var mapping = session.GetMapping(entity.GetType());
+
+        await using var command = session.CreateCommand();
+        await session.InsertEntity(mapping, entity, command, extraColumns);
+    }
+
     private static async Task InsertEntity(
         this Session session,
         ClassMapping mapping,

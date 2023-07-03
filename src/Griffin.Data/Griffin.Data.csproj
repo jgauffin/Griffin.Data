@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\Griffin.Data.xml</DocumentationFile>
 
-        <Version>2.0.0-rc42</Version>
-        <PackageReleaseNotes>SingleEntityChangeTracker now recognizes new child entities for which the Id field has been assigned.</PackageReleaseNotes>
+        <Version>2.0.0-rc43</Version>
+        <PackageReleaseNotes>Change persister will now explicitly insert all items in an entity hierarchy.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>

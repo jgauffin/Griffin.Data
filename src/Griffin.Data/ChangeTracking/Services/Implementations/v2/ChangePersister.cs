@@ -49,7 +49,10 @@ public class ChangePersister
         {
             AssignForeignKeyIfDefined(item);
             var subsetColumn = GetSubsetColumn(item);
-            await session.Insert(item.TrackedItem.Entity, subsetColumn);
+
+            // We must use flat inserts since the change persister will
+            // split hierarchies into stand alone objects.
+            await session.InsertEntity(item.TrackedItem.Entity, subsetColumn);
         }
 
         var itemsToRemove = items.Where(x => x.State == ChangeState.Removed).OrderByDescending(x => x.Depth);
