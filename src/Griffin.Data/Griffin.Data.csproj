@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\Griffin.Data.xml</DocumentationFile>
 
-        <Version>2.0.0-rc41</Version>
-        <PackageReleaseNotes>DELETE should include subset column when deleting.</PackageReleaseNotes>
+        <Version>2.0.0-rc42</Version>
+        <PackageReleaseNotes>singleEntityChangeTracker now recognizes new child entities for which the Id field has been assigned.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>

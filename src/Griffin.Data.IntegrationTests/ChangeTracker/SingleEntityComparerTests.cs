@@ -19,6 +19,20 @@ public class SingleEntityComparerTests : IntegrationTests
         actualMain.State.Should().Be(ChangeState.Modified);
     }
 
+    [Fact]
+    public async Task Should_detect_new_child_property_collection_item()
+    {
+        var snapshot = await Session.GetById<MainTable>(1);
+        var modifiedEntity = CreateManualMain();
+        modifiedEntity.AddLog("new log");
+
+        var sut = new SingleEntityComparer(Registry);
+        var result = sut.Compare(snapshot, modifiedEntity);
+
+        var actualMain = result.First(x => x.Depth == 1);
+        actualMain.State.Should().Be(ChangeState.Modified);
+    }
+
     private static MainTable CreateManualMain()
     {
         var main = new MainTable

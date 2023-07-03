@@ -37,12 +37,21 @@ public class SingleEntityComparer
         // Start by generating a structure (flat list with hierarchical entities).
         // to allow us to traverse them and generate a change report.
         var traverser = new SingleEntityTraverser(_mappingRegistry);
-        var snapshots = traverser.Traverse(snapshot).OrderBy(x => x.Depth);
+        var snapshots = traverser.Traverse(snapshot).OrderBy(x => x.Depth).ToList();
         var currents = traverser.Traverse(current).OrderBy(x => x.Depth).ToList();
 
         Dictionary<string, TrackedEntity2> existingCurrents = new Dictionary<string, TrackedEntity2>();
+        var result = new List<CompareResultItem>();
+
         foreach (var entity2 in currents.Where(x => x.Key != null))
         {
+            // New items can have a key assigned
+            if (snapshots.FirstOrDefault(x => x.Key == entity2.Key) == null)
+            {
+                result.Add(new CompareResultItem(entity2, ChangeState.Added));
+                continue;
+            }
+
             if (!existingCurrents.TryAdd(entity2.Key!, entity2))
             {
                 // TODO: Make sure that they are the same entity
@@ -53,7 +62,6 @@ public class SingleEntityComparer
 
         var toCompare =
             new List<(TrackedEntity2 snapshot, TrackedEntity2 current)>();
-        var result = new List<CompareResultItem>();
         foreach (var snapshotItem in snapshots)
         {
             if (snapshotItem.Key == null)
