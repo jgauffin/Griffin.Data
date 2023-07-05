@@ -48,6 +48,26 @@ public class ClassMappingTests
     }
 
     [Fact]
+    public void Should_use_read_parameter_and_not_build_it_as_a_constant_expression_in_the_exception_builder()
+    {
+        var reg = new MappingRegistry();
+        reg.Scan(Assembly.GetExecutingAssembly());
+        var mapping = reg.Get<ClassWithConstructor>();
+        var record1 = new FakeRecord(new Dictionary<string, object> { { "Id", 1 }, { "Name", DBNull.Value } });
+        var record2 = new FakeRecord(new Dictionary<string, object> { { "Id", 1 }, { "Name", DBNull.Value } });
+        var actual1 = () =>
+        {
+            mapping.CreateInstance(record1);
+            record1.IsDisposed = true;
+        };
+        
+        var actual2 = () => mapping.CreateInstance(record2);
+
+        actual1.Should().Throw<MappingException>();
+        actual2.Should().Throw<MappingException>();
+    }
+
+    [Fact]
     public void Should_auto_convert_dbNull_for_constructor_parameters()
     {
         var reg = new MappingRegistry();

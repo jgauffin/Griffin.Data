@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Xml.Linq;
 
 namespace Griffin.Data.Tests.Helpers;
 
@@ -19,6 +20,8 @@ public class FakeRecord : IDataRecord
             _values[index++] = kvp.Value;
         }
     }
+
+    public bool IsDisposed { get; set; }
 
     public bool GetBoolean(int i)
     {
@@ -127,6 +130,9 @@ public class FakeRecord : IDataRecord
 
     public object GetValue(int i)
     {
+        if (IsDisposed)
+            throw new ObjectDisposedException("Reader is closed.");
+
         return _values[i];
     }
 
@@ -140,9 +146,37 @@ public class FakeRecord : IDataRecord
         throw new NotImplementedException();
     }
 
-    public int FieldCount => _dict.Count;
+    public int FieldCount
+    {
+        get
+        {
+            if (IsDisposed)
+            {
+                throw new ObjectDisposedException("FakeRecord");
+            }
+            return _dict.Count;
+        }
+    }
 
-    public object this[int i] => throw new NotImplementedException();
+    public object this[int i]
+    {
+        get
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException("Reader is closed.");
 
-    public object this[string name] => _dict[name];
+            return _values[i];
+        }
+    }
+
+    public object this[string name]
+    {
+        get
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException("Reader is closed.");
+
+            return _dict[name];
+        }
+    }
 }

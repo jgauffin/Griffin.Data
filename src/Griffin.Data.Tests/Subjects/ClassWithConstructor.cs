@@ -5,7 +5,7 @@ public class ClassWithConstructor
     public ClassWithConstructor(int id, string name)
     {
         Id = id;
-        Name = name;
+        Name = name ?? throw new ArgumentNullException(nameof(name));
     }
 
     public int Id { get; }
