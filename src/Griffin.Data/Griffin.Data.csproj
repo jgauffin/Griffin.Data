@@ -7,8 +7,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DocumentationFile>bin\$(Configuration)\Griffin.Data.xml</DocumentationFile>
 
-        <Version>2.0.0-rc44</Version>
-        <PackageReleaseNotes>Non-default constructor factory now uses the correct IDataRecord (instead of a constant).</PackageReleaseNotes>
+        <Version>2.0.0-rc45</Version>
+        <PackageReleaseNotes>Entity comparison for the change tracker has been updated.</PackageReleaseNotes>
     </PropertyGroup>
 
     <PropertyGroup>

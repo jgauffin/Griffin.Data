@@ -1,13 +1,13 @@
 ﻿namespace Griffin.Data.Tests.ChangeTracker.Implementations.Services.Subjects;
 
-public class ChildWithChildren
+public class Level2
 {
-    public ChildWithChildren(int id)
+    public Level2(int id)
     {
         Id = id;
     }
 
-    public IList<Child> Children { get; set; }
+    public IList<Level3> Children { get; set; }
     public string Type { get; set; }
     public int ParentId { get; set; }
     public int Id { get; private set; }

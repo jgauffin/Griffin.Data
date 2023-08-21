@@ -13,7 +13,7 @@ internal class GeneratorHelper
         var scaffolder = new MapperScaffolder();
         await scaffolder.Generate(dialect, connectionString, directory);
     }
-
+     
     public static async Task GenerateQueries(string? dbEngineName, string connectionString, string directory)
     {
         using var connection = OpenConnection(dbEngineName, connectionString, directory);

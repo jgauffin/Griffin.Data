@@ -40,7 +40,6 @@ internal class ConstructorBuilder
         {
             throw new InvalidOperationException("Failed to find indexer method in IDataRecord");
         }
-
         var constructor = result.Value.Item1;
         var constructorArguments = new List<Expression>();
         foreach (var mapping in result.Value.Item2)
@@ -54,7 +53,7 @@ internal class ConstructorBuilder
                 Expression.Equal(indexerAccessor, Expression.Constant(DBNull.Value)),
                 Expression.Assign(value, Expression.Constant(null)),
                 Expression.Assign(value, indexerAccessor));
-
+            
             Expression converted;
             var converter = mapping.GetType().GetProperty("ColumnToPropertyConverter",
                 BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)?.GetValue(mapping);

@@ -14,16 +14,30 @@ public class SingleEntityComparerTests
     {
         var reg = new MappingRegistry();
         reg.Scan(Assembly.GetExecutingAssembly());
-        var snapshot = new Root(1) { Child = new ChildWithChildren(2) { Children = new List<Child> { new() { Id = 3 } } } };
-        var modified = new Root(1)
+        var snapshot = new Level1(1)
         {
-            Child = new ChildWithChildren(2) { Children = new List<Child> { new() { Id = 3 }, new() { Id = 4 } } }
+            Child = new Level2(2)
+            {
+                Children = new List<Level3> { new() { Id = 3, Child4 = new Level4() { Id = 4 } } }
+            }
+        };
+        var modified = new Level1(1)
+        {
+            Child = new Level2(2)
+            {
+                Children = new List<Level3>
+                {
+                    new() { Id = 3, Child4 = new Level4() { Id = 6 } },
+                    new() { Id = 4, Child4 = new Level4() { Id = 5 } }
+                }
+            }
         };
 
         var sut = new SingleEntityComparer(reg);
         var result = sut.Compare(snapshot, modified);
 
-        result.First(x => x.TrackedItem.Key == "Child4").State.Should().Be(ChangeState.Added);
+        result.First(x => x.TrackedItem.Key == "Level45").State.Should().Be(ChangeState.Added);
+        result.First(x => x.TrackedItem.Key == "Level33").State.Should().Be(ChangeState.Unmodified);
     }
 
     [Fact]
@@ -31,10 +45,10 @@ public class SingleEntityComparerTests
     {
         var reg = new MappingRegistry();
         reg.Scan(Assembly.GetExecutingAssembly());
-        var snapshot = new Root(1) { Child = new ChildWithChildren(2) { Children = new List<Child> { new() { Id = 3 } } } };
-        var modified = new Root(1)
+        var snapshot = new Level1(1) { Child = new Level2(2) { Children = new List<Level3> { new() { Id = 3 } } } };
+        var modified = new Level1(1)
         {
-            Child = new ChildWithChildren(2) { Children = new List<Child> { new() { Id = 3 }, new() } }
+            Child = new Level2(2) { Children = new List<Level3> { new() { Id = 3 }, new() } }
         };
 
         var sut = new SingleEntityComparer(reg);
